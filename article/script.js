@@ -160,7 +160,7 @@ function renderQuestions(data) {
                 `).join("")}
 
                 <div class="answer">
-                    Answer: ${["A","B","C","D"][q.answer]}
+                    Answer: ${["A","B","C","D"][q.answer -1]}
                 </div>
 
             </div>
