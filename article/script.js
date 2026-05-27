@@ -133,6 +133,10 @@ ${escapeHtml(err.message)}
     }
 }
 
+function shuffle(array) {
+    return [...array].sort(() => Math.random() - 0.5);
+}
+
 function renderQuestions(data) {
 
     if (!data.questions) {
@@ -145,6 +149,20 @@ function renderQuestions(data) {
 
     data.questions.forEach((q, i) => {
 
+        // 1. Attach original index to each choice
+        const choicesWithIndex = q.choices.map((choice, idx) => ({
+            text: choice,
+            idx: idx
+        }));
+
+        // 2. Shuffle them
+        const shuffled = shuffle(choicesWithIndex);
+
+        // 3. Find where correct answer moved
+        const correctIndex = shuffled.findIndex(
+            c => c.idx === q.answer
+        );
+
         questionsDiv.innerHTML += `
             <div class="card">
 
@@ -152,15 +170,15 @@ function renderQuestions(data) {
 
                 <p>${escapeHtml(q.question)}</p>
 
-                ${q.choices.map((c, idx) => `
+                ${shuffled.map((c, idx) => `
                     <div class="choice">
                         <b>${["A","B","C","D"][idx]}.</b>
-                        ${escapeHtml(c)}
+                        ${escapeHtml(c.text)}
                     </div>
                 `).join("")}
 
                 <div class="answer">
-                    Answer: ${["A","B","C","D"][q.answer -1]}
+                    Answer: ${["A","B","C","D"][correctIndex]}
                 </div>
 
             </div>
