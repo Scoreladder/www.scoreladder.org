@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Random DOAJ Article Finder</title>
+    <title>Scoreladder Articles</title>
 
     <style>
         body {
@@ -16,12 +16,18 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
         }
 
         h1 {
-            margin-bottom: 20px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            margin-bottom: 25px;
+            line-height: 1.6;
         }
 
         input {
@@ -32,6 +38,12 @@
             border-radius: 8px;
             margin-bottom: 12px;
             box-sizing: border-box;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         button {
@@ -48,26 +60,56 @@
             background: #6366f1;
         }
 
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .card {
             margin-top: 30px;
-            padding: 20px;
+            padding: 24px;
             background: #1e1e1e;
             border-radius: 12px;
         }
 
         .title {
             font-size: 28px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .meta {
             color: #aaa;
-            margin-bottom: 15px;
-            line-height: 1.6;
+            margin-bottom: 18px;
+            line-height: 1.7;
         }
 
         .abstract {
-            line-height: 1.7;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .question-box {
+            margin-top: 18px;
+            padding: 16px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .question-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .choice {
+            margin: 8px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 8px;
+        }
+
+        .answer {
+            margin-top: 10px;
+            color: #8ab4ff;
         }
 
         a {
@@ -83,12 +125,27 @@
             margin-top: 20px;
             color: #aaa;
         }
+
+        .footer-note {
+            margin-top: 40px;
+            color: #777;
+            font-size: 14px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Random Research Article Finder</h1>
+
+    <h1>Scoreladder Articles</h1>
+
+    <div class="subtitle">
+        Discover open-access academic articles powered by
+        <a href="https://doaj.org" target="_blank">
+            DOAJ (Directory of Open Access Journals)
+        </a>.
+    </div>
 
     <input
         type="text"
@@ -96,11 +153,24 @@
         placeholder="Enter a topic..."
     >
 
-    <button id="searchButton">
-        Find Random Article
-    </button>
+    <div class="button-row">
+        <button id="searchButton">
+            Find Random Article
+        </button>
+
+        <button id="questionButton" disabled>
+            Generate SAT-Style Questions
+        </button>
+    </div>
 
     <div id="result"></div>
+
+    <div id="questions"></div>
+
+    <div class="footer-note">
+        Article metadata provided by DOAJ.
+    </div>
+
 </div>
 
 <script src="script.js"></script>
