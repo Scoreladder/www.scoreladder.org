@@ -133,12 +133,40 @@ ${escapeHtml(err.message)}
     }
 }
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+class ShuffleNoRepeat {
+  constructor() {
+    this.last = null;
   }
-  return arr;
+
+  shuffle(arr) {
+    let result;
+
+    do {
+      result = this._fisherYates(arr.slice());
+    } while (this.last && this._sameArray(result, this.last));
+
+    this.last = result.slice();
+    return result;
+  }
+
+  _fisherYates(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  _sameArray(a, b) {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+  }
+}
+
+const shuffler = new ShuffleNoRepeat();
+
+
+function shuffle(arr) {
+    shuffler.shuffle(arr);
 }
 
 
