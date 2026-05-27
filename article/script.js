@@ -45,3 +45,51 @@ async function generateAIQuestions() {
         `;
     }
 }
+
+function renderAIQuestions(data) {
+
+    if (!data.questions) {
+
+        questionsDiv.innerHTML = `
+            <div class="card">
+                AI failed to generate questions.
+            </div>
+        `;
+
+        return;
+    }
+
+    questionsDiv.innerHTML = "";
+
+    data.questions.forEach((q, index) => {
+
+        questionsDiv.innerHTML += `
+            <div class="card">
+
+                <h2>
+                    Question ${index + 1}
+                </h2>
+
+                <p>
+                    ${escapeHtml(q.question)}
+                </p>
+
+                ${q.choices.map((choice, i) => `
+                    <div class="choice">
+                        <strong>
+                            ${["A","B","C","D"][i]}.
+                        </strong>
+
+                        ${escapeHtml(choice)}
+                    </div>
+                `).join("")}
+
+                <div class="answer">
+                    Correct Answer:
+                    ${["A","B","C","D"][q.answer]}
+                </div>
+
+            </div>
+        `;
+    });
+}
