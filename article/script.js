@@ -97,7 +97,7 @@ async function generateAIQuestions() {
     try {
 
         const res = await fetch(
-            "https://scoreladderai.scyyebiz.workers.dev",
+            "https://ai.scoreladder.org",
             {
                 method: "POST",
                 headers: {
