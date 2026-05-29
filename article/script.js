@@ -166,7 +166,7 @@ const shuffler = new ShuffleNoRepeat();
 
 
 function shuffle(arr) {
-    shuffler.shuffle(arr);
+    return shuffler.shuffle(arr);
 }
 
 
