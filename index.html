@@ -6,57 +6,164 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+
+    header {
+        background-color: rgb(175, 175, 175);
+        padding:3px;
+        display:flex;
+        flex-wrap:wrap;
+    }
+    header .link {
+        background-color: rgb(189, 189, 189);
+        color: rgb(34, 34, 34);
+        padding: 12px;
+        margin: 2px;
+        font-size: 25px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+    .center .link {
+        background-color: rgb(189, 189, 189);
+        color: rgb(34, 34, 34);
+        padding: 10px;
+        font-size: 20px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+    body {
+        background-color: rgb(228, 228, 228);
+        font-family: sans-serif;
+    }
+    .regular-text {
+        color: rgb(34, 34, 34);
+    }
+    .center {
+        text-align: center;
+    }
+    .container {
+        max-width: 1000px;
+        margin: auto;
+        padding: 20px;
+    }
+    .bold {
+        font-weight: bold;
+    }
+    #title {
+        font-size: 67px;
+        /*hahahahahaha 67*/
+    }
+    #title-description {
+        font-size: 16px;
+        margin-top: -20px;
+        margin-bottom: 50px;
+    }
+    #directory-title {
+        font-size: 30px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    #directory-names {
+        float: left
+    }
+    #directory-descriptions {
+        text-align:right
+    }
+    a.card {
+        display: block;
+        padding: 15px;
+        margin: 10px;
+        background: rgb(169, 169, 169);
+        border-radius: 10px;
+        text-decoration: none;
+        color:rgb(34, 34, 34);
+        transition: 0.2s;
+    }
+   a.card:hover {
+        transform: translateY(-10px);
+   }
 </style>
 </head>
 
 <body>
 
+    <header>
+        <a href="https://web.scoreladder.org/"><img src="./images/Scoreladder Logo.png" alt="Logo" style="max-height:60px;"></a>
+        <a href=/login class="link">Log in</a>
+        <a href=/play class="link">Play</a>
+        <a href=/donate class="link">Donate</a>
+        <a href=/leaderboards class="link">Leaderboards</a>
+        <a href=/rules class="link">Rules</a>
+        <a href=/aboutus class="link">About Us</a>
+    </header>
+    <div class="center">
+        <div class="regular-text bold">
+            <h1 id="title">Welcome to Scoreladder!</h1>
+            <p id="title-description">
+                Stop doomscrolling and paying for test prep. We turn the SAT into a competitive video game. Start grinding for elo today for free!
+            </p>
+            <a href=/signup class="link">Get Started</a>
+        </div>
 
-<script>
-/**
- * =========================
- * EASY EDIT CONFIG SECTION
- * =========================
- */
+        <div class="container">
 
-const pages = [
-    { name: "Home", url: "/", desc: "Main landing page" },
-    { name: "Blog", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
-    { name: "Article (Proof of Concept)", url: "/article/", desc: "Test out our article and question generator test!" }
-];
+            <div class="section">
+                <h2>Pages</h2>
+                <div id="pages" class="grid"></div>
+            </div>
+            <div class="section">
+                <h2 class="regular-text">External Links</h2>
+                <div id="links" class="grid"></div>
+            </div>
 
-const externalLinks = [
-    { name: "Discord", url: "https://discord.com/invite/Zr8s3GnHNv", desc: "Join our community, become a tester" },
-    { name: "Interest Form", url: "https://forms.gle/LAgDeZZH6BArEHzM9", desc: "Fill out our interest form!" },
-    { name: "Contact", url: "mailto:devs@scoreladder.org", desc: "Send us an email!" }
-];
+        </div>
+    </div>
 
-/**
- * =========================
- * RENDER FUNCTION
- * =========================
- */
+    <script>
+        /**
+         * =========================
+         * EASY EDIT CONFIG SECTION
+         * =========================
+         */
 
-function render(list, elementId) {
-    const container = document.getElementById(elementId);
+        const pages = [
+            { name: "Article (Proof of Concept)", url: "/article", desc: "Test out our article and question generator test!" },
+        ];
 
-    list.forEach(item => {
-        const a = document.createElement("a");
-        a.className = "card";
-        a.href = item.url;
+        const externalLinks = [
+            { name: "Blog", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
+            { name: "Waitlist", url: "https://forms.gle/LAgDeZZH6BArEHzM9", desc: "Join the waitlist so you're notified when the site works!" },
+            { name: "Discord", url: "https://discord.com/invite/Zr8s3GnHNv", desc: "Join our community, become a tester!" },
+            { name: "Instagram", url: "https://www.instagram.com/scoreladder/", desc: "Follow us on Instagram!" },
+            { name: "Tiktok", url: "https://www.tiktok.com/@scoreladder", desc: "Follow us on Tiktok!" },
+            { name: "Email", url: "mailto:devs@scoreladder.org", desc: "Send us an email!" }
+        ];
 
-        a.innerHTML = `
-            <div><strong>${item.name}</strong></div>
-            <div class="tag">${item.desc || ""}</div>
-        `;
+        /**
+         * =========================
+         * RENDER FUNCTION
+         * =========================
+         */
 
-        container.appendChild(a);
-    });
-}
+        function render(list, elementId) {
+            const container = document.getElementById(elementId);
 
-render(pages, "pages");
-render(externalLinks, "links");
-</script>
+            list.forEach(item => {
+                const a = document.createElement("a");
+                a.className = "card";
+                a.href = item.url;
+
+                a.innerHTML = `
+                    <div class="bold" id="directory-names"><strong>${item.name}</strong></div>
+                    <div class="tag" id="directory-descriptions">${item.desc || ""}</div>
+                `;
+
+                container.appendChild(a);
+            });
+        }
+
+        render(pages, "pages");
+        render(externalLinks, "links");
+    </script>
 
 </body>
 </html>
