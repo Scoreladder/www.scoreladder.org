@@ -7,12 +7,22 @@
 <title>Scoreladder Articles</title>
 
 <style>
+    
+:root {
+    --base-color: #e4e4e4;
+    --primary-color: #b8b8b8;
+    --secondary-color: #a9a9a9;
+    --text-color: #222222;
+}
+.darkmode {
+    --base-color: #303030;
+    --primary-color: #3b3b3b;
+    --secondary-color: #5a5a5a;
+    --text-color: #e4e4e4;
+}
 body {
-    font-family: Arial, sans-serif;
-    background: #121212;
-    color: white;
-    margin: 0;
-    padding: 40px;
+    background-color: var(--base-color);
+    font-family: sans-serif;
 }
 
 .container {
@@ -24,8 +34,12 @@ h1 {
     margin-bottom: 6px;
 }
 
+.regular-text {
+    color: var(--text-color);
+}
+
 .subtitle {
-    color: #aaa;
+    color: var(--text-color);
     margin-bottom: 20px;
 }
 
@@ -46,7 +60,7 @@ button {
     border-radius: 8px;
     cursor: pointer;
     background: #4f46e5;
-    color: white;
+    color: var(--base-color);
     margin-right: 8px;
 }
 
@@ -62,7 +76,7 @@ button:disabled {
 .card {
     margin-top: 25px;
     padding: 20px;
-    background: #1e1e1e;
+    background: var(--secondary-color);
     border-radius: 12px;
 }
 
@@ -72,7 +86,7 @@ button:disabled {
 }
 
 .meta {
-    color: #aaa;
+    color: var(--text-color);
     margin-bottom: 15px;
     line-height: 1.6;
 }
@@ -90,7 +104,7 @@ button:disabled {
 .choice {
     margin-top: 8px;
     padding: 10px;
-    background: #2a2a2a;
+    background: var(--secondary-color);
     border-radius: 8px;
 }
 
@@ -102,17 +116,17 @@ button:disabled {
 .footer {
     margin-top: 40px;
     font-size: 13px;
-    color: #777;
+    color: var(--text-color);
     text-align: center;
 }
 </style>
 </head>
 
-<body>
+<body class="darkmode">
 
 <div class="container">
 
-<h1>Scoreladder Articles</h1>
+<h1 class="regular-text">Scoreladder Articles</h1>
 
 <div class="subtitle">
     Open-access research powered by DOAJ
@@ -121,12 +135,12 @@ button:disabled {
 <input id="topicInput" placeholder="Enter a topic..." />
 
 <div>
-    <button id="searchBtn">Find Article</button>
-    <button id="aiBtn" disabled>Generate SAT Questions</button>
+    <button id="searchBtn" class="regular-text">Find Article</button>
+    <button id="aiBtn" class="regular-text" disabled>Generate SAT Questions</button>
 </div>
 
-<div id="result"></div>
-<div id="questions"></div>
+<div id="result" class="regular-text"></div>
+<div id="questions" class="regular-text"></div>
 
 <div class="footer">
     Articles sourced from DOAJ (Directory of Open Access Journals)

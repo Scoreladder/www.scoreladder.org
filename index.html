@@ -1,143 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Scoreladder Homepage</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-    body {
-        margin: 0;
-        font-family: system-ui, sans-serif;
-        background: #0f0f0f;
-        color: white;
-    }
-
-    header {
-        text-align: center;
-        padding: 40px 20px;
-    }
-
-    header h1 {
-        margin: 0;
-        font-size: 2.5rem;
-    }
-
-    header p {
-        color: #aaa;
-    }
-
-    .container {
-        max-width: 1000px;
-        margin: auto;
-        padding: 20px;
-    }
-
-    .section {
-        margin-top: 40px;
-    }
-
-    .section h2 {
-        border-bottom: 1px solid #222;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 15px;
-    }
-
-    a.card {
-        display: block;
-        padding: 15px;
-        background: #1a1a1a;
-        border-radius: 10px;
-        text-decoration: none;
-        color: white;
-        transition: 0.2s;
-    }
-
-    a.card:hover {
-        background: #2a2a2a;
-        transform: translateY(-2px);
-    }
-
-    .tag {
-        font-size: 12px;
-        color: #888;
-        margin-top: 5px;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>Scoreladder Homepage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="darkmode.js" defer></script>
 </head>
 
 <body>
+    <header>
+        <a href="https://web.scoreladder.org/"><img src="./images/Scoreladder Logo.png" alt="Logo" style="max-height:60px;"></a>
+        <a href="/login" class="link">Log in</a>
+        <a href="/play" class="link">Play</a>
+        <a href="/donate" class="link">Donate</a>
+        <a href="/leaderboards" class="link">Leaderboards</a>
+        <a href="/rules" class="link">Rules</a>
+        <a href="/aboutus" class="link">About Us</a>
+        <button id="darkmode-toggle" class="link">Darkmode Toggle</button>
+    </header>
+    <div class="center">
+        <div class="regular-text bold">
+            <h1 id="title">Welcome to Scoreladder!</h1>
+            <p id="title-description">
+                Stop doomscrolling and paying for test prep. We turn the SAT into a competitive video game. Start grinding for elo today for free!
+            </p>
+            <a href=/signup class="link">Get Started</a>
+        </div>
 
-<header>
-    <h1>Scoreladder Homepage</h1>
-    <p>Directory</p>
-</header>
+        <div class="container">
+        <div class="container">
 
-<div class="container">
+            <div class="section">
+                <h2>Pages</h2>
+                <div id="pages" class="grid"></div>
+            </div>
+            <div class="section">
+                <h2 class="regular-text">External Links</h2>
+                <div id="links" class="grid"></div>
+            </div>
+            <div class="section">
+                <h2>Pages</h2>
+                <div id="pages" class="grid"></div>
+            </div>
+            <div class="section">
+                <h2 class="regular-text">External Links</h2>
+                <div id="links" class="grid"></div>
+            </div>
 
-    <div class="section">
-        <h2>Pages</h2>
-        <div id="pages" class="grid"></div>
+        </div>
+    </div>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>External Links</h2>
-        <div id="links" class="grid"></div>
-    </div>
+    <script>
+        /**
+         * =========================
+         * EASY EDIT CONFIG SECTION
+         * =========================
+         */
 
-</div>
+        const pages = [
+            { name: "Article (Proof of Concept)", url: "/article", desc: "Test out our article and question generator test!" },
+        ];
+        const externalLinks = [
+            { name: "Blog", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
+            { name: "Waitlist", url: "https://forms.gle/LAgDeZZH6BArEHzM9", desc: "Join the waitlist so you're notified when the site works!" },
+            { name: "Discord", url: "https://discord.com/invite/Zr8s3GnHNv", desc: "Join our community, become a tester!" },
+            { name: "Instagram", url: "https://www.instagram.com/scoreladder/", desc: "Follow us on Instagram!" },
+            { name: "Tiktok", url: "https://www.tiktok.com/@scoreladder", desc: "Follow us on Tiktok!" },
+            { name: "Email", url: "mailto:devs@scoreladder.org", desc: "Send us an email!" }
+        ];
 
-<script>
-/**
- * =========================
- * EASY EDIT CONFIG SECTION
- * =========================
- */
+        /**
+         * =========================
+         * RENDER FUNCTION
+         * =========================
+         */
 
-const pages = [
-    { name: "Home", url: "/", desc: "Main landing page" },
-    { name: "Blog", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
-    { name: "Article (Proof of Concept)", url: "/article/", desc: "Test out our article and question generator test!" }
-];
+        function render(list, elementId) {
+            const container = document.getElementById(elementId);
 
-const externalLinks = [
-    { name: "Discord", url: "https://discord.com/invite/Zr8s3GnHNv", desc: "Join our community, become a tester" },
-    { name: "Interest Form", url: "https://forms.gle/LAgDeZZH6BArEHzM9", desc: "Fill out our interest form!" },
-    { name: "Contact", url: "mailto:devs@scoreladder.org", desc: "Send us an email!" }
-];
+            list.forEach(item => {
+                const a = document.createElement("a");
+                a.className = "card";
+                a.href = item.url;
 
-/**
- * =========================
- * RENDER FUNCTION
- * =========================
- */
+                a.innerHTML = `
+                    <div class="bold" id="directory-names"><strong>${item.name}</strong></div>
+                    <div class="tag" id="directory-descriptions">${item.desc || ""}</div>
+                `;
 
-function render(list, elementId) {
-    const container = document.getElementById(elementId);
+                container.appendChild(a);
+            });
+        }
 
-    list.forEach(item => {
-        const a = document.createElement("a");
-        a.className = "card";
-        a.href = item.url;
-
-        a.innerHTML = `
-            <div><strong>${item.name}</strong></div>
-            <div class="tag">${item.desc || ""}</div>
-        `;
-
-        container.appendChild(a);
-    });
-}
-
-render(pages, "pages");
-render(externalLinks, "links");
-</script>
+        render(pages, "pages");
+        render(externalLinks, "links");
+    </script>
 
 </body>
 </html>

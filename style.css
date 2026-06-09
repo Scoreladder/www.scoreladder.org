@@ -1,0 +1,99 @@
+
+    :root {
+        --base-color: #e4e4e4;
+        --primary-color: #b8b8b8;
+        --secondary-color: #a9a9a9;
+        --text-color: #222222;
+    }
+    .darkmode {
+        --base-color: #303030;
+        --primary-color: #3b3b3b;
+        --secondary-color: #5a5a5a;
+        --text-color: #e4e4e4;
+    }
+    header {
+        background-color: var(--primary-color);
+        padding: 3px;
+        display: flex;
+        flex-wrap: wrap;
+    }
+    header .link {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        border: none;
+        padding: 12px;
+        margin: 2px;
+        font-size: 25px;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+    .center .link {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        padding: 10px;
+        font-size: 20px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+    body {
+        background-color: var(--base-color);
+        font-family: sans-serif;
+    }
+    .regular-text {
+        color: var(--text-color);
+    }
+    .center {
+        text-align: center;
+    }
+    .container {
+        color: var(--text-color);
+        max-width: 1000px;
+        margin: auto;
+        padding: 20px;
+    }
+    .bold {
+        font-weight: bold;
+    }
+    #title {
+        font-size: 67px;
+        /*hahahahahaha 67*/
+    }
+    #title-description {
+        font-size: 16px;
+        margin-top: -20px;
+        margin-bottom: 50px;
+    }
+    #darkmode-toggle {
+    cursor: pointer;          
+    pointer-events: auto;     
+    }
+    #darkmode-toggle svg {
+    pointer-events: none;     
+    }
+    #directory-title {
+        font-size: 30px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    #directory-names {
+        float: left
+    }
+    #directory-descriptions {
+        text-align:right
+    }
+    a.card {
+        display: block;
+        padding: 15px;
+        margin: 10px;
+        background: var(--secondary-color);
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--text-color);
+        transition: 0.2s;
+    }
+    a.card:hover {
+        transform: translateY(-10px);
+    }
