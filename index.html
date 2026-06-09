@@ -29,7 +29,16 @@
         </div>
 
         <div class="container">
+        <div class="container">
 
+            <div class="section">
+                <h2>Pages</h2>
+                <div id="pages" class="grid"></div>
+            </div>
+            <div class="section">
+                <h2 class="regular-text">External Links</h2>
+                <div id="links" class="grid"></div>
+            </div>
             <div class="section">
                 <h2>Pages</h2>
                 <div id="pages" class="grid"></div>
@@ -41,7 +50,15 @@
 
         </div>
     </div>
+        </div>
+    </div>
 
+    <script>
+        /**
+         * =========================
+         * EASY EDIT CONFIG SECTION
+         * =========================
+         */
     <script>
         /**
          * =========================
@@ -52,7 +69,18 @@
         const pages = [
             { name: "Article (Proof of Concept)", url: "/article", desc: "Test out our article and question generator test!" },
         ];
+        const pages = [
+            { name: "Article (Proof of Concept)", url: "/article", desc: "Test out our article and question generator test!" },
+        ];
 
+        const externalLinks = [
+            { name: "Blog", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
+            { name: "Waitlist", url: "https://forms.gle/LAgDeZZH6BArEHzM9", desc: "Join the waitlist so you're notified when the site works!" },
+            { name: "Discord", url: "https://discord.com/invite/Zr8s3GnHNv", desc: "Join our community, become a tester!" },
+            { name: "Instagram", url: "https://www.instagram.com/scoreladder/", desc: "Follow us on Instagram!" },
+            { name: "Tiktok", url: "https://www.tiktok.com/@scoreladder", desc: "Follow us on Tiktok!" },
+            { name: "Email", url: "mailto:devs@scoreladder.org", desc: "Send us an email!" }
+        ];
         const externalLinks = [
             { name: "Blog", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
             { name: "Waitlist", url: "https://forms.gle/LAgDeZZH6BArEHzM9", desc: "Join the waitlist so you're notified when the site works!" },
@@ -67,10 +95,21 @@
          * RENDER FUNCTION
          * =========================
          */
+        /**
+         * =========================
+         * RENDER FUNCTION
+         * =========================
+         */
 
         function render(list, elementId) {
             const container = document.getElementById(elementId);
+        function render(list, elementId) {
+            const container = document.getElementById(elementId);
 
+            list.forEach(item => {
+                const a = document.createElement("a");
+                a.className = "card";
+                a.href = item.url;
             list.forEach(item => {
                 const a = document.createElement("a");
                 a.className = "card";
@@ -80,11 +119,21 @@
                     <div class="bold" id="directory-names"><strong>${item.name}</strong></div>
                     <div class="tag" id="directory-descriptions">${item.desc || ""}</div>
                 `;
+                a.innerHTML = `
+                    <div class="bold" id="directory-names"><strong>${item.name}</strong></div>
+                    <div class="tag" id="directory-descriptions">${item.desc || ""}</div>
+                `;
 
                 container.appendChild(a);
             });
         }
+                container.appendChild(a);
+            });
+        }
 
+        render(pages, "pages");
+        render(externalLinks, "links");
+    </script>
         render(pages, "pages");
         render(externalLinks, "links");
     </script>
