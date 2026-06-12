@@ -225,24 +225,47 @@ function cleanGutenberg(text) {
 //////////////////////////////////////////////////////
 function isEnglishText(text) {
 
-    const commonEnglish = [
-        "the","and","of","that","is",
-        "was","for","on","with","as","by","at","from",
-        "this","be","are","or","an"
-    ];
-
-    const lower = text.toLowerCase();
-
-    let hits = 0;
-
-    for (const word of commonEnglish) {
-        if (lower.includes(` ${word} `)) {
-            hits++;
-        }
+    if (!text || text.length < 200) {
+        return false;
     }
 
-    // must match enough English structure words
-    return hits >= 5;
+    const sample = text
+        .slice(0, 2000)
+        .toLowerCase();
+
+    // Strong non-English indicators
+    const nonEnglishPatterns = [
+        /[\u0400-\u04FF]/, // Cyrillic
+        /[\u4e00-\u9fff]/, // Chinese
+        /[\u3040-\u30ff]/, // Japanese
+        /[\u0600-\u06ff]/  // Arabic
+    ];
+
+    if (nonEnglishPatterns.some(p => p.test(sample))) {
+        return false;
+    }
+
+    // Common English word set (better weighting)
+    const words = sample.match(/[a-z]+/g) || [];
+
+    if (words.length < 50) return false;
+
+    const common = new Set([
+        "the","be","to","of","and","a","in","that","have","i",
+        "it","for","not","on","with","he","as","you","do","at",
+        "this","but","his","by","from"
+    ]);
+
+    let score = 0;
+
+    for (const w of words) {
+        if (common.has(w)) score++;
+    }
+
+    const ratio = score / words.length;
+
+    // English texts usually have MUCH higher ratio than foreign abstracts
+    return ratio > 0.02;
 }
 
 //////////////////////////////////////////////////////
