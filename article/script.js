@@ -22,29 +22,147 @@ async function searchArticle() {
     aiBtn.disabled = true;
     questionsDiv.innerHTML = "";
 
-    resultDiv.innerHTML = `<div class="card">Loading...</div>`;
+    resultDiv.innerHTML =
+        `<div class="card">Searching for articles...</div>`;
 
     try {
 
         const res = await fetch(
-            `https://doaj.org/api/search/articles/${encodeURIComponent(topic)}?pageSize=50`
+            `https://doaj.org/api/search/articles/${encodeURIComponent(topic)}?pageSize=100`
         );
+
+        if (!res.ok) {
+            throw new Error(`DOAJ returned ${res.status}`);
+        }
 
         const data = await res.json();
 
         if (!data.results?.length) {
-            resultDiv.innerHTML = `<div class="card">No results found.</div>`;
+            resultDiv.innerHTML =
+                `<div class="card">No articles found.</div>`;
             return;
         }
 
-        const article =
-            data.results[Math.floor(Math.random() * data.results.length)];
+        const MIN_LENGTH = 1200;
+        const MAX_LENGTH = 8000;
 
-        renderArticle(article);
+        const filtered = data.results.filter(article => {
+
+            const bib = article.bibjson || {};
+
+            const abstract =
+                (bib.abstract || "").trim();
+
+            if (
+                abstract.length < MIN_LENGTH ||
+                abstract.length > MAX_LENGTH
+            ) {
+                return false;
+            }
+
+            const languageFields = [
+                ...(bib.language || []),
+                ...(bib.journal?.language || [])
+            ]
+            .flat()
+            .map(x => String(x).toLowerCase());
+
+            const hasLanguageInfo =
+                languageFields.length > 0;
+
+            const englishLanguage =
+                !hasLanguageInfo ||
+                languageFields.some(l =>
+                    l === "en" ||
+                    l.includes("english")
+                );
+
+            if (!englishLanguage) {
+                return false;
+            }
+
+            if (!looksEnglish(abstract)) {
+                return false;
+            }
+
+            return true;
+        });
+
+        if (!filtered.length) {
+            resultDiv.innerHTML = `
+                <div class="card">
+                    No English articles with a suitable length were found.
+                    Try a broader topic.
+                </div>
+            `;
+            return;
+        }
+
+        const searchWords =
+            topic.toLowerCase()
+                 .split(/\s+/)
+                 .filter(Boolean);
+
+        const scored = filtered
+            .map(article => {
+
+                const bib = article.bibjson || {};
+
+                const title =
+                    (bib.title || "").toLowerCase();
+
+                const abstract =
+                    (bib.abstract || "").toLowerCase();
+
+                let score = 0;
+
+                for (const word of searchWords) {
+
+                    if (title.includes(word))
+                        score += 100;
+
+                    score += (
+                        abstract.match(
+                            new RegExp(
+                                escapeRegex(word),
+                                "gi"
+                            )
+                        ) || []
+                    ).length * 5;
+                }
+
+                return {
+                    article,
+                    score
+                };
+            })
+            .sort((a, b) => b.score - a.score);
+
+        const topResults =
+            scored.slice(
+                0,
+                Math.min(10, scored.length)
+            );
+
+        const selected =
+            topResults[
+                Math.floor(
+                    Math.random() * topResults.length
+                )
+            ];
+
+        renderArticle(selected.article);
 
     } catch (err) {
+
         console.error(err);
-        resultDiv.innerHTML = `<div class="card">Failed to load articles.</div>`;
+
+        resultDiv.innerHTML = `
+            <div class="card">
+                Failed to load articles.<br><br>
+                ${escapeHtml(err.message)}
+            </div>
+        `;
     }
 }
 
