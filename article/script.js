@@ -24,15 +24,15 @@ async function searchArticle() {
 
     aiBtn.disabled = true;
     questionsDiv.innerHTML = "";
-    resultDiv.innerHTML = `<div class="card">Loading Wikipedia passage...</div>`;
+    resultDiv.innerHTML = `<div class="card">Loading Wikipedia...</div>`;
 
     try {
-        await fetchWikipediaExcerpt(topic);
+        await loadWikipediaPage(topic);
     } catch (err) {
         console.error(err);
         resultDiv.innerHTML = `
             <div class="card">
-                Failed to load passage.<br><br>
+                Failed to load page.<br><br>
                 ${escapeHtml(err.message)}
             </div>
         `;
@@ -40,11 +40,11 @@ async function searchArticle() {
 }
 
 //////////////////////////////////////////////////////
-// WIKIPEDIA → REAL 2–3 PARAGRAPH PASSAGE
+// PURE WIKIPEDIA PAGE FETCH (NO OTHER SOURCES)
 //////////////////////////////////////////////////////
-async function fetchWikipediaExcerpt(topic) {
+async function loadWikipediaPage(topic) {
 
-    // 1. search page
+    // 1. GET PAGE TITLE FROM WIKIPEDIA SEARCH
     const searchRes = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(topic)}&format=json&origin=*&srlimit=1`
     );
@@ -52,12 +52,12 @@ async function fetchWikipediaExcerpt(topic) {
     const searchData = await searchRes.json();
 
     if (!searchData.query?.search?.length) {
-        throw new Error("No Wikipedia results found.");
+        throw new Error("No Wikipedia page found.");
     }
 
     const title = searchData.query.search[0].title;
 
-    // 2. fetch full extract
+    // 2. FETCH FULL PAGE EXTRACT
     const pageRes = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(title)}&format=json&origin=*`
     );
@@ -65,58 +65,50 @@ async function fetchWikipediaExcerpt(topic) {
     const pageData = await pageRes.json();
     const page = Object.values(pageData.query.pages)[0];
 
-    let text = page.extract;
-
-    if (!text) {
-        throw new Error("No article content found.");
+    if (!page?.extract) {
+        throw new Error("No page text found.");
     }
 
-    // 3. split into paragraphs (THIS is the key)
+    // 3. CLEAN TEXT
+    const text = cleanText(page.extract);
+
+    // 4. SPLIT INTO PARAGRAPHS
     const paragraphs = text
         .split("\n\n")
         .map(p => p.trim())
         .filter(p => p.length > 80);
 
-    if (paragraphs.length === 0) {
-        throw new Error("No usable excerpt found.");
+    if (paragraphs.length < 2) {
+        throw new Error("Not enough Wikipedia content.");
     }
 
-    // 4. take first 2–3 paragraphs (simple + stable)
+    // 5. TAKE FIRST 2–3 PARAGRAPHS (REAL ARTICLE TEXT ONLY)
     const excerpt = paragraphs.slice(0, 3).join("\n\n");
 
     currentText = excerpt;
     aiBtn.disabled = false;
 
+    // 6. BUILD REAL WIKIPEDIA LINK (NOT FROM API)
+    const link =
+        `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`;
+
     resultDiv.innerHTML = `
         <div class="card">
             <div class="title">${escapeHtml(title)}</div>
-            <div class="meta">Source: Wikipedia excerpt</div>
+            <div class="meta">Source: Wikipedia</div>
+
             <div class="abstract">${escapeHtml(excerpt)}</div>
+
+            <br>
+            <a href="${link}" target="_blank">View Article</a>
         </div>
     `;
 }
 
 //////////////////////////////////////////////////////
-// TOPIC CHECK (simple but effective)
+// TEXT CLEANING
 //////////////////////////////////////////////////////
-function isOnTopic(text, topic) {
-
-    const words = topic.toLowerCase().split(/\s+/);
-    const sample = text.toLowerCase();
-
-    let hits = 0;
-
-    for (const w of words) {
-        if (sample.includes(w)) hits++;
-    }
-
-    return hits >= Math.max(1, words.length - 1);
-}
-
-//////////////////////////////////////////////////////
-// CLEAN TEXT
-//////////////////////////////////////////////////////
-function clean(text) {
+function cleanText(text) {
     return text
         .replace(/\s+/g, " ")
         .replace(/\n{3,}/g, "\n\n")
@@ -131,27 +123,16 @@ async function generateAIQuestions() {
     questionsDiv.innerHTML =
         `<div class="card">Generating SAT questions...</div>`;
 
-    try {
+    const res = await fetch("https://ai.scoreladder.org", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: currentText })
+    });
 
-        const res = await fetch("https://ai.scoreladder.org", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: currentText })
-        });
-
-        const data = await res.json();
-
-        renderQuestions(data);
-
-    } catch (err) {
-        questionsDiv.innerHTML =
-            `<div class="card">${escapeHtml(err.message)}</div>`;
-    }
+    const data = await res.json();
+    renderQuestions(data);
 }
 
-//////////////////////////////////////////////////////
-// QUESTIONS
-//////////////////////////////////////////////////////
 function renderQuestions(data) {
 
     if (!data.questions) {
@@ -191,7 +172,7 @@ function renderQuestions(data) {
 }
 
 //////////////////////////////////////////////////////
-// UTIL
+// SAFE HTML
 //////////////////////////////////////////////////////
 function escapeHtml(text) {
     return String(text)
