@@ -12,7 +12,7 @@ searchBtn.addEventListener("click", searchArticle);
 aiBtn.addEventListener("click", generateAIQuestions);
 
 //////////////////////////////////////////////////////
-// ROUTER
+// MAIN ROUTER
 //////////////////////////////////////////////////////
 async function searchArticle() {
 
@@ -45,43 +45,42 @@ async function searchArticle() {
 }
 
 //////////////////////////////////////////////////////
-// WIKIPEDIA (ENGLISH ONLY + RELEVANCE FILTER)
+// WIKIPEDIA (STRICT ENGLISH + REAL PASSAGE ONLY)
 //////////////////////////////////////////////////////
 async function searchWikipedia(topic) {
 
-    const searchRes = await fetch(
+    const res = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(topic)}&format=json&origin=*&srlimit=20`
     );
 
-    const searchData = await searchRes.json();
+    const data = await res.json();
 
-    if (!searchData.query?.search?.length) {
-        throw new Error("No Wikipedia results.");
+    if (!data.query?.search?.length) {
+        throw new Error("No results.");
     }
 
     const words = topic.toLowerCase().split(/\s+/);
 
-    const scored = searchData.query.search.map(item => {
+    const ranked = data.query.search
+        .map(item => {
+            let score = 0;
 
-        const title = item.title.toLowerCase();
-        const snippet = item.snippet.toLowerCase();
+            const title = item.title.toLowerCase();
+            const snippet = (item.snippet || "").toLowerCase();
 
-        let score = 0;
+            for (const w of words) {
+                if (title.includes(w)) score += 100;
+                if (snippet.includes(w)) score += 20;
+            }
 
-        for (const w of words) {
-            if (title.includes(w)) score += 80;
-            if (snippet.includes(w)) score += 20;
-        }
+            return { item, score };
+        })
+        .sort((a, b) => b.score - a.score);
 
-        return { item, score };
-    });
+    const best = ranked[0];
 
-    scored.sort((a, b) => b.score - a.score);
-
-    const best = scored[0];
-
-    if (best.score < 40) {
-        throw new Error("No closely related Wikipedia article found.");
+    if (!best || best.score < 40) {
+        throw new Error("No relevant Wikipedia article found.");
     }
 
     const title = best.item.title;
@@ -93,18 +92,20 @@ async function searchWikipedia(topic) {
     const pageData = await pageRes.json();
     const page = Object.values(pageData.query.pages)[0];
 
-    let text = page.extract || "";
+    let text = cleanText(page.extract || "");
 
-    if (!text || text.length < 800) {
-        throw new Error("Article too short or invalid.");
+    text = normalizeText(text);
+
+    if (!isValidPassage(text)) {
+        throw new Error("Invalid Wikipedia passage.");
     }
 
     if (!isEnglishText(text)) {
-        throw new Error("Non-English article rejected.");
+        throw new Error("Non-English Wikipedia content rejected.");
     }
 
     if (!isOnTopic(text, topic)) {
-        throw new Error("Article not relevant enough.");
+        throw new Error("Wikipedia article not relevant enough.");
     }
 
     currentText = text;
@@ -113,14 +114,14 @@ async function searchWikipedia(topic) {
     resultDiv.innerHTML = `
         <div class="card">
             <div class="title">${escapeHtml(title)}</div>
-            <div class="meta">Source: Wikipedia (English)</div>
+            <div class="meta">Source: Wikipedia</div>
             <div class="abstract">${escapeHtml(text)}</div>
         </div>
     `;
 }
 
 //////////////////////////////////////////////////////
-// GUTENBERG (STRICT ENGLISH FILTER)
+// GUTENBERG (STRICT ENGLISH ONLY)
 //////////////////////////////////////////////////////
 async function searchGutenberg(topic) {
 
@@ -130,58 +131,55 @@ async function searchGutenberg(topic) {
 
     const data = await res.json();
 
-    if (!data.results?.length) {
-        throw new Error("No books found.");
-    }
-
-    // ONLY ENGLISH BOOKS
-    const englishBooks = data.results.filter(b =>
+    const books = (data.results || []).filter(b =>
         (b.languages || []).includes("en")
     );
 
-    if (!englishBooks.length) {
+    if (!books.length) {
         throw new Error("No English books found.");
     }
 
     const words = topic.toLowerCase().split(/\s+/);
 
-    const scored = englishBooks.map(book => {
+    const ranked = books
+        .map(book => {
+            let score = 0;
 
-        const title = (book.title || "").toLowerCase();
+            const title = (book.title || "").toLowerCase();
 
-        let score = 0;
+            for (const w of words) {
+                if (title.includes(w)) score += 100;
+            }
 
-        for (const w of words) {
-            if (title.includes(w)) score += 80;
-        }
+            return { book, score };
+        })
+        .sort((a, b) => b.score - a.score);
 
-        return { book, score };
-    });
-
-    scored.sort((a, b) => b.score - a.score);
-
-    const best = scored[0];
+    const best = ranked[0];
 
     if (!best || best.score < 20) {
-        throw new Error("No relevant English book found.");
+        throw new Error("No relevant book found.");
     }
 
-    const book = best.book;
-
     const url =
-        book.formats["text/plain; charset=utf-8"] ||
-        book.formats["text/plain"];
+        best.book.formats["text/plain; charset=utf-8"] ||
+        best.book.formats["text/plain"];
 
     if (!url) {
-        throw new Error("No readable text available.");
+        throw new Error("No readable text.");
     }
 
     let text = await fetch(url).then(r => r.text());
 
     text = cleanGutenberg(text);
+    text = normalizeText(text);
+
+    if (!isValidPassage(text)) {
+        throw new Error("Invalid Gutenberg text.");
+    }
 
     if (!isEnglishText(text)) {
-        throw new Error("Non-English text rejected.");
+        throw new Error("Non-English book rejected.");
     }
 
     if (!isOnTopic(text, topic)) {
@@ -193,28 +191,53 @@ async function searchGutenberg(topic) {
 
     resultDiv.innerHTML = `
         <div class="card">
-            <div class="title">${escapeHtml(book.title)}</div>
-            <div class="meta">
-                Author: ${escapeHtml(book.authors?.[0]?.name || "Unknown")}
-                <br>Source: Project Gutenberg
-            </div>
+            <div class="title">${escapeHtml(best.book.title)}</div>
+            <div class="meta">Source: Project Gutenberg</div>
             <div class="abstract">${escapeHtml(text)}</div>
         </div>
     `;
 }
 
 //////////////////////////////////////////////////////
-// CLEAN GUTENBERG
+// CLEANERS
 //////////////////////////////////////////////////////
-function cleanGutenberg(text) {
+function cleanText(text) {
+    return text.replace(/\r/g, "").slice(0, 12000);
+}
 
-    const start = text.indexOf("*** START");
-    if (start !== -1) text = text.slice(start);
+function normalizeText(text) {
+    return text
+        .replace(/\s+/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+}
 
-    const end = text.indexOf("*** END");
-    if (end !== -1) text = text.slice(0, end);
+//////////////////////////////////////////////////////
+// HARD PASSAGE VALIDATION (IMPORTANT FIX)
+//////////////////////////////////////////////////////
+function isValidPassage(text) {
 
-    return text.trim().slice(0, 12000);
+    if (!text || text.length < 1500) return false;
+
+    const metaSignals = [
+        /authors?:/i,
+        /journal:/i,
+        /year:/i,
+        /abstract:/i,
+        /view article/i,
+        /doi:/i
+    ];
+
+    let hits = 0;
+
+    for (const r of metaSignals) {
+        if (r.test(text)) hits++;
+    }
+
+    // if it looks like a metadata card → reject
+    if (hits >= 2) return false;
+
+    return true;
 }
 
 //////////////////////////////////////////////////////
@@ -222,20 +245,21 @@ function cleanGutenberg(text) {
 //////////////////////////////////////////////////////
 function isEnglishText(text) {
 
-    const sample = text.slice(0, 2000).toLowerCase();
+    const sample = text.slice(0, 3000).toLowerCase();
 
+    // reject accented Latin (Spanish/Italian/French leak fix)
     if (/[àáâäæèéêëìíîïòóôöùúûüçñ]/.test(sample)) {
         return false;
     }
 
     const words = sample.match(/[a-z]+/g) || [];
 
-    if (words.length < 120) return false;
+    if (words.length < 200) return false;
 
     const common = new Set([
         "the","be","to","of","and","a","in","that","have","i",
         "it","for","not","on","with","he","as","you","do","at",
-        "this","but","his","by","from","they","we","say"
+        "this","but","his","by","from","they","we","say","her"
     ]);
 
     let score = 0;
@@ -244,11 +268,11 @@ function isEnglishText(text) {
         if (common.has(w)) score++;
     }
 
-    return (score / words.length) > 0.04;
+    return (score / words.length) > 0.05;
 }
 
 //////////////////////////////////////////////////////
-// TOPIC RELEVANCE FILTER
+// TOPIC CHECK
 //////////////////////////////////////////////////////
 function isOnTopic(text, topic) {
 
@@ -276,9 +300,7 @@ async function generateAIQuestions() {
 
         const res = await fetch("https://ai.scoreladder.org", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: currentText })
         });
 
@@ -287,14 +309,13 @@ async function generateAIQuestions() {
         renderQuestions(data);
 
     } catch (err) {
-        questionsDiv.innerHTML = `
-            <div class="card">${escapeHtml(err.message)}</div>
-        `;
+        questionsDiv.innerHTML =
+            `<div class="card">${escapeHtml(err.message)}</div>`;
     }
 }
 
 //////////////////////////////////////////////////////
-// QUESTIONS RENDER
+// QUESTIONS
 //////////////////////////////////////////////////////
 function renderQuestions(data) {
 
