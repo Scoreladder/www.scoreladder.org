@@ -226,9 +226,9 @@ function cleanGutenberg(text) {
 function isEnglishText(text) {
 
     const commonEnglish = [
-        "the","and","of","to","in","a","that","is",
+        "the","and","of","that","is",
         "was","for","on","with","as","by","at","from",
-        "this","it","be","are","or","an"
+        "this","be","are","or","an"
     ];
 
     const lower = text.toLowerCase();
