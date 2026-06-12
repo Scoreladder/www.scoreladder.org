@@ -1,150 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scoreladder Articles</title>
+const topicInput = document.getElementById("topicInput");
+const searchBtn = document.getElementById("searchBtn");
 
-<style>
-:root {
-    --base-color: #e4e4e4;
-    --secondary-color: #a9a9a9;
-    --text-color: #222222;
+const resultDiv = document.getElementById("result");
+
+searchBtn.addEventListener("click", searchArticle);
+
+//////////////////////////////////////////////////////
+// MAIN
+//////////////////////////////////////////////////////
+async function searchArticle() {
+
+    const topic = topicInput.value.trim();
+
+    if (!topic) {
+        resultDiv.innerHTML = `<div class="card">Enter a topic.</div>`;
+        return;
+    }
+
+    resultDiv.innerHTML = `<div class="card">Loading Wikipedia...</div>`;
+
+    try {
+
+        // 1. SEARCH WIKIPEDIA TITLE
+        const searchRes = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(topic)}&format=json&origin=*&srlimit=1`
+        );
+
+        const searchData = await searchRes.json();
+
+        if (!searchData.query?.search?.length) {
+            throw new Error("No Wikipedia page found.");
+        }
+
+        const title = searchData.query.search[0].title;
+
+        // 2. GET FULL PAGE TEXT
+        const pageRes = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(title)}&format=json&origin=*`
+        );
+
+        const pageData = await pageRes.json();
+        const page = Object.values(pageData.query.pages)[0];
+
+        if (!page?.extract) {
+            throw new Error("No content found.");
+        }
+
+        // 3. CLEAN + SPLIT INTO PARAGRAPHS
+        const paragraphs = page.extract
+            .replace(/\r/g, "")
+            .split("\n\n")
+            .map(p => p.trim())
+            .filter(p => p.length > 50);
+
+        if (paragraphs.length < 2) {
+            throw new Error("Not enough paragraphs found.");
+        }
+
+        // 4. PICK 2 RANDOM PARAGRAPHS
+        const shuffled = paragraphs.sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, 2).join("\n\n");
+
+        // 5. BUILD LINK
+        const link =
+            `https://en.wikipedia.org/wiki/${title.replace(/ /g, "_")}`;
+
+        // 6. RENDER
+        resultDiv.innerHTML = `
+            <div class="card">
+                <div class="title">${escapeHtml(title)}</div>
+                <div class="meta">Source: Wikipedia</div>
+
+                <div class="abstract">${escapeHtml(selected)}</div>
+
+                <br>
+                <a href="${link}" target="_blank">View Article</a>
+            </div>
+        `;
+
+    } catch (err) {
+        resultDiv.innerHTML = `
+            <div class="card">
+                Error: ${escapeHtml(err.message)}
+            </div>
+        `;
+    }
 }
 
-.darkmode {
-    --base-color: #303030;
-    --secondary-color: #5a5a5a;
-    --text-color: #e4e4e4;
+//////////////////////////////////////////////////////
+// SAFE HTML
+//////////////////////////////////////////////////////
+function escapeHtml(text) {
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
-
-body {
-    margin: 0;
-    font-family: sans-serif;
-    background: var(--base-color);
-    color: var(--text-color);
-}
-
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-}
-
-h1 {
-    margin-bottom: 5px;
-}
-
-.subtitle {
-    margin-bottom: 20px;
-    opacity: 0.8;
-}
-
-/* INPUT */
-input {
-    width: 100%;
-    padding: 14px;
-    font-size: 18px;
-    border-radius: 10px;
-    border: none;
-    margin-bottom: 12px;
-}
-
-/* BUTTONS */
-button {
-    padding: 12px 18px;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    background: #4f46e5;
-    color: white;
-    margin-right: 8px;
-}
-
-button:hover {
-    background: #6366f1;
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* CARD */
-.card {
-    margin-top: 20px;
-    padding: 20px;
-    background: var(--secondary-color);
-    border-radius: 12px;
-}
-
-.title {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-.meta {
-    font-size: 14px;
-    opacity: 0.9;
-    margin-bottom: 10px;
-}
-
-.abstract {
-    line-height: 1.6;
-    white-space: pre-wrap;
-}
-
-/* QUESTIONS */
-.choice {
-    margin-top: 8px;
-    padding: 10px;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.1);
-}
-
-.answer {
-    margin-top: 10px;
-    color: #8ab4ff;
-}
-
-/* FOOTER */
-.footer {
-    margin-top: 30px;
-    font-size: 12px;
-    opacity: 0.7;
-    text-align: center;
-}
-</style>
-</head>
-
-<body class="darkmode">
-
-<div class="container">
-
-<h1>Scoreladder Articles</h1>
-
-<div class="subtitle">
-    Wikipedia-powered reading + SAT question generator
-</div>
-
-<input id="topicInput" placeholder="Enter a topic (e.g. World War II, Gravity, Shakespeare)" />
-
-<div>
-    <button id="searchBtn">Find Article</button>
-    <button id="aiBtn" disabled>Generate SAT Questions</button>
-</div>
-
-<div id="result"></div>
-<div id="questions"></div>
-
-<div class="footer">
-    Powered by Wikipedia API
-</div>
-
-</div>
-
-<script src="script.js"></script>
-
-</body>
-</html>
