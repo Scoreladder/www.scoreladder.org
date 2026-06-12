@@ -1,3 +1,11 @@
+const DEBUG = true;
+
+function log(...args) {
+    if (DEBUG) {
+        console.log("[WikiDebug]", ...args);
+    }
+}
+
 const topicInput = document.getElementById("topicInput");
 const searchBtn = document.getElementById("searchBtn");
 const aiBtn = document.getElementById("aiBtn");
@@ -17,6 +25,8 @@ async function searchArticle() {
 
     const topic = topicInput.value.trim();
 
+    log("User input:", topic);
+
     if (!topic) {
         resultDiv.innerHTML = `<div class="card">Enter a topic.</div>`;
         return;
@@ -30,6 +40,8 @@ async function searchArticle() {
         await loadWikipediaPage(topic);
     } catch (err) {
         console.error(err);
+        log("ERROR:", err.message, err.stack);
+
         resultDiv.innerHTML = `
             <div class="card">
                 Failed to load page.<br><br>
@@ -44,12 +56,16 @@ async function searchArticle() {
 //////////////////////////////////////////////////////
 async function loadWikipediaPage(topic) {
 
-    // 1. search title
+    log("Starting Wikipedia search...");
+
+    // 1. SEARCH TITLE
     const searchRes = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(topic)}&format=json&origin=*&srlimit=1`
     );
 
     const searchData = await searchRes.json();
+
+    log("Search response:", searchData);
 
     if (!searchData.query?.search?.length) {
         throw new Error("No Wikipedia page found.");
@@ -57,7 +73,9 @@ async function loadWikipediaPage(topic) {
 
     const title = searchData.query.search[0].title;
 
-    // 2. get extract
+    log("Selected title:", title);
+
+    // 2. GET PAGE EXTRACT
     const pageRes = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(title)}&format=json&origin=*`
     );
@@ -69,29 +87,41 @@ async function loadWikipediaPage(topic) {
         throw new Error("No Wikipedia content found.");
     }
 
+    log("Raw extract length:", page.extract.length);
+    log("Raw extract preview:", page.extract.slice(0, 200));
+
     const text = cleanText(page.extract);
 
-    // 3. reject stub articles
-    if (text.length < 800) {
-        throw new Error("Wikipedia page too short (stub article). Try a broader topic.");
+    log("Cleaned text length:", text.length);
+
+    // 3. STUB CHECK
+    if (text.length < 400) {
+        throw new Error("Wikipedia page too short (likely stub). Try a broader topic.");
     }
 
-    // 4. extract robust paragraphs
+    // 4. PARAGRAPH EXTRACTION
     const paragraphs = extractParagraphs(text);
+
+    log("Paragraph count:", paragraphs.length);
+    log("Paragraph sample:", paragraphs.slice(0, 2));
 
     if (paragraphs.length < 2) {
         throw new Error("Not enough usable Wikipedia content.");
     }
 
-    // 5. pick 2–3 paragraph passage (random middle section)
+    // 5. PICK RANDOM PASSAGE (2–3 PARAGRAPHS)
     const maxStart = Math.max(0, paragraphs.length - 3);
     const start = Math.floor(Math.random() * (maxStart + 1));
 
     const excerpt = paragraphs.slice(start, start + 3).join("\n\n");
 
+    log("Passage start index:", start);
+    log("Final excerpt:", excerpt.slice(0, 300));
+
     currentText = excerpt;
     aiBtn.disabled = false;
 
+    // 6. BUILD LINK
     const link =
         `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`;
 
@@ -109,7 +139,7 @@ async function loadWikipediaPage(topic) {
 }
 
 //////////////////////////////////////////////////////
-// PARAGRAPH EXTRACTION (ROBUST)
+// PARAGRAPH EXTRACTION
 //////////////////////////////////////////////////////
 function extractParagraphs(text) {
 
@@ -118,19 +148,17 @@ function extractParagraphs(text) {
         .replace(/\n{3,}/g, "\n\n")
         .trim();
 
-    let paragraphs = cleaned.split("\n\n");
+    let raw = cleaned.split("\n\n");
 
-    if (paragraphs.length < 2) {
-        paragraphs = cleaned.split("\n");
+    if (raw.length < 2) {
+        raw = cleaned.split("\n");
     }
 
-    return paragraphs
+    return raw
         .map(p => p.trim())
         .filter(p =>
-            p.length > 80 &&
-            !p.startsWith("References") &&
-            !p.startsWith("See also") &&
-            !p.startsWith("External links")
+            p.length > 30 &&
+            !/^(references|see also|external links)/i.test(p)
         );
 }
 
@@ -161,10 +189,11 @@ async function generateAIQuestions() {
         });
 
         const data = await res.json();
-
         renderQuestions(data);
 
     } catch (err) {
+        console.error(err);
+        log("AI ERROR:", err.message);
 
         questionsDiv.innerHTML =
             `<div class="card">${escapeHtml(err.message)}</div>`;
@@ -172,7 +201,7 @@ async function generateAIQuestions() {
 }
 
 //////////////////////////////////////////////////////
-// QUESTIONS
+// QUESTIONS RENDER
 //////////////////////////////////////////////////////
 function renderQuestions(data) {
 
@@ -213,7 +242,7 @@ function renderQuestions(data) {
 }
 
 //////////////////////////////////////////////////////
-// HTML SAFE
+// SAFE HTML
 //////////////////////////////////////////////////////
 function escapeHtml(text) {
     return String(text)
