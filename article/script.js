@@ -24,15 +24,15 @@ async function searchArticle() {
 
     aiBtn.disabled = true;
     questionsDiv.innerHTML = "";
-    resultDiv.innerHTML = `<div class="card">Loading Wikipedia...</div>`;
+    resultDiv.innerHTML = `<div class="card">Loading Wikipedia passage...</div>`;
 
     try {
-        await fetchWikipediaArticle(topic);
+        await fetchWikipediaPassage(topic);
     } catch (err) {
         console.error(err);
         resultDiv.innerHTML = `
             <div class="card">
-                Failed to load article.<br><br>
+                Failed to load passage.<br><br>
                 ${escapeHtml(err.message)}
             </div>
         `;
@@ -40,11 +40,11 @@ async function searchArticle() {
 }
 
 //////////////////////////////////////////////////////
-// WIKIPEDIA (DIRECT ARTICLE FETCH)
+// WIKIPEDIA → REAL 2–3 PARAGRAPH PASSAGE
 //////////////////////////////////////////////////////
-async function fetchWikipediaArticle(topic) {
+async function fetchWikipediaPassage(topic) {
 
-    // 1. search best match
+    // 1. search article
     const searchRes = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(topic)}&format=json&origin=*&srlimit=1`
     );
@@ -57,7 +57,7 @@ async function fetchWikipediaArticle(topic) {
 
     const title = searchData.query.search[0].title;
 
-    // 2. fetch full article extract
+    // 2. get full article text
     const pageRes = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(title)}&format=json&origin=*`
     );
@@ -65,26 +65,75 @@ async function fetchWikipediaArticle(topic) {
     const pageData = await pageRes.json();
     const page = Object.values(pageData.query.pages)[0];
 
-    let text = page.extract;
+    let text = clean(page.extract || "");
 
-    if (!text || text.length < 200) {
-        throw new Error("Article too short or unavailable.");
+    if (!text || text.length < 2000) {
+        throw new Error("Article too short.");
     }
 
-    currentText = text;
+    // 3. split into REAL paragraphs
+    const paragraphs = text
+        .split("\n")
+        .map(p => p.trim())
+        .filter(p => p.length > 80); // remove junk lines
+
+    if (paragraphs.length < 3) {
+        throw new Error("Not enough usable paragraphs.");
+    }
+
+    // 4. pick a 2–3 paragraph passage (contiguous)
+    const startIndex = Math.floor(Math.random() * (paragraphs.length - 3));
+
+    const passage = paragraphs
+        .slice(startIndex, startIndex + 3)
+        .join("\n\n");
+
+    // 5. final validation
+    if (!isOnTopic(passage, topic)) {
+        throw new Error("Passage not relevant enough. Try again.");
+    }
+
+    currentText = passage;
     aiBtn.disabled = false;
 
     resultDiv.innerHTML = `
         <div class="card">
             <div class="title">${escapeHtml(title)}</div>
-            <div class="meta">Source: Wikipedia</div>
-            <div class="abstract">${escapeHtml(text)}</div>
+            <div class="meta">Source: Wikipedia (2–3 paragraph passage)</div>
+            <div class="abstract">${escapeHtml(passage)}</div>
         </div>
     `;
 }
 
 //////////////////////////////////////////////////////
-// AI QUESTIONS (UNCHANGED)
+// TOPIC CHECK (simple but effective)
+//////////////////////////////////////////////////////
+function isOnTopic(text, topic) {
+
+    const words = topic.toLowerCase().split(/\s+/);
+    const sample = text.toLowerCase();
+
+    let hits = 0;
+
+    for (const w of words) {
+        if (sample.includes(w)) hits++;
+    }
+
+    return hits >= Math.max(1, words.length - 1);
+}
+
+//////////////////////////////////////////////////////
+// CLEAN TEXT
+//////////////////////////////////////////////////////
+function clean(text) {
+    return text
+        .replace(/\s+/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+}
+
+//////////////////////////////////////////////////////
+// AI QUESTIONS (unchanged)
 //////////////////////////////////////////////////////
 async function generateAIQuestions() {
 
@@ -95,13 +144,12 @@ async function generateAIQuestions() {
 
         const res = await fetch("https://ai.scoreladder.org", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: currentText })
         });
 
         const data = await res.json();
+
         renderQuestions(data);
 
     } catch (err) {
