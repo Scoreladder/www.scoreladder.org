@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Settings</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f0f12;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: #1a1a22;
+      padding: 20px;
+      border-radius: 12px;
+      width: 320px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #5865F2;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Settings</h2>
+
+  <input id="displayName" placeholder="Display Name" />
+
+  <button onclick="save()">Save</button>
+  <button onclick="back()">Back</button>
+</div>
+
+<script>
+const API = "https://auth.scoreladder.org";
+
+async function load() {
+  const res = await fetch(API + "/me", { credentials: "include" });
+
+  if (!res.ok) {
+    location.href = "/";
+    return;
+  }
+
+  const user = await res.json();
+  document.getElementById("displayName").value = user.display_name || "";
+}
+
+async function save() {
+  const display_name = document.getElementById("displayName").value;
+
+  await fetch(API + "/settings", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ display_name })
+  });
+
+  alert("Saved!");
+}
+
+function back() {
+  location.href = "/profile.html";
+}
+
+load();
+</script>
+
+</body>
+</html>
