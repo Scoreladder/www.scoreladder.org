@@ -6,6 +6,40 @@
   <link rel="stylesheet" href="https://web.scoreladder.org/global.css">
 
   <style>
+    .banner {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, #5865F2, #3b3f9c);
+      border-radius: 16px;
+      margin-bottom: -60px;
+    }
+    
+    .profile-card {
+      margin-top: -40px;
+    }
+    
+    .bio {
+      font-size: 13px;
+      opacity: 0.8;
+      margin: 10px 0;
+    }
+    
+    .socials {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    
+    .socials a {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: white;
+      text-decoration: none;
+    }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -107,39 +141,23 @@
 
 <body>
 
-<div class="profile-card">
+<div class="banner" id="banner"></div>
 
+<div class="profile-card">
   <img id="avatar" class="avatar" />
 
-  <h2 id="name" class="name">Loading...</h2>
-  <p id="id" class="id"></p>
+  <h2 id="name"></h2>
+  <p id="id"></p>
 
-  <div class="stats">
-    <div class="stat">
-      Level
-      <b>1</b>
-    </div>
+  <p id="bio" class="bio"></p>
 
-    <div class="stat">
-      Elo
-      <b>--</b>
-    </div>
+  <div class="stats" id="stats"></div>
 
-    <div class="stat">
-      Rank
-      <b>Unranked</b>
-    </div>
+  <div class="socials" id="socials"></div>
 
-    <div class="stat">
-      Status
-      <b>Online</b>
-    </div>
-  </div>
-
-  <div class="buttons">
-    <button class="settings" onclick="goSettings()">Settings</button>
-    <button class="logout" onclick="logout()">Logout</button>
-  </div>
+  <button class="settings" onclick="goSettings()">Settings</button>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
 
 </div>
 
@@ -165,6 +183,56 @@ async function load() {
     user.avatar
       ? `https://cdn.discordapp.com/avatars/${user.id.replace("discord_", "")}/${user.avatar}.png`
       : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+  renderProfile(user)
+}
+
+function renderProfile(user) {
+  document.getElementById("name").innerText =
+    user.display_name || user.username;
+
+  document.getElementById("id").innerText = user.id;
+
+  document.getElementById("bio").innerText =
+    user.profile.bio || "No bio yet.";
+
+  // Banner
+  document.getElementById("banner").style.background =
+    user.profile.banner
+      ? `url(${user.profile.banner}) center/cover`
+      : "linear-gradient(135deg, #5865F2, #3b3f9c)";
+
+  // Avatar
+  const discordId = user.id.replace("discord_", "");
+  document.getElementById("avatar").src =
+    user.avatar
+      ? `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`
+      : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+  // Stats
+  document.getElementById("stats").innerHTML = `
+    <div class="stat">Level<b>${user.stats.level}</b></div>
+    <div class="stat">Elo<b>${user.stats.elo}</b></div>
+    <div class="stat">Wins<b>${user.stats.wins}</b></div>
+    <div class="stat">Losses<b>${user.stats.losses}</b></div>
+  `;
+
+  // Socials
+  const socials = [];
+
+  if (user.profile.twitter)
+    socials.push(`<a href="${user.profile.twitter}">Twitter</a>`);
+
+  if (user.profile.instagram)
+    socials.push(`<a href="${user.profile.instagram}">Instagram</a>`);
+
+  if (user.profile.youtube)
+    socials.push(`<a href="${user.profile.youtube}">YouTube</a>`);
+
+  if (user.profile.website)
+    socials.push(`<a href="${user.profile.website}">Website</a>`);
+
+  document.getElementById("socials").innerHTML = socials.join("");
 }
 
 function goSettings() {
