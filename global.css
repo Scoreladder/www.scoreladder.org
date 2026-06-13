@@ -1,9 +1,17 @@
+:root {
+  --topbar-height: 60px;
+}
+
+body {
+  padding-top: var(--topbar-height);
+}
+
 #topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 50px;
+  height: var(--topbar-height);
   background: #1a1a22;
   display: flex;
   align-items: center;
