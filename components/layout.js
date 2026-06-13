@@ -10,6 +10,7 @@ async function initLayout() {
   syncTopbarHeight();
 
   initTopbar();
+  console.log("layout.js loaded");
 }
 
 /* ---------------- COMPONENT LOADER ---------------- */
