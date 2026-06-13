@@ -71,16 +71,19 @@ async function load() {
 }
 
 async function save() {
-  const display_name = document.getElementById("displayName").value;
-
-  await fetch(API + "/settings", {
+  await fetch("https://auth.scoreladder.org/settings", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ display_name })
+    body: JSON.stringify({
+      bio: bio.value,
+      banner: banner.value,
+      twitter: twitter.value,
+      instagram: instagram.value,
+      youtube: youtube.value,
+      website: website.value
+    })
   });
-
-  alert("Saved!");
 }
 
 function back() {
