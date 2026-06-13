@@ -94,20 +94,9 @@ async function logout() {
 
 load();
 </script>
-<script>
-async function loadComponent(id, file) {
-  const res = await fetch(file);
-  const html = await res.text();
-  document.getElementById(id).innerHTML = html;
-}
-</script>
+<script src="/components/layout.js" defer></script>
 
 <div id="header"></div>
 <div id="footer"></div>
-
-<script>
-loadComponent("header", "/components/header.html");
-loadComponent("footer", "/components/footer.html");
-</script>
 </body>
 </html>
