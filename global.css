@@ -31,7 +31,7 @@
   font-size: 12px;
 }
 
-body.dark {
+body.darmode {
   background: #0f0f12;
   color: white;
 }
@@ -40,3 +40,4 @@ body {
   background: white;
   color: black;
 }
+
