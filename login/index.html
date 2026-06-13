@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scoreladder Login</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f0f12;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #1a1a22;
+      padding: 30px;
+      border-radius: 12px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    button, a.button {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .discord {
+      background: #5865F2;
+      color: white;
+    }
+
+    .logout {
+      background: #ff4d4d;
+      color: white;
+    }
+
+    .user-box {
+      margin-top: 15px;
+      padding: 10px;
+      background: #2a2a35;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    img.avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+
+    <!-- NOT LOGGED IN -->
+    <div id="loginSection">
+      <h1>Login to Scoreladder</h1>
+
+      <a class="button discord"
+         href="https://discord.com/oauth2/authorize?client_id=1511967100485238955&response_type=code&redirect_uri=https%3A%2F%2Fauth.scoreladder.org%2Fauth%2Fdiscord%2Fcallback&scope=identify%20email">
+        Continue with Discord
+      </a>
+    </div>
+
+    <!-- LOGGED IN -->
+    <div id="userSection" class="hidden">
+      <h1>Welcome back</h1>
+
+      <div class="user-box">
+        <img id="avatar" class="avatar" />
+        <div id="username"></div>
+        <div id="email"></div>
+      </div>
+
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
+
+  </div>
+
+  <script>
+    const API = "https://auth.scoreladder.org";
+
+    async function loadUser() {
+      try {
+        const res = await fetch(`${API}/me`, {
+          credentials: "include"
+        });
+
+        if (!res.ok) return;
+
+        const user = await res.json();
+
+        document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("userSection").classList.remove("hidden");
+
+        document.getElementById("username").innerText =
+          user.display_name || user.username;
+
+        document.getElementById("email").innerText =
+          user.email || "";
+
+        document.getElementById("avatar").src =
+          user.avatar
+            ? `https://cdn.discordapp.com/avatars/${user.id.replace("discord_", "")}/${user.avatar}.png`
+            : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+      } catch (e) {
+        console.log("Not logged in");
+      }
+    }
+
+    async function logout() {
+      await fetch(`${API}/logout`, {
+        credentials: "include"
+      });
+
+      location.reload();
+    }
+
+    loadUser();
+  </script>
+</body>
+</html>
