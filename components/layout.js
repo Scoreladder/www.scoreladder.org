@@ -22,32 +22,10 @@ async function load(id, file) {
 /* ---------------- TOPBAR LOGIC ---------------- */
 
 function initTopbar() {
-  setupDarkMode();
+  initDarkMode();
   setupAuth();
   setLogo();
 }
-
-/* ---------------- DARK MODE ---------------- */
-
-function setupDarkMode() {
-  const btn = document.getElementById("darkToggle");
-  if (!btn) return;
-
-  const saved = localStorage.getItem("darkmode") === "true";
-  applyTheme(saved);
-
-  btn.onclick = () => {
-    const newVal = localStorage.getItem("darkmode") !== "true";
-    localStorage.setItem("darkmode", newVal);
-    applyTheme(newVal);
-  };
-}
-
-function applyTheme(dark) {
-  document.body.classList.toggle("dark", dark);
-  setLogo();
-}
-
 /* ---------------- LOGO ---------------- */
 
 function setLogo() {
@@ -93,5 +71,32 @@ async function setupAuth() {
 
   } catch (e) {
     console.log("not logged in");
+  }
+}
+
+function initDarkMode() {
+  const btn = document.getElementById("darkmode-toggle");
+  if (!btn) return;
+
+  const saved = localStorage.getItem("darkmode") === "true";
+
+  applyDarkMode(saved);
+
+  btn.addEventListener("click", () => {
+    const newValue = localStorage.getItem("darkmode") !== "true";
+    localStorage.setItem("darkmode", newValue);
+    applyDarkMode(newValue);
+  });
+}
+
+function applyDarkMode(enabled) {
+  document.body.classList.toggle("darkmode", enabled);
+
+  // optional: sync logo if you use it
+  const logo = document.getElementById("logo");
+  if (logo) {
+    logo.src = enabled
+      ? "https://web.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo%20Dark.png"
+      : "https://web.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo.png";
   }
 }
