@@ -162,10 +162,8 @@
 </div>
 
 <script>
-const API = "https://auth.scoreladder.org";
-
-async function load() {
-  const res = await fetch(API + "/me", { credentials: "include" });
+  async function load() {
+  const res = await fetch("https://auth.scoreladder.org/me", { credentials: "include" });
 
   if (!res.ok) {
     location.href = "/";
@@ -240,7 +238,7 @@ function goSettings() {
 }
 
 async function logout() {
-  await fetch(API + "/logout", { credentials: "include" });
+  await fetch("https://auth.scoreladder.org/logout", { credentials: "include" });
   location.href = "/";
 }
 
