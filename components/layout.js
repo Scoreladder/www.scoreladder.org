@@ -37,8 +37,8 @@ function setLogo() {
   const dark = localStorage.getItem("darkmode") === "true";
 
   logo.src = dark
-    ? "https://web.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo%20Dark.png"
-    : "https://web.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo.png";
+    ? "https://www.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo%20Dark.png"
+    : "https://www.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo.png";
 }
 
 /* ---------------- AUTH ---------------- */
@@ -98,8 +98,8 @@ function applyDarkMode(enabled) {
   const logo = document.getElementById("logo");
   if (logo) {
     logo.src = enabled
-      ? "https://web.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo%20Dark.png"
-      : "https://web.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo.png";
+      ? "https://www.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo%20Dark.png"
+      : "https://www.scoreladder.org/images%20and%20svgs/Scoreladder%20Logo.png";
   }
 }
 
