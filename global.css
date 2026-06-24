@@ -44,7 +44,7 @@
   font-size: 12px
 }
 
-body.darmode {
+body.darkmode {
   background: var(--base-color);
   color: var(--text-color);
   padding-top: var(--topbar-height);
