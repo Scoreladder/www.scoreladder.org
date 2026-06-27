@@ -1,2 +1,2 @@
-# web.scoreladder.org
+# www.scoreladder.org
 Our webite

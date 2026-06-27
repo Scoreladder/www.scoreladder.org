@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scoreladder Rules</title>
+<link rel="stylesheet" href="https://www.scoreladder.org/global.css">
+<style>
+
+:root {
+    --bg: #e4e4e4;
+    --card: #b8b8b8;
+    --border: #30363d;
+    --text: #222222;
+    --muted: #575757;
+    --accent: #1070de;
+}
+.darkmode {
+    --bg: #303030;
+    --card: #5a5a5a;
+    --border: #3b3b3b;
+    --text: #e4e4e4;
+    --muted: #a7a7a7;
+    --accent: #1070de;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 2.5rem;
+}
+
+h2 {
+    margin-top: 40px;
+    color: var(--accent);
+}
+
+p {
+    color: var(--text);
+}
+
+ul {
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+.updated {
+    color: var(--muted);
+    margin-bottom: 30px;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+}
+
+@media (max-width: 768px) {
+    .card {
+        padding: 25px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+
+        <h1>Rules</h1>
+
+        <p class="updated">
+            Last Updated: June 24, 2026
+        </p>
+
+        <p>
+            You must agree to the following rules when you join Scoreladder.
+        </p>
+
+    <h2>Eligibility</h2>
+
+        <p>
+          You must be 13 or older in order to use Scoreladder.
+        </p>
+
+    <h2>Sportsmanship</h2>
+
+      <h3>Outside Assistance</h3>
+        <p>Using outside assistance will result in your account being terminated. This includes navigating to tabs and windows besides the Desmos Calculator and scoreladder.org. 
+        However, you’re allowed to stream the game as long as you don’t use chat for assistance or record your gameplay.</p>
+
+        <p>Accounts with suspiciously high win rates will be flagged for review, and terminated if anything suspicious is detected.</p>
+
+      <h3>Sandbagging</h3>
+
+        <p>Sandbagging is the act of intentionally losing games to lower your ELO rating. Sandbagging is not allowed, and accounts with suspiciously high win or lose streaks will be terminated.</p>
+
+      <h3>Chat</h3>
+
+        <p>There will be no in game chat provided in order to prevent cheating, harassment, and sharing social media information. If you are found to be using outside chat or social media (Discord, Instagram, etc.) to communicate with other players and cheat, your account will be terminated.</p>
+
+    <h2>Game Rules</h2>
+
+      <h3>General</h3>
+
+        <p>You will not be able to see the other player's progress or answers during the game. Once the game is over, you will be able to see the other player's answers (and explanations if you have analysis unlocked through donations).</p>
+
+        <p>We understand that some players may not have access to analysis, and that's ok. Players will also be sent a breakdown of their accuracy across their past 10 games or so, and their performance across answer types so they can target areas for improvement.</p>
+
+      <h3>SAT - Reading and Writing</h3>
+
+        <p>
+          Each player will get a set of 10 RW questions, with a time limit of 11 minutes to complete them. After the 11 minutes (or when both players are done), the player with the higher accuracy wins. If both players have the same score, the player who finishes first wins.
+        </p>
+        <p>Here's a breakdown of the questions you will receive in RW games.</p>
+        <ul>
+
+          <li>3 Craft and Structure questions
+            <ul>
+              <li>1 Words in Context question</li>
+              <li>1 Structure and Purpose question</li>
+              <li>1 Cross Text Connections question</li>
+            </ul>
+          </li>
+
+          <li>3 Information and Ideas questions
+            <ul>
+              <li>3 random topics from the following pool will be chosen, and each topic will have 1 question: <br>Textual Evidence, Quantitative Evidence, Main Idea, and Inference
+              </li>
+            </ul>
+          </li>
+
+          <li>2 Expression of Ideas questions
+            <ul>
+              <li>1 Transition Question</li>
+              <li>1 Boundaries Question</li>
+            </ul>
+          </li>
+
+          <li>2 Standard English Conventions questions
+            <ul>
+              <li>1 Form, Structure, and Sense Question</li>
+              <li>1 Rhetorical Synthesis Question</li>
+            </ul>
+          </li>
+      </ul>
+          
+      <h3>SAT - Math</h3>
+
+        <p>Each player will get a set of 10 Math questions, with a time limit of 15 minutes to complete them. After the 15 minutes (or when both players are done), the player with the higher accuracy wins. If both players have the same score, the player who finishes first wins. You are allowed to use the Desmos calculator in an outside tab, but you are not allowed to use any other outside assistance.</p>
+
+        <p>Here's a breakdown of the questions you will receive in Math games.</p>
+
+        <ul>
+          <li>3 Algebra questions (Linear equations, Systems of Equations, Inequalities)
+            <ul>
+              <li>1 question will be a word problem.</li>
+            </ul>
+          </li>
+
+          <li>3 Advanced Math questions (Quadratics, Exponential functions, Polynomials, Radicals, other nonlinear functions)
+            <ul>
+              <li>1 question will be a word problem.
+              </li>
+            </ul>
+          </li>
+
+          <li>2 Problem Solving and Data Analysis questions (Ratios, Percentages, Data, Statistical Claims, Linear/Exponential growth)
+            <ul>
+              <li>1 question will be a word problem.</li>
+            </ul>
+          </li>
+
+          <li>2 Geometry and Trigonometry questions (Area/Volume, Circles, Right triangles, Angle relationships)
+            <ul>
+              <li>1 question will be a word problem.</li>
+            </ul>
+          </li>
+      </ul>
+        <div class="footer">
+            © 2026 Scoreladder. All rights reserved.
+        </div>
+
+    </div>
+</div>
+
+<script src="https://www.scoreladder.org/components/layout.js" defer></script>
+
+<div id="header"></div>
+
+</body>
+</html>

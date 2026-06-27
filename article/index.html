@@ -5,16 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scoreladder Articles</title>
 
-<link rel="stylesheet" href="https://web.scoreladder.org/global.css">
+<link rel="stylesheet" href="https://www.scoreladder.org/global.css">
 <style>
-:root {
+    :root {
     --base-color: #e4e4e4;
+    --primary-color: #b8b8b8;
     --secondary-color: #a9a9a9;
     --text-color: #222222;
 }
-
 .darkmode {
     --base-color: #303030;
+    --primary-color: #3b3b3b;
     --secondary-color: #5a5a5a;
     --text-color: #e4e4e4;
 }
@@ -101,7 +102,7 @@ button:disabled {
     margin-top: 8px;
     padding: 10px;
     border-radius: 8px;
-    background: rgba(0,0,0,0.1);
+    background: var(--secondary-color, 0.1);
 }
 
 .answer {
@@ -146,7 +147,7 @@ button:disabled {
 </div>
 
 <script src="script.js"></script>
-<script src="https://web.scoreladder.org/components/layout.js" defer></script>
+<script src="https://www.scoreladder.org/components/layout.js" defer></script>
 
 <div id="header"></div>
 <div id="footer"></div>

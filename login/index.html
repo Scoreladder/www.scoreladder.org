@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="https://web.scoreladder.org/global.css">
+  <link rel="stylesheet" href="https://www.scoreladder.org/global.css">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scoreladder Login</title>
 
   <style>
+    :root {
+    --base-color: #e4e4e4;
+    --primary-color: #b8b8b8;
+    --secondary-color: #a9a9a9;
+    --text-color: #222222;
+}
+.darkmode {
+    --base-color: #303030;
+    --primary-color: #3b3b3b;
+    --secondary-color: #5a5a5a;
+    --text-color: #e4e4e4;
+}
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #0f0f12;
-      color: white;
+      background: var(--base-color);
+      color: var(--text-color);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -19,7 +31,7 @@
     }
 
     .card {
-      background: #1a1a22;
+      background: var(--primary-color);
       padding: 30px;
       border-radius: 12px;
       width: 320px;
@@ -36,7 +48,7 @@
       display: inline-block;
       width: 100%;
       padding: 12px;
-      margin-top: 10px;
+      margin-left: -12px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -47,18 +59,18 @@
 
     .discord {
       background: #5865F2;
-      color: white;
+      color: var(--text-color);
     }
 
     .logout {
       background: #ff4d4d;
-      color: white;
+      color: var(--text-color);
     }
 
     .user-box {
       margin-top: 15px;
       padding: 10px;
-      background: #2a2a35;
+      background: var(--secondary-color);
       border-radius: 8px;
       font-size: 14px;
     }
@@ -146,7 +158,7 @@
 
     loadUser();
   </script>
-<script src="https://web.scoreladder.org/components/layout.js" defer></script>
+<script src="https://www.scoreladder.org/components/layout.js" defer></script>
 
 <div id="header"></div>
 <div id="footer"></div>
