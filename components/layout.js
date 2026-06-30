@@ -1,12 +1,13 @@
 const API = "https://auth.scoreladder.org"
+const BASE_URL = window.location.origin;
 
 /* ---------------- ENTRY POINT ---------------- */
 
 document.addEventListener("DOMContentLoaded", initLayout);
 
 async function initLayout() {
-  await load("header", "/components/header.html");
-  await load("footer", "/components/footer.html");
+  await load("header", `${BASE_URL}/components/header.html`);
+  await load("footer", `${BASE_URL}/components/footer.html`);
   syncTopbarHeight();
 
   initTopbar();
@@ -55,7 +56,7 @@ async function setupAuth() {
       : "https://cdn.discordapp.com/embed/avatars/0.png";
 
     profileBtn.onclick = () => {
-      location.href = "/profile/";
+      location.href = `${BASE_URL}/profile/`;
     };
 
   } catch (e) {
