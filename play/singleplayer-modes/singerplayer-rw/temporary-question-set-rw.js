@@ -1,16 +1,16 @@
-const questionBankRw = [
+export const questionBankRw = [
   {
     id: 1,
     unit: 'Information and Ideas',
     topic: 'main-idea',
     questionType: function getQuestionType(){
-      if (passage.includes("According to the text")){
+      if (this.passage.includes("According to the text")){
         return 'according';
       }
-      else if (passage.includes("Based on the text")){
+      else if (this.passage.includes("Based on the text")){
         return 'based';
       }
-      else if (passage.includes("Which choise best states the main idea")){
+      else if (this.passage.includes("Which choise best states the main idea")){
         return 'main-idea';
       }
       else {
