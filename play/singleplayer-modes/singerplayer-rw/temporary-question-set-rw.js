@@ -25,6 +25,6 @@ export const questionBankRw = [
       c: 'A flaw in the theory of general relativity',
       d: 'A miscalculation of the distance between Mercury and the Sun'
     },
-    correctAnswer: 'choice-a'
+    solution: 'a'
   }
 ]
