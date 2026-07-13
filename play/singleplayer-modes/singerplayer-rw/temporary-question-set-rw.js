@@ -10,7 +10,7 @@ export const questionBankRw = [
       else if (this.passage.includes("Based on the text")){
         return 'based';
       }
-      else if (this.passage.includes("Which choise best states the main idea")){
+      else if (this.passage.includes("Which choice best states the main idea")){
         return 'main-idea';
       }
       else {

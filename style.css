@@ -117,9 +117,6 @@ a.card:hover {
 }
 
 #footer {
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 40px;
   background: var(--primary-color);
   display: flex;
