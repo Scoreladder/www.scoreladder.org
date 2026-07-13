@@ -26,5 +26,33 @@ export const questionBankRw = [
       d: 'A miscalculation of the distance between Mercury and the Sun'
     },
     solution: 'a'
+  },
+  {
+    id: 2,
+    unit: 'Information and Ideas',
+    topic: 'main-idea',
+    questionType: function getQuestionType(){
+      if (this.passage.includes("According to the")){
+        return 'according';
+      }
+      else if (this.passage.includes("Based on the")){
+        return 'based';
+      }
+      else if (this.passage.includes("Which choise best states the main idea")){
+        return 'main-idea';
+      }
+      else {
+        return 'suggest';
+      }
+    },
+    passage: `In December 1941, Japan attacked American and British territories in Asia and the Pacific, including Pearl Harbor in Hawaii, leading the United States to enter the war against the Axis. Japan conquered much of coastal China and Southeast Asia, but its advances in the Pacific were halted in June 1942 at the Battle of Midway.`,
+    question: `The passage suggests that the turning point in the war against Japan occurred at which event?`,
+    choices: {
+      a: 'The invasion of Normandy',
+      b: 'The Battle of Stalingrad',
+      c: 'The Battle of Midway',
+      d: 'The invasion of Italy'
+    },
+    solution: 'c'
   }
 ]
