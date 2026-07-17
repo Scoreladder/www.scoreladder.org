@@ -3,6 +3,7 @@ export const questionBankRw = [
     id: 1,
     unit: 'Information and Ideas',
     topic: 'main-idea',
+    difficulty: 'easy',
     questionType: function getQuestionType(){
       if (this.passage.includes("According to the text")){
         return 'according';
@@ -31,6 +32,7 @@ export const questionBankRw = [
     id: 2,
     unit: 'Information and Ideas',
     topic: 'main-idea',
+    difficulty: 'easy',
     questionType: function getQuestionType(){
       if (this.passage.includes("According to the")){
         return 'according';
