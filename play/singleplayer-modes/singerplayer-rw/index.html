@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scoreladder Privacy Policy</title>
-<link rel="stylesheet" href="../style.css">
+<title>Play</title>
+<link rel="stylesheet" href="https://www.scoreladder.org/global.css">
 <style>
 :root {
     --bg: #e4e4e4;
     --card: #b8b8b8;
-    --border: #30363d;
+    --border: #4e545b;
     --text: #222222;
     --muted: #575757;
     --accent: #1070de;
@@ -28,14 +28,18 @@
 }
 
 body {
-    margin-top: 50px;
+    margin: 0;
     font-family: Inter, system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.7;
 }
 
-.container {
+button {
+  font-size: 16px;
+}
+
+.question-container {
     max-width: 900px;
     margin: 0 auto;
     padding: 40px 20px;
@@ -54,6 +58,7 @@ h1 {
 }
 
 h2 {
+    margin-top: 40px;
     color: var(--accent);
 }
 
@@ -84,6 +89,7 @@ a:hover {
 }
 
 .footer {
+    margin-top: 50px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
     color: var(--muted);
@@ -91,7 +97,7 @@ a:hover {
 
 @media (max-width: 768px) {
     .card {
-        padding: 20px;
+        padding: 25px;
     }
 
     h1 {
@@ -101,15 +107,17 @@ a:hover {
 </style>
 </head>
 <body>
-<div class="container">
-    <div class="card">
-      <h2>This page is currently under construction.</h2>
+
+<div class="question-container">
+    <div class="card js-card">
     </div>
 </div>
 
-<script src="https://www.scoreladder.org/components/layout.js" defer></script>
+<script src="singleplayer-mode.js" type="module"></script>
+<script src="../../../components/layout.js" defer></script>
 
 <div id="header"></div>
+<div id="footer"></div>
 
 </body>
 </html>

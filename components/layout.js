@@ -73,14 +73,14 @@ function initDarkMode() {
   applyDarkMode(saved);
 
   btn.addEventListener("click", () => {
-    const newValue = localStorage.getItem("darkmode") !== "true";
-    localStorage.setItem("darkmode", newValue);
-    applyDarkMode(newValue);
+    const enabled = !document.documentElement.classList.contains("darkmode");
+    localStorage.setItem("darkmode", enabled ? "true" : "false");
+    applyDarkMode(enabled);
   });
 }
 
 function applyDarkMode(enabled) {
-  document.body.classList.toggle("darkmode", enabled);
+  document.documentElement.classList.toggle("darkmode", enabled);
 }
 
 function syncTopbarHeight() {

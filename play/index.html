@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scoreladder Privacy Policy</title>
-<link rel="stylesheet" href="../style.css">
+<title>Play</title>
+<link rel="stylesheet" href="https://www.scoreladder.org/global.css">
 <style>
 :root {
     --bg: #e4e4e4;
     --card: #b8b8b8;
-    --border: #30363d;
+    --border: #4e545b;
     --text: #222222;
     --muted: #575757;
     --accent: #1070de;
@@ -28,7 +28,7 @@
 }
 
 body {
-    margin-top: 50px;
+    margin: 0;
     font-family: Inter, system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
@@ -54,6 +54,7 @@ h1 {
 }
 
 h2 {
+    margin-top: 40px;
     color: var(--accent);
 }
 
@@ -84,6 +85,7 @@ a:hover {
 }
 
 .footer {
+    margin-top: 50px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
     color: var(--muted);
@@ -91,7 +93,7 @@ a:hover {
 
 @media (max-width: 768px) {
     .card {
-        padding: 20px;
+        padding: 25px;
     }
 
     h1 {
@@ -101,15 +103,35 @@ a:hover {
 </style>
 </head>
 <body>
+
 <div class="container">
-    <div class="card">
-      <h2>This page is currently under construction.</h2>
-    </div>
+  <div class="card">
+    <h1>Play</h1>
+
+    <a href=/play/singleplayer-modes/singerplayer-rw><h2>Singleplayer - RW (In development)</h2></a>
+    <p>
+      You will get a set of 10 RW questions. None of your stats will be affected, and you don't have to be logged in.
+    </p>
+
+    <a href=/comingsoon><h2>Singleplayer - Math (Coming Soon!)</h2></a>
+
+    <a href=/comingsoon><h2>Multiplayer - RW (Coming Soon!)</h2></a>
+
+    <a href=/comingsoon><h2>Multiplayer - Math (Coming Soon!)</h2></a>
+
+    <a href=/comingsoon><h2>Targeted Practice - RW (Coming Soon!)</h2></a>
+    <p>
+      You will get a set of 10 RW questions on a specific topic. This mode requires you to be logged in.
+    </p>
+
+    <a href=/comingsoon><h2>Targeted Practice - Math (Coming Soon!)</h2></a>
+  </div>
 </div>
 
 <script src="https://www.scoreladder.org/components/layout.js" defer></script>
 
 <div id="header"></div>
+<div id="footer"></div>
 
 </body>
 </html>
