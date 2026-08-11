@@ -1,24 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="https://www.scoreladder.org/global.css">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scoreladder Login</title>
-
+  <link rel="stylesheet" href="/style.css">
   <style>
-    :root {
-    --base-color: #e4e4e4;
-    --primary-color: #b8b8b8;
-    --secondary-color: #a9a9a9;
-    --text-color: #222222;
-}
-.darkmode {
-    --base-color: #303030;
-    --primary-color: #3b3b3b;
-    --secondary-color: #5a5a5a;
-    --text-color: #e4e4e4;
-}
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -31,7 +18,8 @@
     }
 
     .card {
-      background: var(--primary-color);
+      background: var(--surface);
+      border: 1px solid var(--border);
       padding: 30px;
       border-radius: 12px;
       width: 320px;
@@ -59,12 +47,12 @@
 
     .discord {
       background: #5865F2;
-      color: var(--text-color);
+      color: white;
     }
 
     .logout {
       background: #ff4d4d;
-      color: var(--text-color);
+      color: white;
     }
 
     .user-box {
@@ -154,9 +142,9 @@
 
     loadUser();
   </script>
-<script src="https://www.scoreladder.org/components/layout.js" defer></script>
 
 <div id="header"></div>
 <div id="footer"></div>
+<script src="/components/layout.js" defer></script>
 </body>
 </html>

@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="../global.css">
+  <link rel="stylesheet" href="/style.css">
   <title>Settings</title>
   <style>
     body {
       font-family: Arial;
-      background: #0f0f12;
-      color: white;
+      background: var(--base-color);
+      color: var(--text-color);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,18 +16,21 @@
     }
 
     .box {
-      background: #1a1a22;
+      background: var(--surface);
+      border: 1px solid var(--border);
       padding: 20px;
       border-radius: 12px;
       width: 320px;
     }
 
-    input {
+    input, textarea {
       width: 100%;
       padding: 8px;
       margin-top: 10px;
       border-radius: 6px;
-      border: none;
+      border: 1px solid var(--border);
+      background: var(--primary-color);
+      color: var(--text-color);
     }
 
     button {
@@ -37,7 +40,7 @@
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      background: #5865F2;
+      background: var(--accent);
       color: white;
     }
   </style>
@@ -61,7 +64,7 @@
 </div>
 
 <script src="load-and-save-settings.js"></script>
-<script src="../components/layout.js" defer></script>
+<script src="/components/layout.js" defer></script>
 
 <div id="header"></div>
 <div id="footer"></div>
