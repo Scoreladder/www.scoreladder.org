@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scoreladder Leaderboards</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--base-color);
+    color: var(--text-color);
+    line-height: 1.7;
+}
+
+h1 {
+  text-align: center;
+}
+
+.container {
+    max-height: 500px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 5px;
+
+    margin: 15px auto;
+    text-align: center;
+    display: inline-block; 
+    width: 400px;
+    float: none;
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 2.5rem;
+}
+
+h2 {
+    margin-top: 40px;
+    color: var(--accent);
+}
+
+p {
+    color: var(--text-color);
+}
+
+ul {
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+.updated {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .card {
+        padding: 5px;
+        margin: 15px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+}
+
+.rw-container {
+    width: 600px;
+    max-height:400px;
+    overflow-y: scroll;
+    float: left;
+    text-align: center; 
+    display: flow-root;
+}
+.math-container {
+    width: 600px;
+    max-height:400px;
+    overflow-y: scroll;
+    float: right;
+    text-align: center; 
+    display: flow-root;
+}
+</style>
+</head>
+<body>
+
+    <h1>.</h1>
+    <h1>Leaderboards</h1>
+
+    <div class="container">
+        <div class="rw-container">
+            <h2>RW Leaderboard</h2>
+            <div class="card">
+                <p>1st (Placeholder)</p>
+            </div>
+        </div>
+        <div class="math-container">
+            <h2>Math Leaderboard</h2>
+            <div class="card">
+                <p>1st (Placeholder)</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="header"></div>
+    <div id="footer"></div>
+    <script src="/components/layout.js" defer></script>
+</body>
+</html>
