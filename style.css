@@ -186,6 +186,7 @@ a.card:hover {
   padding: 0 24px;
   z-index: 999;
   box-shadow: var(--shadow-sm);
+  
 }
 
 #topbar a {
@@ -235,7 +236,8 @@ a.card:hover {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1.1;
-  margin-bottom: 16px;
+  margin: 16px;
+  margin-top: 128px;
 }
 
 #title-description {
