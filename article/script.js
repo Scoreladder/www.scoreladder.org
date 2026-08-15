@@ -175,7 +175,7 @@ function renderQuestions(data) {
 
     data.questions.forEach((q, i) => {
 
-        const shuffled = q.choices
+        const shuffled = Object.values(q.choices)
             .map((c, idx) => ({ text: c, idx }))
             .sort(() => Math.random() - 0.5);
 
