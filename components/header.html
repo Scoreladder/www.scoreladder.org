@@ -1,69 +1,134 @@
 <style>
 :root {
-    --base-color: #e4e4e4;
-    --primary-color: #b8b8b8;
-    --secondary-color: #a9a9a9;
-    --text-color: #222222;
+  --base-color:    #f4f6fb;
+  --primary-color: #eef1f8;
+  --secondary-color:#e2e7f3;
+  --surface:       #ffffff;
+  --text-color:    #1a1d2e;
+  --text-muted:    #5a6280;
+  --accent:        #4f46e5;
+  --accent-hover:  #4338ca;
+  --accent-soft:   #ede9fe;
+  --border:        #d4d9ec;
+  --topbar-height: 64px;
 }
 .darkmode {
-    --base-color: #303030;
-    --primary-color: #3b3b3b;
-    --secondary-color: #5a5a5a;
-    --text-color: #e4e4e4;
+  --base-color:    #0f1117;
+  --primary-color: #161b27;
+  --secondary-color:#1e2535;
+  --surface:       #1a2035;
+  --text-color:    #e8eaf6;
+  --text-muted:    #8892b0;
+  --accent:        #6d63ff;
+  --accent-hover:  #7c73ff;
+  --accent-soft:   #2d2b6e;
+  --border:        #2a3350;
 }
+
 #topbar {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: var(--primary-color);
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-height);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 18px;
+  padding: 0 24px;
   z-index: 999;
-  font-family: Arial;
+  box-shadow: 0 1px 3px rgba(79,70,229,.08), 0 1px 2px rgba(0,0,0,.06);
+  font-family: 'Inter', system-ui, sans-serif;
+  gap: 16px;
 }
 
 #topbar .left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-shrink: 0;
 }
-
 #topbar .logo {
-  height: 34px;
+  height: 36px;
   cursor: pointer;
+  display: block;
 }
 
-#topbar .center a {
-  margin: 0 10px;
-  color: var(--text-color);
+#topbar .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+#topbar .nav-links a {
+  color: var(--text-muted);
   text-decoration: none;
-  opacity: 0.85;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+#topbar .nav-links a:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+  text-decoration: none;
 }
 
 #topbar .right {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
-#topbar button {
-  background: var(--secondary-color);
-  color: var(--text-color);
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
+#darkmode-toggle {
   cursor: pointer;
+  background: var(--secondary-color);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--text-color);
+  transition: background 0.18s;
+  pointer-events: auto;
+}
+#darkmode-toggle:hover { background: var(--border); }
+#darkmode-toggle svg   { pointer-events: none; }
+
+#loginBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background 0.18s, transform 0.12s;
+}
+#loginBtn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
 }
 
 #topbar .avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   cursor: pointer;
+  border: 2px solid var(--accent);
+  object-fit: cover;
+  transition: transform 0.15s;
+}
+#topbar .avatar:hover { transform: scale(1.08); }
+
+.hidden { display: none !important; }
+
+@media (max-width: 768px) {
+  #topbar .nav-links { display: none; }
+  #topbar { padding: 0 14px; }
 }
 </style>
 
@@ -74,7 +139,8 @@
     </a>
   </div>
 
-  <div class="center">
+  <div class="nav-links">
+    <a href="/comingsoon/">Donate</a>
     <a href="/play/">Play</a>
     <a href="/comingsoon/">Leaderboards</a>
     <a href="/rules/">Rules</a>
