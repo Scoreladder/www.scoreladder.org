@@ -186,6 +186,13 @@ function renderQuestions(data) {
                 <h3>Question ${i + 1}</h3>
                 <p>${escapeHtml(q.question)}</p>
 
+                <div class="passage">
+                  ${escapeHtml(q.passage)
+                  }
+                </div>
+                
+                <p>${escapeHtml(q.question)}</p>
+
                 ${shuffled.map((c, idx) => `
                     <div class="choice">
                         <b>${["A","B","C","D"][idx]}.</b>
