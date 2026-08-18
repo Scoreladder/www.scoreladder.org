@@ -175,7 +175,7 @@ function renderQuestions(data) {
 
     data.questions.forEach((q, i) => {
 
-        const shuffled = q.choices
+        const shuffled = Object.values(q.choices)
             .map((c, idx) => ({ text: c, idx }))
             .sort(() => Math.random() - 0.5);
 
@@ -184,6 +184,13 @@ function renderQuestions(data) {
         questionsDiv.innerHTML += `
             <div class="card">
                 <h3>Question ${i + 1}</h3>
+                <p>${escapeHtml(q.question)}</p>
+
+                <div class="passage">
+                  ${escapeHtml(q.passage)
+                  }
+                </div>
+                
                 <p>${escapeHtml(q.question)}</p>
 
                 ${shuffled.map((c, idx) => `
