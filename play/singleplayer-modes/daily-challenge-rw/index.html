@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scoreladder Singleplayer Mode Test</title>
+  <title>Scoreladder Daily Challenge Mode Test</title>
   <link rel="stylesheet" href="/style.css">
   <style>
     body {
@@ -109,29 +109,26 @@
     }
   </style>
 </head>
-
 <body>
+
+  <div id="header"></div>
 
   <div class="container">
 
-    <h1>Question Generator</h1>
-
-    <div>
-      <button id="aiBtn">Generate SAT Questions</button>
-    </div>
+    <h1>Daily Challenge</h1>
 
     <div id="result"></div>
     <div id="questions"></div>
 
   </div>
 
-  <script src="/play/generate-questions.js"></script>
-  <script src="/components/layout.js" defer></script>
-
-  <div id="header"></div>
   <div class="footer">
     Powered by Wikipedia API
   </div>
+
+  <script src="generate-questions.js"></script>
+  <script src="/components/layout.js" defer></script>
+
 </body>
 
 </html>
