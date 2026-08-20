@@ -38,7 +38,7 @@
     background: #0f1117 !important;
   }
 
-  html.darkmode body>*:not(header) {
+  html.darkmode body > *:not(header) {
     color: #e8eaf6;
   }
 
@@ -98,7 +98,7 @@
     justify-content: space-between;
     padding: 0 24px;
     z-index: 999;
-    box-shadow: 0 1px 3px rgba(79, 70, 229, .08), 0 1px 2px rgba(0, 0, 0, .06);
+    box-shadow: 0 1px 3px rgba(79, 70, 229, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
     font-family: 'Inter', system-ui, sans-serif;
     gap: 16px;
     transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -213,7 +213,7 @@
     background: var(--surface);
     color: var(--text-color);
     border: 2px solid var(--accent);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     transform: translateY(-200%);
     transition: transform 0.15s;
   }
@@ -241,8 +241,7 @@
   <div id="topbar">
     <div class="left">
       <a href="/" aria-label="Go to homepage">
-        <img id="logo" class="logo" src="/assets/logo.png"
-          alt="Scoreladder Homepage">
+        <img id="logo" class="logo" src="/assets/logo.png" alt="Scoreladder Homepage">
       </a>
     </div>
 
@@ -258,8 +257,12 @@
     </nav>
 
     <div class="right">
-      <button id="darkmode-toggle" type="button" aria-label="Toggle dark mode"
-        aria-pressed="false">
+      <button
+        id="darkmode-toggle"
+        type="button"
+        aria-label="Toggle dark mode"
+        aria-pressed="false"
+      >
         <span aria-hidden="true">🌙</span>
       </button>
 
