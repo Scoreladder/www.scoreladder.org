@@ -6,7 +6,7 @@ const timerDiv = document.getElementById("timer");
 
 const API_URL =
     "https://scoreladderai-testing.scyyebiz.workers.dev/";
-
+    
 let questions = [];
 let selectedAnswers = [];
 
