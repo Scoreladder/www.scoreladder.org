@@ -15,6 +15,7 @@ let challengeSubmitted = false;
 
 let timeRemaining = 660;
 let timerInterval = null;
+let challengeDeadline = 0;
 
 async function loadDailyQuestions() {
 
@@ -42,7 +43,7 @@ async function loadDailyQuestions() {
             );
         }
 
-        if (
+if (
             !data ||
             !Array.isArray(data.questions) ||
             data.questions.length === 0
@@ -51,9 +52,23 @@ async function loadDailyQuestions() {
                 "No valid questions were returned."
             );
         }
-
-        questions = data.questions.slice(0, 10);
-
+        const candidateQuestions = data.questions.slice(0, 10);
+        const hasValidQuestion = question => {
+            const choices = Array.isArray(question?.choices)
+                ? question.choices
+                : Object.values(question?.choices ?? {});
+            return choices.length === 4 &&
+                Number.isInteger(question.answer) &&
+                question.answer >= 0 &&
+                question.answer < choices.length;
+        };
+        if (
+            candidateQuestions.length !== 10 ||
+            !candidateQuestions.every(hasValidQuestion)
+        ) {
+            throw new Error("The daily challenge did not contain 10 valid questions.");
+        }
+        questions = candidateQuestions;
         selectedAnswers = new Array(
             questions.length
         ).fill(-1);
@@ -107,6 +122,7 @@ function startChallenge() {
     submitButton.disabled = true;
 
     timeRemaining = 660;
+    challengeDeadline = Date.now() + 660_000;
 
     updateTimer();
 
@@ -114,7 +130,10 @@ function startChallenge() {
 
     timerInterval = setInterval(() => {
 
-        timeRemaining--;
+    timeRemaining = Math.max(
+        0,
+        Math.ceil((challengeDeadline - Date.now()) / 1000)
+    );
 
         updateTimer();
 
