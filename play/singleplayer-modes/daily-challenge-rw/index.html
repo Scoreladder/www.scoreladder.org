@@ -4,8 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scoreladder Daily Challenge Mode Test</title>
+
+  <title>Scoreladder Daily Challenge</title>
+
   <link rel="stylesheet" href="/style.css">
+
   <style>
     body {
       margin: 0;
@@ -29,19 +32,15 @@
       opacity: 0.8;
     }
 
-    /* INPUT */
-    input {
-      width: 100%;
-      padding: 14px;
-      font-size: 18px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-color);
-      margin-bottom: 12px;
+    .challenge-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
     }
 
-    /* BUTTONS */
     button {
       padding: 12px 18px;
       font-size: 16px;
@@ -50,7 +49,6 @@
       cursor: pointer;
       background: var(--accent);
       color: white;
-      margin-right: 8px;
     }
 
     button:hover {
@@ -62,7 +60,22 @@
       cursor: not-allowed;
     }
 
-    /* CARD */
+    #timer {
+      position: fixed;
+      top: 75px;
+      right: 20px;
+      z-index: 9999;
+      font-size: 24px;
+      font-weight: bold;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      min-width: 75px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
     .card {
       margin-top: 20px;
       padding: 20px;
@@ -82,33 +95,134 @@
       margin-bottom: 10px;
     }
 
-    .abstract {
+    .passage {
       line-height: 1.6;
-      white-space: pre-wrap;
+      margin-bottom: 20px;
     }
 
-    /* QUESTIONS */
     .choice {
-      margin-top: 8px;
-      padding: 10px;
+      width: 100%;
+      display: block;
+      margin-top: 10px;
+      padding: 14px;
       border-radius: 8px;
+      background: var(--secondary-color);
+      color: var(--text-color);
+      border: 2px solid transparent;
+      text-align: left;
+      box-sizing: border-box;
+    }
+
+    .choice:hover {
+      background: var(--secondary-color);
+      border-color: var(--accent);
+    }
+
+    .choice.selected {
+      border-color: var(--accent);
       background: var(--secondary-color);
     }
 
-    .answer {
-      margin-top: 10px;
-      color: var(--accent);
+    .choice-letter {
+      font-weight: bold;
+      margin-right: 8px;
     }
 
-    /* FOOTER */
+    .question-number {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    #submitButton {
+      margin-top: 25px;
+      width: 100%;
+      font-size: 18px;
+      padding: 15px;
+    }
+
+    #result {
+      margin-bottom: 20px;
+    }
+
+    .result-card {
+      text-align: center;
+    }
+
+    .score {
+      font-size: 42px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .accuracy {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .result-question {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      background: var(--secondary-color);
+    }
+
+    .correct {
+      border-left: 5px solid #2ecc71;
+    }
+
+    .incorrect {
+      border-left: 5px solid #e74c3c;
+    }
+
     .footer {
       margin-top: 30px;
+      padding-bottom: 20px;
       font-size: 12px;
       opacity: 0.7;
       text-align: center;
     }
+
+    .question-result {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+
+        margin-bottom: 18px;
+        padding: 14px 16px;
+
+        border-radius: 10px;
+        border: 2px solid;
+        font-size: 16px;
+    }
+
+    .question-result strong {
+        font-size: 18px;
+    }
+
+    .question-result-correct {
+        border-color: #2ecc71;
+        background: rgba(46, 204, 113, 0.12);
+    }
+
+    .question-result-incorrect {
+        border-color: #e74c3c;
+        background: rgba(231, 76, 60, 0.12);
+    }
+
+    .choice-correct {
+        border-color: #2ecc71 !important;
+        background: rgba(46, 204, 113, 0.12) !important;
+    }
+
+    .choice-incorrect {
+        border-color: #e74c3c !important;
+        background: rgba(231, 76, 60, 0.12) !important;
+    }
   </style>
 </head>
+
 <body>
 
   <div id="header"></div>
@@ -117,8 +231,29 @@
 
     <h1>Daily Challenge</h1>
 
+    <div class="subtitle">
+      Answer 10 questions before time runs out.
+    </div>
+
+    <div class="challenge-controls">
+
+      <button id="startButton">
+        Start Challenge
+      </button>
+
+      <div id="timer">
+        11:00
+      </div>
+
+    </div>
+
     <div id="result"></div>
+
     <div id="questions"></div>
+
+    <button id="submitButton" disabled>
+      Submit Challenge
+    </button>
 
   </div>
 
