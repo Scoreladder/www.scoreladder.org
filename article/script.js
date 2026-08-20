@@ -11,7 +11,7 @@ let currentText = "";
    EVENTS
 ---------------------------- */
 searchBtn.addEventListener("click", searchArticle);
-aiBtn.addEventListener("click", generateAIQuestions);
+aiBtn.addEventListener("click", generateQuestions);
 
 /* ---------------------------
    SEARCH WIKIPEDIA
@@ -20,13 +20,16 @@ async function searchArticle() {
 
     const topic = topicInput.value.trim();
 
-    resultDiv.innerHTML = `<div class="card">Loading Wikipedia...</div>`;
+    resultDiv.innerHTML =
+        `<div class="card">Loading Wikipedia...</div>`;
+
     questionsDiv.innerHTML = "";
     currentText = "";
     aiBtn.disabled = true;
 
     if (!topic) {
-        resultDiv.innerHTML = `<div class="card">Enter a topic.</div>`;
+        resultDiv.innerHTML =
+            `<div class="card">Enter a topic.</div>`;
         return;
     }
 
@@ -43,7 +46,9 @@ async function searchArticle() {
             throw new Error("No Wikipedia page found.");
         }
 
-        const title = searchData.query.search[0].title;
+        const title =
+            searchData.query.search[0].title;
+
 
         // 2. GET HTML EXTRACT
         const htmlRes = await fetch(
@@ -52,16 +57,27 @@ async function searchArticle() {
 
         const htmlData = await htmlRes.json();
 
-        const htmlString = htmlData.parse?.text?.["*"];
+        const htmlString =
+            htmlData.parse?.text?.["*"];
 
         if (!htmlString) {
-            throw new Error("No Wikipedia content returned.");
+            throw new Error(
+                "No Wikipedia content returned."
+            );
         }
 
-        // 3. PARSE HTML
-        const doc = new DOMParser().parseFromString(htmlString, "text/html");
 
-        let paragraphs = Array.from(doc.querySelectorAll("p"))
+        // 3. PARSE HTML
+        const doc =
+            new DOMParser().parseFromString(
+                htmlString,
+                "text/html"
+            );
+
+        let paragraphs =
+            Array.from(
+                doc.querySelectorAll("p")
+            )
             .map(p => p.textContent.trim())
             .filter(p =>
                 p.length > 40 &&
@@ -71,34 +87,60 @@ async function searchArticle() {
             );
 
         if (paragraphs.length < 2) {
-            throw new Error("Not enough Wikipedia paragraphs found.");
+            throw new Error(
+                "Not enough Wikipedia paragraphs found."
+            );
         }
 
+
         // 4. PICK 2 RANDOM PARAGRAPHS
-        paragraphs = paragraphs.sort(() => Math.random() - 0.5);
-        const selected = paragraphs.slice(0, 2).join("\n\n");
+        paragraphs =
+            paragraphs.sort(
+                () => Math.random() - 0.5
+            );
+
+        const selected =
+            paragraphs
+                .slice(0, 2)
+                .join("\n\n");
 
         currentText = selected;
+
         aiBtn.disabled = false;
+
 
         // 5. BUILD LINK
         const link =
             `https://en.wikipedia.org/wiki/${title.replace(/ /g, "_")}`;
 
+
         // 6. RENDER
         resultDiv.innerHTML = `
             <div class="card">
-                <div class="title">${escapeHtml(title)}</div>
-                <div class="meta">Source: Wikipedia</div>
 
-                <div class="abstract">${escapeHtml(selected)}</div>
+                <div class="title">
+                    ${escapeHtml(title)}
+                </div>
+
+                <div class="meta">
+                    Source: Wikipedia
+                </div>
+
+                <div class="abstract">
+                    ${escapeHtml(selected)}
+                </div>
 
                 <br>
-                <a href="${link}" target="_blank">View Article</a>
+
+                <a href="${link}" target="_blank">
+                    View Article
+                </a>
+
             </div>
         `;
 
     } catch (err) {
+
         console.error(err);
 
         resultDiv.innerHTML = `
@@ -109,113 +151,235 @@ async function searchArticle() {
     }
 }
 
+
 /* ---------------------------
-   AI QUESTION GENERATION
+   QUESTION GENERATION
 ---------------------------- */
-async function generateAIQuestions() {
+async function generateQuestions() {
 
     if (!currentText) {
-        questionsDiv.innerHTML = `
-            <div class="card">Load an article first.</div>
-        `;
+
+        questionsDiv.innerHTML =
+            `<div class="card">
+                Load an article first.
+            </div>`;
+
         return;
     }
 
     questionsDiv.innerHTML =
-        `<div class="card">Generating SAT questions...</div>`;
+        `<div class="card">
+            Generating SAT questions...
+        </div>`;
 
     aiBtn.disabled = true;
 
     try {
 
-        const res = await fetch("https://ai.scoreladder.org", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                text: currentText
-            })
-        });
+        const res = await fetch(
+            "https://questions.scoreladder.org/generate",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    passage: currentText,
+                    amount: 6
+                })
+            }
+        );
+
 
         if (!res.ok) {
-            throw new Error(await res.text());
+
+            let errorText;
+
+            try {
+                errorText = await res.text();
+            } catch {
+                errorText = "Unknown API error";
+            }
+
+            throw new Error(errorText);
         }
 
-        const data = await res.json();
+
+        const data =
+            await res.json();
+
 
         renderQuestions(data);
 
     } catch (err) {
+
         console.error(err);
 
         questionsDiv.innerHTML = `
             <div class="card">
-                Error generating questions:<br><br>
+
+                Error generating questions:
+
+                <br><br>
+
                 ${escapeHtml(err.message)}
+
             </div>
         `;
+
     } finally {
+
         aiBtn.disabled = false;
     }
 }
+
 
 /* ---------------------------
    RENDER QUESTIONS
 ---------------------------- */
 function renderQuestions(data) {
 
-    if (!data.questions) {
+    if (
+        !data ||
+        !Array.isArray(data.questions)
+    ) {
+
         questionsDiv.innerHTML =
-            `<div class="card">Invalid AI response</div>`;
+            `<div class="card">
+                Invalid API response
+            </div>`;
+
         return;
     }
 
+
     questionsDiv.innerHTML = "";
+
 
     data.questions.forEach((q, i) => {
 
-        const shuffled = Object.values(q.choices)
-            .map((c, idx) => ({ text: c, idx }))
-            .sort(() => Math.random() - 0.5);
+        if (
+            !q.question ||
+            !Array.isArray(q.choices) ||
+            !q.answer
+        ) {
+            return;
+        }
 
-        const correct = shuffled.findIndex(c => c.idx === q.answer);
+
+        // Copy the choices so we don't
+        // modify the API response
+        const shuffled =
+            [...q.choices];
+
+
+        // Shuffle answers
+        shuffled.sort(
+            () => Math.random() - 0.5
+        );
+
+
+        // Find correct answer
+        const correctIndex =
+            shuffled.findIndex(
+                choice =>
+                    choice === q.answer
+            );
+
+
+        const letters =
+            ["A", "B", "C", "D"];
+
 
         questionsDiv.innerHTML += `
             <div class="card">
-                <h3>Question ${i + 1}</h3>
-                <p>${escapeHtml(q.question)}</p>
 
-                <div class="passage">
-                  ${escapeHtml(q.passage)
-                  }
+                <h3>
+                    Question ${i + 1}
+                </h3>
+
+
+                <p>
+                    ${escapeHtml(q.question)}
+                </p>
+
+
+                <div class="choices">
+
+                    ${shuffled.map(
+                        (choice, index) => `
+
+                        <div class="choice">
+
+                            <b>
+                                ${letters[index]}.
+                            </b>
+
+                            ${escapeHtml(choice)}
+
+                        </div>
+
+                    `
+                    ).join("")}
+
                 </div>
-                
-                <p>${escapeHtml(q.question)}</p>
 
-                ${shuffled.map((c, idx) => `
-                    <div class="choice">
-                        <b>${["A","B","C","D"][idx]}.</b>
-                        ${escapeHtml(c.text)}
-                    </div>
-                `).join("")}
 
                 <div class="answer">
-                    Answer: ${["A","B","C","D"][correct]}
+
+                    Answer:
+                    ${correctIndex >= 0
+                        ? letters[correctIndex]
+                        : "Unknown"}
+
                 </div>
+
             </div>
         `;
     });
+
+
+    if (!questionsDiv.innerHTML.trim()) {
+
+        questionsDiv.innerHTML =
+            `<div class="card">
+                No valid questions were returned.
+            </div>`;
+    }
 }
+
 
 /* ---------------------------
    SAFE HTML
 ---------------------------- */
 function escapeHtml(text) {
+
     return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 }
