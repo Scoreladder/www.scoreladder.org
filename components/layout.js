@@ -117,31 +117,49 @@ async function setupAuth() {
 
   if (!loginBtn || !profileBtn) return;
 
+  // Default state: logged out
+  loginBtn.classList.remove("hidden");
+  profileBtn.classList.add("hidden");
+
   try {
     const res = await fetch(`${API}/me`, {
       credentials: "include"
     });
 
-    if (!res.ok) return;
+    if (!res.ok) {
+      return;
+    }
 
     const user = await res.json();
 
-    loginBtn.style.display = "none";
+    // User is logged in
+    loginBtn.classList.add("hidden");
     profileBtn.classList.remove("hidden");
 
+    // Get Discord ID
     const discordId = user.id.replace("discord_", "");
 
-    profileBtn.src = user.avatar ?
-      `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png` :
-      "https://cdn.discordapp.com/embed/avatars/0.png";
+    // Set avatar
+    if (user.avatar) {
+      profileBtn.src =
+        `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png?size=128`;
+    } else {
+      profileBtn.src =
+        "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
 
+    profileBtn.alt =
+      `${user.display_name || user.username || "User"} profile picture`;
+
+    // Make the PFP clickable
     const profileLink = profileBtn.closest("a");
 
     if (profileLink) {
       profileLink.href = `${BASE_URL}/profile/`;
     }
+
   } catch (error) {
-    console.log("not logged in");
+    console.log("Not logged in:", error);
   }
 }
 

@@ -1,37 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Profile</title>
+
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="profile.css">
 </head>
 
 <body>
 
-<div class="banner" id="banner"></div>
+  <div id="header"></div>
 
-<div class="profile-card">
-  <img id="avatar" class="avatar" />
+  <div class="banner" id="banner"></div>
 
-  <h2 id="name"></h2>
-  <p id="id"></p>
+  <div class="profile-card">
+    <img id="avatar" class="avatar" alt="Profile picture">
 
-  <p id="bio" class="bio"></p>
+    <h2 id="name"></h2>
+    <p id="id"></p>
 
-  <div class="stats" id="stats"></div>
+    <p id="bio" class="bio"></p>
 
-  <div class="socials" id="socials"></div>
+    <div class="stats" id="stats"></div>
 
-  <button class="settings" onclick="goSettings()">Settings</button>
-  <button class="logout" onclick="logout()">Logout</button>
-</div>
+    <div class="socials" id="socials"></div>
 
-<script src="profile.js"></script>
+    <div class="profile-actions">
+      <button class="settings" onclick="goSettings()">Settings</button>
+      <button class="logout" onclick="logout()">Sign out</button>
+    </div>
+  </div>
 
-<script src="/components/layout.js"></script>
+  <div id="footer"></div>
 
-<div id="header"></div>
-<div id="footer"></div>
+  <script src="profile.js"></script>
+  <script src="/components/layout.js"></script>
 
 </body>
+
 </html>

@@ -1,82 +1,378 @@
+const Auth_API = "https://auth.scoreladder.org";
 
-  async function load() {
-  const res = await fetch("https://auth.scoreladder.org/me", { credentials: "include" });
+async function load() {
+  try {
+    const res = await fetch(`${Auth_API}/me`, {
+      credentials: "include"
+    });
 
-  if (!res.ok) {
+    if (!res.ok) {
+      location.href = "/";
+      return;
+    }
+
+    const user = await res.json();
+
+    console.log("Profile data loaded:", user);
+
+    renderProfile(user);
+
+  } catch (error) {
+    console.error("Failed to load profile:", error);
     location.href = "/";
-    return;
   }
-
-  const user = await res.json();
-
-  document.getElementById("name").innerText =
-    user.display_name || user.username;
-
-  document.getElementById("id").innerText = user.id;
-
-  document.getElementById("avatar").src =
-    user.avatar
-      ? `https://cdn.discordapp.com/avatars/${user.id.replace("discord_", "")}/${user.avatar}.png`
-      : "https://cdn.discordapp.com/embed/avatars/0.png";
-
-  renderProfile(user)
 }
 
 function renderProfile(user) {
-  document.getElementById("name").innerText =
-    user.display_name || user.username;
+  const profile = user.profile || {};
+  const stats = user.stats || {};
+  const questionTypeStats = user.question_type_stats || [];
 
-  document.getElementById("id").innerText = user.id;
+  // -------------------------
+  // BASIC PROFILE
+  // -------------------------
+
+  document.getElementById("name").innerText =
+    user.display_name || user.username || "User";
+
+  document.getElementById("id").innerText =
+    user.username
+      ? `@${user.username}`
+      : user.id;
 
   document.getElementById("bio").innerText =
-    user.profile.bio || "No bio yet.";
+    profile.bio || "No bio yet.";
 
-  // Banner
-  document.getElementById("banner").style.background =
-    user.profile.banner
-      ? `url(${user.profile.banner}) center/cover`
+
+  // -------------------------
+  // BANNER
+  // -------------------------
+
+  const banner = document.getElementById("banner");
+
+  banner.style.background =
+    profile.banner
+      ? `url("${profile.banner}") center/cover`
       : "linear-gradient(135deg, #5865F2, #3b3f9c)";
 
-  // Avatar
+
+  // -------------------------
+  // AVATAR
+  // -------------------------
+
+  const avatar = document.getElementById("avatar");
+
   const discordId = user.id.replace("discord_", "");
-  document.getElementById("avatar").src =
+
+  avatar.src =
     user.avatar
       ? `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`
       : "https://cdn.discordapp.com/embed/avatars/0.png";
 
-  // Stats
+
+  // -------------------------
+  // OVERALL ACCURACY
+  // -------------------------
+
+  const rwAnswered =
+    Number(stats.rw_questions_answered) || 0;
+
+  const rwCorrect =
+    Number(stats.rw_questions_correct) || 0;
+
+  const mathAnswered =
+    Number(stats.math_questions_answered) || 0;
+
+  const mathCorrect =
+    Number(stats.math_questions_correct) || 0;
+
+  const rwAccuracy =
+    rwAnswered > 0
+      ? Math.round((rwCorrect / rwAnswered) * 100)
+      : 0;
+
+  const mathAccuracy =
+    mathAnswered > 0
+      ? Math.round((mathCorrect / mathAnswered) * 100)
+      : 0;
+
+
+  // -------------------------
+  // OVERALL STATS
+  // -------------------------
+
   document.getElementById("stats").innerHTML = `
-    <div class="stat">Level<b>${user.stats.level}</b></div>
-    <div class="stat">Elo<b>${user.stats.elo}</b></div>
-    <div class="stat">Wins<b>${user.stats.wins}</b></div>
-    <div class="stat">Losses<b>${user.stats.losses}</b></div>
+    <div class="stat">
+      <span>RW Elo</span>
+      <b>${stats.rw_elo ?? 1200}</b>
+    </div>
+
+    <div class="stat">
+      <span>Math Elo</span>
+      <b>${stats.math_elo ?? 1200}</b>
+    </div>
+
+    <div class="stat">
+      <span>RW Wins</span>
+      <b>${stats.rw_wins ?? 0}</b>
+    </div>
+
+    <div class="stat">
+      <span>Math Wins</span>
+      <b>${stats.math_wins ?? 0}</b>
+    </div>
+
+    <div class="stat">
+      <span>RW Accuracy</span>
+      <b>${rwAccuracy}%</b>
+    </div>
+
+    <div class="stat">
+      <span>Math Accuracy</span>
+      <b>${mathAccuracy}%</b>
+    </div>
+
+    <div class="stat">
+      <span>Daily Challenge Streak</span>
+      <b>${stats.daily_streak ?? 0}</b>
+    </div>
   `;
 
-  // Socials
+
+  // -------------------------
+  // QUESTION TYPE STATS
+  // -------------------------
+
+  renderQuestionTypeStats(questionTypeStats);
+
+
+  // -------------------------
+  // SOCIAL LINKS
+  // -------------------------
+
   const socials = [];
 
-  if (user.profile.twitter)
-    socials.push(`<a href="${user.profile.twitter}">Twitter</a>`);
+  if (profile.twitter) {
+    socials.push(`
+      <a
+        href="${escapeAttribute(profile.twitter)}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Twitter
+      </a>
+    `);
+  }
 
-  if (user.profile.instagram)
-    socials.push(`<a href="${user.profile.instagram}">Instagram</a>`);
+  if (profile.instagram) {
+    socials.push(`
+      <a
+        href="${escapeAttribute(profile.instagram)}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Instagram
+      </a>
+    `);
+  }
 
-  if (user.profile.youtube)
-    socials.push(`<a href="${user.profile.youtube}">YouTube</a>`);
+  if (profile.youtube) {
+    socials.push(`
+      <a
+        href="${escapeAttribute(profile.youtube)}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        YouTube
+      </a>
+    `);
+  }
 
-  if (user.profile.website)
-    socials.push(`<a href="${user.profile.website}">Website</a>`);
+  if (profile.website) {
+    socials.push(`
+      <a
+        href="${escapeAttribute(profile.website)}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Website
+      </a>
+    `);
+  }
 
-  document.getElementById("socials").innerHTML = socials.join("");
+  document.getElementById("socials").innerHTML =
+    socials.join("");
 }
+
+
+function renderQuestionTypeStats(questionTypeStats) {
+
+  const existing =
+    document.getElementById("questionTypeStats");
+
+  if (existing) {
+    existing.remove();
+  }
+
+
+  const section =
+    document.createElement("div");
+
+  section.id = "questionTypeStats";
+  section.className = "question-type-stats";
+
+
+  const title =
+    document.createElement("h3");
+
+  title.innerText =
+    "Reading & Writing Performance";
+
+  section.appendChild(title);
+
+
+  const names = {
+    central_ideas:
+      "Central Ideas and Details",
+
+    command_evidence_textual:
+      "Command of Evidence (Textual)",
+
+    command_evidence_quantitative:
+      "Command of Evidence (Quantitative)",
+
+    inferences:
+      "Inferences",
+
+    words_in_context:
+      "Words in Context",
+
+    text_structure_purpose:
+      "Text Structure and Purpose",
+
+    cross_text_connections:
+      "Cross-Text Connections",
+
+    rhetorical_synthesis:
+      "Rhetorical Synthesis",
+
+    transitions:
+      "Transitions",
+
+    boundaries:
+      "Boundaries",
+
+    form_structure_sense:
+      "Form, Structure, and Sense"
+  };
+
+
+  // Create a row for every question type
+  for (const stat of questionTypeStats) {
+
+    const answered =
+      Number(stat.questions_answered) || 0;
+
+    const correct =
+      Number(stat.questions_correct) || 0;
+
+    const accuracy =
+      answered > 0
+        ? Math.round((correct / answered) * 100)
+        : 0;
+
+
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "question-type-stat";
+
+
+    const name =
+      document.createElement("span");
+
+    name.className =
+      "question-type-name";
+
+    name.innerText =
+      names[stat.question_type] ||
+      stat.question_type;
+
+
+    const accuracyElement =
+      document.createElement("span");
+
+    accuracyElement.className =
+      "question-type-accuracy";
+
+    accuracyElement.innerText =
+      `${accuracy}%`;
+
+
+    const count =
+      document.createElement("span");
+
+    count.className =
+      "question-type-count";
+
+    count.innerText =
+      `${correct}/${answered}`;
+
+
+    row.appendChild(name);
+    row.appendChild(accuracyElement);
+    row.appendChild(count);
+
+    section.appendChild(row);
+  }
+
+
+  if (questionTypeStats.length === 0) {
+
+    const empty =
+      document.createElement("p");
+
+    empty.innerText =
+      "No Reading & Writing data yet.";
+
+    section.appendChild(empty);
+  }
+
+
+  const stats =
+    document.getElementById("stats");
+
+  stats.insertAdjacentElement(
+    "afterend",
+    section
+  );
+}
+
+
+function escapeAttribute(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 
 function goSettings() {
   location.href = "/settings";
 }
 
+
 async function logout() {
-  await fetch("https://auth.scoreladder.org/logout", { credentials: "include" });
-  location.href = "/";
+  try {
+    await fetch(`${Auth_API}/logout`, {
+      credentials: "include"
+    });
+  } finally {
+    location.href = "/";
+  }
 }
+
 
 load();

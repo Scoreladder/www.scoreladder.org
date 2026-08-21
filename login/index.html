@@ -3,145 +3,282 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scoreladder Login</title>
+  <title>Login — Scoreladder</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--base-color);
-      color: var(--text-color);
+    /* ── Page shell ───────────────────────────────────────────── */
+    .login-page {
+      min-height: calc(100vh - var(--topbar-height));
       display: flex;
-      justify-content: center;
       align-items: center;
-      height: 100vh;
+      justify-content: center;
+      padding: 40px 16px;
+      /* subtle radial glow behind the card */
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%,
+          rgba(79, 70, 229, .08) 0%,
+          transparent 70%),
+        var(--base-color);
     }
 
-    .card {
+    /* ── Card ─────────────────────────────────────────────────── */
+    .login-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 30px;
-      border-radius: 12px;
-      width: 320px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-
-    h1 {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-
-    button, a.button {
-      display: inline-block;
+      border-radius: var(--radius-lg);
+      padding: 48px 40px 40px;
       width: 100%;
-      padding: 12px;
-      margin-left: -12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: none;
+      max-width: 400px;
       text-align: center;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
     }
 
-    .discord {
-      background: #5865F2;
-      color: white;
+    /* accent stripe along the top edge */
+    .login-card::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     }
 
-    .logout {
-      background: #ff4d4d;
-      color: white;
+    /* ── Logo / heading area ──────────────────────────────────── */
+    .login-logo {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 20px;
+      display: block;
     }
 
-    .user-box {
-      margin-top: 15px;
-      padding: 10px;
-      background: var(--secondary-color);
-      border-radius: 8px;
+    .login-card h1 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-color);
+      margin-bottom: 6px;
+    }
+
+    .login-card .subtitle {
       font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
     }
 
-    img.avatar {
-      width: 64px;
-      height: 64px;
+    /* ── Discord button ───────────────────────────────────────── */
+    .btn-discord {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: #5865F2;
+      color: #ffffff;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+      box-shadow: 0 4px 14px rgba(88, 101, 242, .40);
+    }
+
+    .btn-discord:hover {
+      background: #4752c4;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(88, 101, 242, .50);
+      text-decoration: none;
+      color: #ffffff;
+    }
+
+    .btn-discord svg {
+      flex-shrink: 0;
+    }
+
+    /* ── Divider ──────────────────────────────────────────────── */
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .login-divider::before,
+    .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── User box (logged-in state) ───────────────────────────── */
+    .user-box {
+      background: var(--primary-color);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 16px;
+      margin-bottom: 24px;
+    }
+
+    .user-box .avatar {
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      margin-bottom: 10px;
+      border: 3px solid var(--accent);
+      object-fit: cover;
+      margin-bottom: 12px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .user-box .user-name {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 2px;
+    }
+
+    .user-box .user-email {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Logged-in action buttons ─────────────────────────────── */
+    .login-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-profile {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, .35);
+    }
+
+    .btn-profile:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, .45);
+      text-decoration: none;
+      color: #ffffff;
+    }
+
+    .btn-logout {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 11px 20px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--danger);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.12s;
+    }
+
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, .08);
+      border-color: var(--danger);
+      transform: translateY(-1px);
+    }
+
+    /* ── Footer note ──────────────────────────────────────────── */
+    .login-note {
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .login-note a {
+      color: var(--accent);
     }
   </style>
 </head>
 
 <body>
-  <div class="card">
+  <div id="header"></div>
 
-    <!-- NOT LOGGED IN -->
-    <div id="loginSection">
-      <h1>Login to Scoreladder</h1>
+  <main class="login-page" id="main-content">
+    <div class="login-card">
 
-      <a class="button discord"
-         href="https://discord.com/oauth2/authorize?client_id=1511967100485238955&response_type=code&redirect_uri=https%3A%2F%2Fauth.scoreladder.org%2Fauth%2Fdiscord%2Fcallback&scope=identify%20email">
-        Continue with Discord
-      </a>
-    </div>
+      <img src="/assets/logo.png" alt="Scoreladder logo" class="login-logo" />
 
-    <!-- LOGGED IN -->
-    <div id="userSection" class="hidden">
-      <h1>Welcome back</h1>
+      <!-- NOT LOGGED IN -->
+      <div id="loginSection">
+        <h1>Welcome to Scoreladder</h1>
+        <p class="subtitle">Sign in to track your scores and climb the ladder.</p>
 
-      <div class="user-box">
-        <img id="avatar" class="avatar" />
-        <div id="username"></div>
-        <div id="email"></div>
+        <a class="btn-discord"
+           href="https://discord.com/oauth2/authorize?client_id=1511967100485238955&response_type=code&redirect_uri=https%3A%2F%2Fauth.scoreladder.org%2Fauth%2Fdiscord%2Fcallback&scope=identify%20email"
+           aria-label="Continue with Discord">
+          <!-- Discord logo mark -->
+          <svg width="22" height="16" viewBox="0 0 71 55" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60.1 4.9A58.5 58.5 0 0 0 45.6.7a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54 54 0 0 0-16.2 0A37.7 37.7 0 0 0 25.6.8a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.9 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.6a.2.2 0 0 0 .1.2 58.8 58.8 0 0 0 17.7 9 .2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.7 38.7 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.9a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.9a.2.2 0 0 1 0 .4 36 36 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.1 47.1 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-9 .2.2 0 0 0 .1-.2C72.9 29 69.4 16.2 60.2 5a.2.2 0 0 0-.1-.1ZM23.7 36a6.7 6.7 0 0 1-6.3-7 6.7 6.7 0 0 1 6.3-7 6.7 6.7 0 0 1 6.3 7 6.7 6.7 0 0 1-6.3 7Zm23.6 0a6.7 6.7 0 0 1-6.3-7 6.7 6.7 0 0 1 6.3-7 6.7 6.7 0 0 1 6.3 7 6.7 6.7 0 0 1-6.3 7Z" fill="currentColor"/>
+          </svg>
+          Continue with Discord
+        </a>
+
+        <p class="login-note">
+          By signing in you agree to our
+          <a href="/privacy/">Privacy Policy</a>.
+        </p>
       </div>
 
-      <button class="logout" onclick="logout()">Logout</button>
+      <!-- LOGGED IN -->
+      <div id="userSection" class="hidden">
+        <h1>Welcome back</h1>
+        <p class="subtitle">You're already signed in.</p>
+
+        <div class="user-box">
+          <img id="avatar" class="avatar" alt="Your profile picture" />
+          <div id="username" class="user-name"></div>
+          <div id="email" class="user-email"></div>
+        </div>
+
+        <div class="login-actions">
+          <a href="/profile/" class="btn-profile">Go to my Profile</a>
+          <button class="btn-logout" onclick="logout()">Sign out</button>
+        </div>
+      </div>
+
     </div>
+  </main>
 
-  </div>
+  <div id="footer"></div>
 
-  <script>
-    const API = "https://auth.scoreladder.org";
-
-    async function loadUser() {
-      try {
-        const res = await fetch(`${API}/me`, {
-          credentials: "include"
-        });
-
-        if (!res.ok) return;
-
-        const user = await res.json();
-
-        document.getElementById("loginSection").classList.add("hidden");
-        document.getElementById("userSection").classList.remove("hidden");
-
-        document.getElementById("username").innerText =
-          user.display_name || user.username;
-
-        document.getElementById("email").innerText =
-          user.email || "";
-
-        document.getElementById("avatar").src =
-          user.avatar
-            ? `https://cdn.discordapp.com/avatars/${user.id.replace("discord_", "")}/${user.avatar}.png`
-            : "https://cdn.discordapp.com/embed/avatars/0.png";
-
-      } catch (e) {
-        console.log("Not logged in");
-      }
-    }
-
-    async function logout() {
-      await fetch(`${API}/logout`, {
-        credentials: "include"
-      });
-
-      location.reload();
-    }
-
-    loadUser();
-  </script>
-
+  <script src="login.js"></script>
+  <script src="/components/layout.js"></script>
 </body>
 </html>

@@ -1,143 +1,282 @@
-:root {
-  --bg:      #f4f6fb;
-  --surface: #ffffff;
-  --card:    #eef1f8;
-  --border:  #d4d9ec;
-  --text:    #1a1d2e;
-  --muted:   #5a6280;
-  --accent:  #4f46e5;
-  --accent2: #06b6d4;
-  --accent-soft: #ede9fe;
-  --success: #10b981;
-  --danger:  #ef4444;
+/* ================================================================
+   Profile page — uses global design tokens from /style.css
+   ================================================================ */
+
+/* ── Page shell ─────────────────────────────────────────────────── */
+/* font-family, background, color, and padding-top are all inherited
+   from the global body rule in style.css — we only add what's needed
+   to center the profile card layout.                                 */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 60px;
 }
 
-.darkmode {
-  --bg:      #0f1117;
-  --surface: #1a2035;
-  --card:    #161b27;
-  --border:  #2a3350;
-  --text:    #e8eaf6;
-  --muted:   #8892b0;
-  --accent:  #6d63ff;
-  --accent2: #22d3ee;
-  --accent-soft: #2d2b6e;
-  --success: #34d399;
-  --danger:  #f87171;
-}
-
+/* ── Banner ─────────────────────────────────────────────────────── */
 .banner {
   width: 100%;
-  height: 140px;
-  background: linear-gradient(135deg, #5865F2, #3b3f9c);
-  border-radius: 16px;
-  margin-bottom: -60px;
+  max-width: 520px;
+  height: 160px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  /* profile card overlaps the bottom of the banner */
+  margin-bottom: -64px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
 }
 
+/* ── Profile card ───────────────────────────────────────────────── */
 .profile-card {
-  margin-top: -40px;
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 0 32px 32px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  position: relative;
+}
+
+/* avatar sits at the very top, overlapping the banner */
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid var(--surface);
+  outline: 3px solid var(--accent);
+  object-fit: cover;
+  margin-top: -50px;   /* half of avatar height */
+  margin-bottom: 14px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--secondary-color);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Name / handle / bio ────────────────────────────────────────── */
+.profile-card h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-color);
+  margin-bottom: 2px;
+}
+
+#id {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 10px;
 }
 
 .bio {
-  font-size: 13px;
-  opacity: 0.8;
-  margin: 10px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0 0 24px;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.socials {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-.socials a {
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  text-decoration: none;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  padding-top: 70px;
-  padding-bottom: 50px;
-  display: flex;
-  justify-content: center;
-}
-
-.profile-card {
-  width: 360px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-  text-align: center;
-}
-
-.avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  border: 3px solid var(--accent);
-  margin-bottom: 12px;
-}
-
+/* ── Stats grid ─────────────────────────────────────────────────── */
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin: 20px 0;
+  margin: 0 0 20px;
+  text-align: left;
 }
 
 .stat {
-  background: var(--card);
+  background: var(--primary-color);
   border: 1px solid var(--border);
-  padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
   font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.stat:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .stat b {
   display: block;
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
   margin-top: 4px;
+  font-family: var(--font-display);
+}
+
+/* ── Question-type stats section ────────────────────────────────── */
+.question-type-stats {
+  background: var(--primary-color);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin: 0 0 20px;
+  text-align: left;
+}
+
+.question-type-stats h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.question-type-stat {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.question-type-stat:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.question-type-name {
+  color: var(--text-color);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.question-type-accuracy {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  white-space: nowrap;
+  font-family: var(--font-display);
+}
+
+.question-type-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  background: var(--secondary-color);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* empty state message */
+.question-type-stats > p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Social links ───────────────────────────────────────────────── */
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.socials a {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: border-color 0.15s, transform 0.12s;
+}
+
+.socials a:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  text-decoration: none;
   color: var(--accent);
 }
 
-button {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.15s;
-  margin-top: 10px;
+/* ── Action buttons ─────────────────────────────────────────────── */
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
+/* settings uses the shared secondary style */
 .settings {
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--border);
+  width: 100%;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--primary-color);
+  color: var(--text-color);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
 }
 
 .settings:hover {
-  background: var(--border);
+  background: var(--secondary-color);
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
+/* logout uses danger colour as a ghost */
 .logout {
-  background: var(--danger);
-  color: white;
+  width: 100%;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--danger);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
 }
 
 .logout:hover {
-  background: #dc2626;
+  background: rgba(239, 68, 68, .08);
+  border-color: var(--danger);
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .banner,
+  .profile-card {
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .banner {
+    border-radius: 0;
+  }
+
+  .profile-card {
+    padding: 0 20px 28px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
 }
