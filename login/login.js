@@ -60,7 +60,12 @@ async function loadUser() {
       window.location.pathname === "/login" ||
       window.location.pathname === "/login/"
     ) {
-      window.location.href = "/profile";
+      const profileUrl = `${window.location.origin}/profile/`;
+
+      console.log("Current URL:", window.location.href);
+      console.log("Redirecting to:", profileUrl);
+
+      window.location.href = profileUrl;
       return user;
     }
 

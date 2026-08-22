@@ -1,39 +1,127 @@
 const Auth_API = "https://auth.scoreladder.org";
 
+const LOCAL_SESSION_KEY = "scoreladder_session";
+
+
+// ============================================================
+// GET LOCAL SESSION
+// ============================================================
+
+function getSessionId() {
+  const params = new URLSearchParams(window.location.search);
+
+  // If the Worker just redirected us here with ?session=...
+  const urlSession = params.get("session");
+
+  if (urlSession) {
+    // Save it so the session survives navigation to other pages.
+    sessionStorage.setItem(
+      LOCAL_SESSION_KEY,
+      urlSession
+    );
+
+    return urlSession;
+  }
+
+  // Otherwise use the previously saved local session.
+  return sessionStorage.getItem(
+    LOCAL_SESSION_KEY
+  );
+}
+
+
+// ============================================================
+// LOAD PROFILE
+// ============================================================
+
 async function load() {
   try {
-    const res = await fetch(`${Auth_API}/me`, {
+    const sessionId = getSessionId();
+
+    console.log(
+      "Profile session:",
+      sessionId ? "found" : "missing"
+    );
+
+    if (!sessionId) {
+      console.error(
+        "No Scoreladder session found."
+      );
+
+      location.href = "/";
+      return;
+    }
+
+    // IMPORTANT:
+    // Local development authentication uses
+    // /me?session=SESSION_ID
+    //
+    // The Worker does NOT read Authorization: Bearer ...
+    const meUrl =
+      `${Auth_API}/me?session=${encodeURIComponent(sessionId)}`;
+
+    const res = await fetch(meUrl, {
       credentials: "include"
     });
 
     if (!res.ok) {
+      console.error(
+        "Authentication failed:",
+        res.status
+      );
+
+      // The session may actually be expired/invalid.
+      sessionStorage.removeItem(
+        LOCAL_SESSION_KEY
+      );
+
       location.href = "/";
       return;
     }
 
     const user = await res.json();
 
-    console.log("Profile data loaded:", user);
+    console.log(
+      "Profile data loaded:",
+      user
+    );
 
     renderProfile(user);
 
   } catch (error) {
-    console.error("Failed to load profile:", error);
+    console.error(
+      "Failed to load profile:",
+      error
+    );
+
     location.href = "/";
   }
 }
 
+
+// ============================================================
+// RENDER PROFILE
+// ============================================================
+
 function renderProfile(user) {
-  const profile = user.profile || {};
-  const stats = user.stats || {};
-  const questionTypeStats = user.question_type_stats || [];
+  const profile =
+    user.profile || {};
+
+  const stats =
+    user.stats || {};
+
+  const questionTypeStats =
+    user.question_type_stats || [];
+
 
   // -------------------------
   // BASIC PROFILE
   // -------------------------
 
   document.getElementById("name").innerText =
-    user.display_name || user.username || "User";
+    user.display_name ||
+    user.username ||
+    "User";
 
   document.getElementById("id").innerText =
     user.username
@@ -41,14 +129,16 @@ function renderProfile(user) {
       : user.id;
 
   document.getElementById("bio").innerText =
-    profile.bio || "No bio yet.";
+    profile.bio ||
+    "No bio yet.";
 
 
   // -------------------------
   // BANNER
   // -------------------------
 
-  const banner = document.getElementById("banner");
+  const banner =
+    document.getElementById("banner");
 
   banner.style.background =
     profile.banner
@@ -60,9 +150,14 @@ function renderProfile(user) {
   // AVATAR
   // -------------------------
 
-  const avatar = document.getElementById("avatar");
+  const avatar =
+    document.getElementById("avatar");
 
-  const discordId = user.id.replace("discord_", "");
+  const discordId =
+    user.id.replace(
+      "discord_",
+      ""
+    );
 
   avatar.src =
     user.avatar
@@ -75,25 +170,37 @@ function renderProfile(user) {
   // -------------------------
 
   const rwAnswered =
-    Number(stats.rw_questions_answered) || 0;
+    Number(
+      stats.rw_questions_answered
+    ) || 0;
 
   const rwCorrect =
-    Number(stats.rw_questions_correct) || 0;
+    Number(
+      stats.rw_questions_correct
+    ) || 0;
 
   const mathAnswered =
-    Number(stats.math_questions_answered) || 0;
+    Number(
+      stats.math_questions_answered
+    ) || 0;
 
   const mathCorrect =
-    Number(stats.math_questions_correct) || 0;
+    Number(
+      stats.math_questions_correct
+    ) || 0;
 
   const rwAccuracy =
     rwAnswered > 0
-      ? Math.round((rwCorrect / rwAnswered) * 100)
+      ? Math.round(
+          (rwCorrect / rwAnswered) * 100
+        )
       : 0;
 
   const mathAccuracy =
     mathAnswered > 0
-      ? Math.round((mathCorrect / mathAnswered) * 100)
+      ? Math.round(
+          (mathCorrect / mathAnswered) * 100
+        )
       : 0;
 
 
@@ -101,7 +208,9 @@ function renderProfile(user) {
   // OVERALL STATS
   // -------------------------
 
-  document.getElementById("stats").innerHTML = `
+  document.getElementById(
+    "stats"
+  ).innerHTML = `
     <div class="stat">
       <span>RW Elo</span>
       <b>${stats.rw_elo ?? 1200}</b>
@@ -143,7 +252,9 @@ function renderProfile(user) {
   // QUESTION TYPE STATS
   // -------------------------
 
-  renderQuestionTypeStats(questionTypeStats);
+  renderQuestionTypeStats(
+    questionTypeStats
+  );
 
 
   // -------------------------
@@ -200,26 +311,36 @@ function renderProfile(user) {
     `);
   }
 
-  document.getElementById("socials").innerHTML =
-    socials.join("");
+  document.getElementById(
+    "socials"
+  ).innerHTML = socials.join("");
 }
 
 
-function renderQuestionTypeStats(questionTypeStats) {
+// ============================================================
+// QUESTION TYPE STATS
+// ============================================================
 
+function renderQuestionTypeStats(
+  questionTypeStats
+) {
   const existing =
-    document.getElementById("questionTypeStats");
+    document.getElementById(
+      "questionTypeStats"
+    );
 
   if (existing) {
     existing.remove();
   }
 
-
   const section =
     document.createElement("div");
 
-  section.id = "questionTypeStats";
-  section.className = "question-type-stats";
+  section.id =
+    "questionTypeStats";
+
+  section.className =
+    "question-type-stats";
 
 
   const title =
@@ -267,18 +388,22 @@ function renderQuestionTypeStats(questionTypeStats) {
   };
 
 
-  // Create a row for every question type
   for (const stat of questionTypeStats) {
-
     const answered =
-      Number(stat.questions_answered) || 0;
+      Number(
+        stat.questions_answered
+      ) || 0;
 
     const correct =
-      Number(stat.questions_correct) || 0;
+      Number(
+        stat.questions_correct
+      ) || 0;
 
     const accuracy =
       answered > 0
-        ? Math.round((correct / answered) * 100)
+        ? Math.round(
+            (correct / answered) * 100
+          )
         : 0;
 
 
@@ -321,15 +446,18 @@ function renderQuestionTypeStats(questionTypeStats) {
 
 
     row.appendChild(name);
-    row.appendChild(accuracyElement);
+    row.appendChild(
+      accuracyElement
+    );
     row.appendChild(count);
 
     section.appendChild(row);
   }
 
 
-  if (questionTypeStats.length === 0) {
-
+  if (
+    questionTypeStats.length === 0
+  ) {
     const empty =
       document.createElement("p");
 
@@ -341,7 +469,9 @@ function renderQuestionTypeStats(questionTypeStats) {
 
 
   const stats =
-    document.getElementById("stats");
+    document.getElementById(
+      "stats"
+    );
 
   stats.insertAdjacentElement(
     "afterend",
@@ -349,6 +479,10 @@ function renderQuestionTypeStats(questionTypeStats) {
   );
 }
 
+
+// ============================================================
+// HELPERS
+// ============================================================
 
 function escapeAttribute(value) {
   return String(value)
@@ -359,20 +493,55 @@ function escapeAttribute(value) {
 }
 
 
+// ============================================================
+// SETTINGS
+// ============================================================
+
 function goSettings() {
-  location.href = "/settings";
+  location.href = "/settings/";
 }
 
 
+// ============================================================
+// LOGOUT
+// ============================================================
+
 async function logout() {
   try {
-    await fetch(`${Auth_API}/logout`, {
-      credentials: "include"
-    });
+    const sessionId =
+      sessionStorage.getItem(
+        LOCAL_SESSION_KEY
+      );
+
+    if (sessionId) {
+      await fetch(
+        `${Auth_API}/logout?session=${encodeURIComponent(sessionId)}`,
+        {
+          credentials: "include"
+        }
+      );
+    } else {
+      await fetch(
+        `${Auth_API}/logout`,
+        {
+          credentials: "include"
+        }
+      );
+    }
+
   } finally {
+    // Delete local development session.
+    sessionStorage.removeItem(
+      LOCAL_SESSION_KEY
+    );
+
     location.href = "/";
   }
 }
 
+
+// ============================================================
+// START
+// ============================================================
 
 load();

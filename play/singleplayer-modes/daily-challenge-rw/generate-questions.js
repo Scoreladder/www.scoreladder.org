@@ -6,12 +6,14 @@ const timerDiv = document.getElementById("timer");
 
 // AI worker: generates/serves the daily questions
 const QUESTION_API_URL =
-    "https://scoreladderai-testing.scyye.workers.dev/";
+    "https://dailyai-rw.scoreladder.org/";
 
 // Auth API: handles sessions, users, stats, and score submission
 // IMPORTANT: This MUST match the hostname that sets the session cookie.
 const AUTH_API_URL =
     "https://auth.scoreladder.org";
+const LOCAL_SESSION_KEY =
+    "scoreladder_session";
 
 let questions = [];
 let selectedAnswers = [];
@@ -83,30 +85,98 @@ function normalizeTopic(topic) {
 
 async function getCurrentUser() {
     try {
-        const response = await fetch(
-            `${AUTH_API_URL}/me`,
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        // First check whether the auth worker
+        // redirected us here with ?session=...
+        const urlSession =
+            params.get("session");
+
+        let sessionId = urlSession;
+
+        // Save the session so it survives navigation.
+        if (urlSession) {
+            try {
+                sessionStorage.setItem(
+                    LOCAL_SESSION_KEY,
+                    urlSession
+                );
+            } catch (error) {
+                console.error(
+                    "Failed to save session:",
+                    error
+                );
+            }
+        }
+
+        // Otherwise use the session saved previously.
+        if (!sessionId) {
+            try {
+                sessionId =
+                    sessionStorage.getItem(
+                        LOCAL_SESSION_KEY
+                    );
+            } catch (error) {
+                console.error(
+                    "Failed to read session:",
+                    error
+                );
+            }
+        }
+
+        // Build the authentication request.
+        let meUrl =
+            `${AUTH_API_URL}/me`;
+
+        if (sessionId) {
+            meUrl =
+                `${AUTH_API_URL}/me?session=${encodeURIComponent(
+                    sessionId
+                )}`;
+        }
+
+        console.log(
+            "Checking authentication:",
             {
-                method: "GET",
-                credentials: "include",
-                cache: "no-store"
+                sessionFound: Boolean(sessionId),
+                usingSessionParameter: Boolean(sessionId),
+                meUrl
             }
         );
 
-        const text = await response.text();
+        const response =
+            await fetch(
+                meUrl,
+                {
+                    method: "GET",
+                    credentials: "include",
+                    cache: "no-store"
+                }
+            );
+
+        const text =
+            await response.text();
 
         let data;
 
         try {
-            data = JSON.parse(text);
+            data =
+                JSON.parse(text);
         } catch {
             data = null;
         }
 
-        console.log("Authentication check:", {
-            status: response.status,
-            ok: response.ok,
-            data
-        });
+        console.log(
+            "Authentication check:",
+            {
+                status: response.status,
+                ok: response.ok,
+                data
+            }
+        );
 
         if (!response.ok) {
             return null;
@@ -728,19 +798,54 @@ async function submitChallenge(
      */
 
     try {
+        let sessionId = null;
+
+        try {
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+            sessionId =
+                params.get("session") ||
+                sessionStorage.getItem(
+                    LOCAL_SESSION_KEY
+                );
+        } catch (error) {
+            console.error(
+                "Failed to retrieve session:",
+                error
+            );
+        }
+
+        let saveUrl =
+            `${AUTH_API_URL}/daily-complete`;
+
+        if (sessionId) {
+            saveUrl =
+                `${AUTH_API_URL}/daily-complete?session=${encodeURIComponent(
+                    sessionId
+                )}`;
+        }
+
+        console.log(
+            "Submitting daily challenge:",
+            {
+                sessionFound: Boolean(sessionId),
+                saveUrl
+            }
+        );
+
         const saveResponse =
             await fetch(
-                `${AUTH_API_URL}/daily-complete`,
+                saveUrl,
                 {
                     method: "POST",
-
                     credentials: "include",
-
                     headers: {
                         "Content-Type":
                             "application/json"
                     },
-
                     body:
                         JSON.stringify({
                             results

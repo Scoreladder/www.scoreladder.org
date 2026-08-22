@@ -28,7 +28,7 @@ async function save() {
 }
 
 function back() {
-  location.href = "/profile";
+  location.href = "/profile/";
 }
 
 load();

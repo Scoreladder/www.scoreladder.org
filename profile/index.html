@@ -8,37 +8,61 @@
   <title>Profile</title>
 
   <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="profile.css">
+  <link rel="stylesheet" href="/profile/profile.css">
 </head>
 
 <body>
 
-  <div id="header"></div>
 
-  <div class="banner" id="banner"></div>
+  <main class="profile-page">
 
-  <div class="profile-card">
-    <img id="avatar" class="avatar" alt="Profile picture">
+    <div class="banner" id="banner"></div>
 
-    <h2 id="name"></h2>
-    <p id="id"></p>
+    <div class="profile-card">
 
-    <p id="bio" class="bio"></p>
+      <img
+        id="avatar"
+        class="avatar"
+        alt="Profile picture"
+      >
 
-    <div class="stats" id="stats"></div>
+      <h2 id="name"></h2>
 
-    <div class="socials" id="socials"></div>
+      <p id="id"></p>
 
-    <div class="profile-actions">
-      <button class="settings" onclick="goSettings()">Settings</button>
-      <button class="logout" onclick="logout()">Sign out</button>
+      <p id="bio" class="bio"></p>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="socials" id="socials"></div>
+
+      <div class="profile-actions">
+        <button
+          class="settings"
+          type="button"
+          onclick="goSettings()"
+        >
+          Settings
+        </button>
+
+        <button
+          class="logout"
+          type="button"
+          onclick="logout()"
+        >
+          Sign out
+        </button>
+      </div>
+
     </div>
-  </div>
 
+  </main>
+
+  <div id="header"></div>
   <div id="footer"></div>
 
-  <script src="profile.js"></script>
   <script src="/components/layout.js"></script>
+  <script src="/profile/profile.js"></script>
 
 </body>
 
