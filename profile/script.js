@@ -43,25 +43,16 @@ async function load() {
       sessionId ? "found" : "missing"
     );
 
-    if (!sessionId) {
-      console.error(
-        "No Scoreladder session found."
-      );
+    let meUrl = `${Auth_API}/me`;
 
-      location.href = "/";
-      return;
+    if (sessionId) {
+      meUrl =
+        `${Auth_API}/me?session=${encodeURIComponent(sessionId)}`;
     }
 
-    // IMPORTANT:
-    // Local development authentication uses
-    // /me?session=SESSION_ID
-    //
-    // The Worker does NOT read Authorization: Bearer ...
-    const meUrl =
-      `${Auth_API}/me?session=${encodeURIComponent(sessionId)}`;
-
     const res = await fetch(meUrl, {
-      credentials: "include"
+      credentials: "include",
+      cache: "no-store"
     });
 
     if (!res.ok) {
@@ -70,10 +61,11 @@ async function load() {
         res.status
       );
 
-      // The session may actually be expired/invalid.
-      sessionStorage.removeItem(
-        LOCAL_SESSION_KEY
-      );
+      if (sessionId) {
+        sessionStorage.removeItem(
+          LOCAL_SESSION_KEY
+        );
+      }
 
       location.href = "/";
       return;
