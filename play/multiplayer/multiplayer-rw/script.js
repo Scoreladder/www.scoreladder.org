@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8787";
+const API = window.location.origin;
 
 const startMatchButton =
   document.getElementById("startMatchButton");
@@ -241,7 +241,10 @@ async function startMatchmaking() {
 
   try {
     const response = await fetch(
-      `${API}/matchmake?session=${encodeURIComponent(sessionId)}`
+      `${API}/matchmake`,
+        {
+          headers: {  'Authorization': `Bearer ${sessionId}`
+          }}
     );
 
     const data = await response.json();
