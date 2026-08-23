@@ -20,18 +20,13 @@ body {
 #startMatchButton {
   display: block;
   margin: 0 auto 30px;
-
   padding: 14px 30px;
-
   border: none;
   border-radius: 8px;
-
   background: #222;
   color: white;
-
   font-size: 18px;
   font-weight: 600;
-
   cursor: pointer;
 }
 
@@ -50,7 +45,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 40px;
-
   margin-bottom: 25px;
 }
 
@@ -59,11 +53,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-
   min-width: 150px;
-
   padding: 18px;
-
   background: white;
   border-radius: 10px;
   border: 1px solid #ddd;
@@ -90,7 +81,6 @@ body {
 #status {
   text-align: center;
   margin: 20px 0;
-
   font-size: 17px;
   font-weight: 500;
 }
@@ -98,10 +88,8 @@ body {
 /* Timer */
 #timer {
   text-align: center;
-
   font-size: 36px;
   font-weight: bold;
-
   margin: 20px 0 30px;
 }
 
@@ -114,9 +102,7 @@ body {
 
 .card {
   background: white;
-
   padding: 22px;
-
   border-radius: 10px;
   border: 1px solid #ddd;
 }
@@ -135,18 +121,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-
   margin-top: 18px;
 }
 
 .choices label {
   display: block;
-
   padding: 12px 15px;
-
   border: 1px solid #ccc;
   border-radius: 7px;
-
   cursor: pointer;
   background: #fafafa;
 }
@@ -162,20 +144,14 @@ body {
 /* Submit */
 #submitButton {
   display: block;
-
   margin: 30px auto;
-
   padding: 13px 28px;
-
   border: none;
   border-radius: 8px;
-
   background: #222;
   color: white;
-
   font-size: 17px;
   font-weight: 600;
-
   cursor: pointer;
 }
 
@@ -191,9 +167,7 @@ body {
 /* Results */
 #result {
   text-align: center;
-
   margin-top: 25px;
-
   font-size: 20px;
   font-weight: 600;
 }

@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8787";
+const API = window.location.origin;
 
 const startMatchButton =
   document.getElementById("startMatchButton");
@@ -61,31 +61,35 @@ function showQuestions(questions) {
 
     card.className = "card";
 
-    const choicesHTML =
-      question.choices
-        .map(
-          (choice, choiceIndex) => `
-            <label>
-              <input
-                type="radio"
-                name="question-${index}"
-                value="${choiceIndex}"
-              >
-              ${choice}
-            </label>
-          `
-        )
-        .join("");
+    const heading = document.createElement("h3");
+    heading.textContent = `Question ${index + 1}`;
+    card.appendChild(heading);
 
-    card.innerHTML = `
-      <h3>Question ${index + 1}</h3>
+    const questionText = document.createElement("p");
+    questionText.textContent = question.question;
+    card.appendChild(questionText);
 
-      <p>${question.question}</p>
+    const choicesContainer = document.createElement("div");
+    choicesContainer.className = "choices";
 
-      <div class="choices">
-        ${choicesHTML}
-      </div>
-    `;
+    question.choices.forEach((choice, choiceIndex) => {
+      const label = document.createElement("label");
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = `question-${index}`;
+      input.value = choiceIndex;
+
+      const choiceText = document.createTextNode(choice);
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(" "));
+      label.appendChild(choiceText);
+
+      choicesContainer.appendChild(label);
+    });
+
+    card.appendChild(choicesContainer);
 
     questionsDiv.appendChild(card);
   });
@@ -186,9 +190,12 @@ async function startMatchmaking() {
   try {
     const response =
       await fetch(
-        `${API}/matchmake?session=${encodeURIComponent(
-          sessionId
-        )}`
+        `${API}/matchmake`,
+        {
+          headers: {
+            'Authorization': `Bearer ${sessionId}`
+          }
+        }
       );
 
     const data =
@@ -674,6 +681,15 @@ function connectToRoom() {
       setStatus(
         "Connection to match failed."
       );
+
+      if (!gameStarted && matchSocket === socket) {
+        inQueue = false;
+        matchId = null;
+        playerId = null;
+
+        startMatchButton.disabled = false;
+        startMatchButton.textContent = "Retry";
+      }
     }
   );
 
@@ -699,6 +715,19 @@ function connectToRoom() {
         console.log(
           "WebSocket closed unexpectedly."
         );
+
+        if (!gameStarted && matchSocket === socket) {
+          inQueue = false;
+          matchId = null;
+          playerId = null;
+
+          setStatus(
+            "Connection lost. Please try again."
+          );
+
+          startMatchButton.disabled = false;
+          startMatchButton.textContent = "Retry";
+        }
       }
     }
   );
@@ -811,6 +840,48 @@ function sendRoomMessage(message) {
 
   return true;
 }
+
+
+/* ----------------------------- */
+/* Submit answers                */
+/* ----------------------------- */
+
+submitButton.addEventListener(
+  "click",
+  () => {
+    const answers = [];
+    const questionCards = questionsDiv.querySelectorAll(".card");
+
+    for (let i = 0; i < questionCards.length; i++) {
+      const selectedInput = questionCards[i].querySelector(
+        `input[name="question-${i}"]:checked`
+      );
+
+      if (!selectedInput) {
+        setStatus(
+          `Please answer question ${i + 1}`
+        );
+        return;
+      }
+
+      answers.push(parseInt(selectedInput.value, 10));
+    }
+
+    submitButton.disabled = true;
+
+    const sent = sendRoomMessage({
+      type: "submit_answers",
+      answers: answers
+    });
+
+    if (sent) {
+      setStatus("Answers submitted!");
+    } else {
+      submitButton.disabled = false;
+      setStatus("Failed to submit answers.");
+    }
+  }
+);
 
 
 /* ----------------------------- */
