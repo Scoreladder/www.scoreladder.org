@@ -13,7 +13,6 @@
     initLayout();
   }
 
-
   async function initLayout() {
     try {
       await loadComponent(
@@ -30,7 +29,6 @@
       syncTopbarHeight();
 
       console.log("layout.js loaded");
-
     } catch (error) {
       console.error(
         "Layout initialization failed:",
@@ -38,7 +36,6 @@
       );
     }
   }
-
 
   // ============================================================
   // LOAD HTML COMPONENT
@@ -66,7 +63,6 @@
     element.innerHTML = await res.text();
   }
 
-
   // ============================================================
   // TOPBAR
   // ============================================================
@@ -75,7 +71,6 @@
     initDarkMode();
     setupAuth();
   }
-
 
   // ============================================================
   // GET LOCAL SESSION
@@ -96,6 +91,23 @@
           LOCAL_SESSION_KEY,
           urlSession
         );
+
+        // Remove the session credential from the URL
+        // after successfully storing it.
+        const cleanUrl =
+          new URL(window.location.href);
+
+        cleanUrl.searchParams.delete(
+          "session"
+        );
+
+        window.history.replaceState(
+          {},
+          document.title,
+          cleanUrl.pathname +
+            cleanUrl.search +
+            cleanUrl.hash
+        );
       } catch (error) {
         console.error(
           "Could not save local session:",
@@ -115,7 +127,6 @@
     }
   }
 
-
   // ============================================================
   // DARK MODE
   // ============================================================
@@ -130,7 +141,6 @@
       console.error(
         "Dark mode button was not found"
       );
-
       return;
     }
 
@@ -147,10 +157,8 @@
 
     if (saved === "true") {
       setDarkMode(true);
-
     } else if (saved === "false") {
       setDarkMode(false);
-
     } else {
       setDarkMode(
         window.matchMedia(
@@ -175,7 +183,6 @@
       }
     );
   }
-
 
   function setDarkMode(
     enabled,
@@ -240,7 +247,6 @@
     }
   }
 
-
   // ============================================================
   // AUTHENTICATION
   // ============================================================
@@ -255,7 +261,6 @@
       console.error(
         "profileBtn was not found in header"
       );
-
       return;
     }
 
@@ -296,7 +301,6 @@
         );
 
         showLoginButton();
-
         return;
       }
 
@@ -354,13 +358,6 @@
             `${BASE_URL}/profile/`
           );
 
-        if (session) {
-          profileUrl.searchParams.set(
-            "session",
-            session
-          );
-        }
-
         profileLink.href =
           profileUrl.toString();
       }
@@ -374,7 +371,6 @@
       if (loginBtn) {
         loginBtn.remove();
       }
-
     } catch (error) {
       console.error(
         "Auth check failed:",
@@ -388,7 +384,6 @@
       showLoginButton();
     }
   }
-
 
   // ============================================================
   // LOGIN BUTTON
@@ -404,7 +399,6 @@
       console.error(
         "#topbar .right was not found"
       );
-
       return;
     }
 
@@ -443,7 +437,6 @@
     );
   }
 
-
   // ============================================================
   // TOPBAR HEIGHT
   // ============================================================
@@ -466,5 +459,4 @@
       `${height}px`
     );
   }
-
 })();

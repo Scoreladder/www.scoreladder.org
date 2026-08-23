@@ -141,9 +141,7 @@ async function getCurrentUser() {
         console.log(
             "Checking authentication:",
             {
-                sessionFound: Boolean(sessionId),
-                usingSessionParameter: Boolean(sessionId),
-                meUrl
+                sessionFound: Boolean(sessionId)
             }
         );
 

@@ -255,10 +255,23 @@ function renderProfile(user) {
 
   const socials = [];
 
-  if (profile.twitter) {
+  const twitterUrl = getSafeExternalUrl(profile.twitter);
+
+  function getSafeExternalUrl(value) {
+    try {
+      const url = new URL(String(value));
+      return ["https:", "http:"].includes(url.protocol)
+        ? url.href
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (twitterUrl) {
     socials.push(`
       <a
-        href="${escapeAttribute(profile.twitter)}"
+        href="${escapeAttribute(twitterUrl)}"
         target="_blank"
         rel="noopener noreferrer"
       >
