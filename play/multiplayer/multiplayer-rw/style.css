@@ -158,8 +158,9 @@ body {
    ANSWER CHOICES
    ========================================================= */
 
-.choices label {
+.choice {
   display: block;
+  width: 100%;
 
   margin-top: 10px;
   padding: 14px;
@@ -172,6 +173,7 @@ body {
 
   text-align: left;
   font-size: 16px;
+  font-family: inherit;
 
   cursor: pointer;
 }
@@ -193,6 +195,7 @@ body {
 
 .choice:disabled {
   cursor: not-allowed;
+  opacity: 1;
 }
 
 /* =========================================================
