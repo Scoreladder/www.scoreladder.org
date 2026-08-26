@@ -1,148 +1,213 @@
-const API = "http://127.0.0.1:8787";
-const AUTH_API = "https://auth.scoreladder.org";
+import {
+  createDisconnectManager
+} from "./match-disconnect.js";
+
+import {
+  createReconnectManager
+} from "./match-reconnect.js";
+
+/* =========================================================
+   API
+   ========================================================= */
+
+export const API = "http://127.0.0.1:8787";
+
+export const AUTH_API =
+  "https://auth.scoreladder.org";
+
+export const RESUME_MATCH_STORAGE_KEY =
+  "scoreladder_multiplayer_resume_match";
+
+export const ACTIVE_MATCH_STATE_STORAGE_KEY =
+  "scoreladder_multiplayer_active_match_state";
+
 
 /* =========================================================
    CONSTANTS
    ========================================================= */
 
-const TOTAL_QUESTIONS = 11;
-const MATCH_DURATION_MS = 13 * 60 * 1000;
-const COOLDOWN_DURATION_MS = 15 * 60 * 1000;
+export const TOTAL_QUESTIONS = 11;
 
-const COOLDOWN_STORAGE_KEY =
+export const MATCH_DURATION_MS =
+  13 * 60 * 1000;
+
+export const COOLDOWN_DURATION_MS =
+  15 * 60 * 1000;
+
+export const COOLDOWN_STORAGE_KEY =
   "scoreladder_multiplayer_cooldown_until";
 
-const KHAN_ACADEMY_SAT_URL =
+export const KHAN_ACADEMY_SAT_URL =
   "https://www.khanacademy.org/test-prep/sat";
+
 
 /* =========================================================
    ELEMENTS
    ========================================================= */
 
-const startMatchButton =
-  document.getElementById("startMatchButton");
+export const elements = {
+  startMatchButton:
+    document.getElementById("startMatchButton"),
 
-const statusDiv =
-  document.getElementById("status");
+  statusDiv:
+    document.getElementById("status"),
 
-const timerDiv =
-  document.getElementById("timer");
+  timerDiv:
+    document.getElementById("timer"),
 
-const questionsDiv =
-  document.getElementById("questions");
+  questionsDiv:
+    document.getElementById("questions"),
 
-const submitButton =
-  document.getElementById("submitButton");
+  submitButton:
+    document.getElementById("submitButton"),
 
-const resultDiv =
-  document.getElementById("result");
+  resultDiv:
+    document.getElementById("result"),
 
-const playerNameDiv =
-  document.getElementById("playerName");
+  playerNameDiv:
+    document.getElementById("playerName"),
 
-const playerEloDiv =
-  document.getElementById("playerElo");
+  playerEloDiv:
+    document.getElementById("playerElo"),
 
-const opponentNameDiv =
-  document.getElementById("opponentName");
+  opponentNameDiv:
+    document.getElementById("opponentName"),
 
-const opponentEloDiv =
-  document.getElementById("opponentElo");
+  opponentEloDiv:
+    document.getElementById("opponentElo")
+};
 
-/* =========================================================
-   STATE
-   ========================================================= */
-
-let playerId = null;
-let matchId = null;
-let opponent = null;
-
-let checkingMatch = false;
-let matchSocket = null;
-
-let inQueue = false;
-let gameStarted = false;
-let playerReady = false;
-
-let matchConnectionConfirmed = false;
-
-let challengeSubmitted = false;
-let submissionInProgress = false;
-
-let questions = [];
-let selectedAnswers = [];
 
 /* =========================================================
-   MATCH TIMER
+   SHARED STATE
    ========================================================= */
 
-let timerInterval = null;
-let challengeDeadline = 0;
-let timeRemaining = 0;
+export const state = {
+  playerId: null,
 
-/* =========================================================
-   COOLDOWN
-   ========================================================= */
+  reconnecting: false,
 
-let cooldownUntil = 0;
-let cooldownInterval = null;
+  matchId: null,
 
-/* =========================================================
-   UI STATE
-   ========================================================= */
+  opponent: null,
 
-let newGameMode = false;
+  checkingMatch: false,
+
+  matchSocket: null,
+
+  inQueue: false,
+
+  gameStarted: false,
+
+  playerReady: false,
+
+  matchConnectionConfirmed: false,
+
+  challengeSubmitted: false,
+
+  submissionInProgress: false,
+
+  questions: [],
+
+  selectedAnswers: [],
+
+  timerInterval: null,
+
+  challengeDeadline: 0,
+
+  timeRemaining: 0,
+
+  cooldownUntil: 0,
+
+  cooldownInterval: null,
+
+  newGameMode: false,
+
+  /* Resume state */
+  resumeAvailable: false,
+
+  resumeMatchId: null,
+
+  /*
+   * Prevent duplicate resume attempts while reconnecting.
+   */
+  resumeInProgress: false
+};
+
 
 /* =========================================================
    TOPICS
    ========================================================= */
 
-const TOPIC_ALIASES = {
-  central_idea: "central_ideas",
-  central_ideas: "central_ideas",
+export const TOPIC_ALIASES = {
+  central_idea:
+    "central_ideas",
 
-  text_evidence: "command_evidence_textual",
-  textual_evidence: "command_evidence_textual",
+  central_ideas:
+    "central_ideas",
+
+  text_evidence:
+    "command_evidence_textual",
+
+  textual_evidence:
+    "command_evidence_textual",
+
   command_evidence_textual:
     "command_evidence_textual",
 
   quantitative_evidence:
     "command_evidence_quantitative",
+
   command_evidence_quantitative:
     "command_evidence_quantitative",
 
-  inference: "inferences",
-  inferences: "inferences",
+  inference:
+    "inferences",
 
-  word_in_context: "words_in_context",
-  words_in_context: "words_in_context",
+  inferences:
+    "inferences",
+
+  word_in_context:
+    "words_in_context",
+
+  words_in_context:
+    "words_in_context",
 
   structure_and_purpose:
     "text_structure_purpose",
+
   text_structure_purpose:
     "text_structure_purpose",
 
   cross_text:
     "cross_text_connections",
+
   cross_text_connections:
     "cross_text_connections",
 
   rhetorical:
     "rhetorical_synthesis",
+
   rhetorical_synthesis:
     "rhetorical_synthesis",
 
-  transition: "transitions",
-  transitions: "transitions",
+  transition:
+    "transitions",
 
-  boundary: "boundaries",
-  boundaries: "boundaries",
+  transitions:
+    "transitions",
+
+  boundary:
+    "boundaries",
+
+  boundaries:
+    "boundaries",
 
   form_structure_sense:
     "form_structure_sense"
 };
 
-const TOPIC_DISPLAY_NAMES = {
+export const TOPIC_DISPLAY_NAMES = {
   central_ideas:
     "Central Ideas",
 
@@ -177,7 +242,7 @@ const TOPIC_DISPLAY_NAMES = {
     "Form, Structure & Sense"
 };
 
-function normalizeTopic(topic) {
+export function normalizeTopic(topic) {
   if (typeof topic !== "string") {
     return null;
   }
@@ -185,10 +250,13 @@ function normalizeTopic(topic) {
   const normalized =
     topic.trim().toLowerCase();
 
-  return TOPIC_ALIASES[normalized] ?? null;
+  return (
+    TOPIC_ALIASES[normalized] ??
+    null
+  );
 }
 
-function getTopicDisplayName(topic) {
+export function getTopicDisplayName(topic) {
   const normalized =
     normalizeTopic(topic);
 
@@ -199,23 +267,26 @@ function getTopicDisplayName(topic) {
   );
 }
 
+
 /* =========================================================
    BASIC UI
    ========================================================= */
 
-function setStatus(message) {
-  if (statusDiv) {
-    statusDiv.textContent = message;
+export function setStatus(message) {
+  if (elements.statusDiv) {
+    elements.statusDiv.textContent =
+      message;
   }
 }
 
-function showResult(message) {
-  if (resultDiv) {
-    resultDiv.textContent = message;
+export function showResult(message) {
+  if (elements.resultDiv) {
+    elements.resultDiv.textContent =
+      message;
   }
 }
 
-function escapeHtml(text) {
+export function escapeHtml(text) {
   return String(text)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -224,28 +295,29 @@ function escapeHtml(text) {
     .replaceAll("'", "&#039;");
 }
 
-function formatPassage(text) {
+export function formatPassage(text) {
   if (typeof text !== "string") {
     return "";
   }
 
   return escapeHtml(text)
     .replace(
-      /\[UNDERLINED\](.*?)\[\/UNDERLINED\]/g,
+      /\[\/\*UNDERLINED\*\/\](.*?)\[\/\*UNDERLINED\*\/\]/gs,
       "<u>$1</u>"
     )
     .replace(
-      /\[\*\*UNDERLINED\*\*\](.*?)\[\/\*\*UNDERLINED\*\*\]/g,
+      /\[\/\*UNDERLINED\*\/\](.*?)\[\/\*UNDERLINED\*\/\]/gs,
       "<u>$1</u>"
     )
     .replace(/\n/g, "<br>");
 }
 
+
 /* =========================================================
    SESSION
    ========================================================= */
 
-function getSessionId() {
+export function getSessionId() {
   try {
     return sessionStorage.getItem(
       "scoreladder_session"
@@ -260,11 +332,27 @@ function getSessionId() {
   }
 }
 
+
+/* =========================================================
+   AUTH API URL HELPER
+   ========================================================= */
+
+export function getAuthApiUrl(path) {
+  const base =
+    AUTH_API.replace(/\/+$/, "");
+
+  const cleanPath =
+    String(path).replace(/^\/+/, "");
+
+  return `${base}/${cleanPath}`;
+}
+
+
 /* =========================================================
    COOLDOWN
    ========================================================= */
 
-function getStoredCooldownUntil() {
+export function getStoredCooldownUntil() {
   try {
     const stored =
       localStorage.getItem(
@@ -300,8 +388,9 @@ function getStoredCooldownUntil() {
   }
 }
 
-function saveCooldownUntil(timestamp) {
-  cooldownUntil = timestamp;
+export function saveCooldownUntil(timestamp) {
+  state.cooldownUntil =
+    timestamp;
 
   try {
     localStorage.setItem(
@@ -316,8 +405,8 @@ function saveCooldownUntil(timestamp) {
   }
 }
 
-function clearCooldown() {
-  cooldownUntil = 0;
+export function clearCooldown() {
+  state.cooldownUntil = 0;
 
   try {
     localStorage.removeItem(
@@ -333,22 +422,24 @@ function clearCooldown() {
   stopCooldownTimer();
 }
 
-function getCooldownRemainingMs() {
-  if (!cooldownUntil) {
+export function getCooldownRemainingMs() {
+  if (!state.cooldownUntil) {
     return 0;
   }
 
   return Math.max(
     0,
-    cooldownUntil - Date.now()
+    state.cooldownUntil - Date.now()
   );
 }
 
-function isCoolingDown() {
-  return getCooldownRemainingMs() > 0;
+export function isCoolingDown() {
+  return (
+    getCooldownRemainingMs() > 0
+  );
 }
 
-function formatCountdown(totalSeconds) {
+export function formatCountdown(totalSeconds) {
   const safeSeconds =
     Math.max(
       0,
@@ -368,11 +459,378 @@ function formatCountdown(totalSeconds) {
   ).padStart(2, "0")}`;
 }
 
+
+/* =========================================================
+   ACTIVE MATCH PERSISTENCE
+   ========================================================= */
+
+export function getStoredActiveMatchState() {
+  try {
+    const raw =
+      localStorage.getItem(
+        ACTIVE_MATCH_STATE_STORAGE_KEY
+      );
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed =
+      JSON.parse(raw);
+
+    if (
+      !parsed ||
+      typeof parsed !== "object"
+    ) {
+      localStorage.removeItem(
+        ACTIVE_MATCH_STATE_STORAGE_KEY
+      );
+
+      return null;
+    }
+
+    if (
+      typeof parsed.matchId !== "string" ||
+      parsed.matchId.length === 0
+    ) {
+      localStorage.removeItem(
+        ACTIVE_MATCH_STATE_STORAGE_KEY
+      );
+
+      return null;
+    }
+
+    return parsed;
+  } catch (error) {
+    console.error(
+      "Failed to read active match state:",
+      error
+    );
+
+    return null;
+  }
+}
+
+function isLogicalMatchId(value) {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value.trim()
+  );
+}
+
+export function saveActiveMatchState() {
+  if (
+    !isLogicalMatchId(state.matchId)
+  ) {
+    console.warn(
+      "Refusing to persist invalid logical matchId:",
+      state.matchId
+    );
+
+    return false;
+  }
+
+  const activeMatchState = {
+    matchId:
+      state.matchId,
+
+    playerId:
+      state.playerId,
+
+    opponent:
+      state.opponent || null,
+
+    questions:
+      Array.isArray(state.questions)
+        ? state.questions
+        : [],
+
+    selectedAnswers:
+      Array.isArray(state.selectedAnswers)
+        ? [...state.selectedAnswers]
+        : [],
+
+    challengeDeadline:
+      Number(state.challengeDeadline) || 0,
+
+    timeRemaining:
+      Number(state.timeRemaining) || 0,
+
+    gameStarted:
+      state.gameStarted === true,
+
+    playerReady:
+      state.playerReady === true,
+
+    matchConnectionConfirmed:
+      state.matchConnectionConfirmed === true,
+
+    challengeSubmitted:
+      state.challengeSubmitted === true,
+
+    savedAt:
+      Date.now()
+  };
+
+  try {
+    localStorage.setItem(
+      ACTIVE_MATCH_STATE_STORAGE_KEY,
+      JSON.stringify(
+        activeMatchState
+      )
+    );
+
+    localStorage.setItem(
+      RESUME_MATCH_STORAGE_KEY,
+      state.matchId
+    );
+
+    state.resumeAvailable =
+      true;
+
+    state.resumeMatchId =
+      state.matchId;
+
+    return true;
+  } catch (error) {
+    console.error(
+      "Failed to save active match state:",
+      error
+    );
+
+    return false;
+  }
+}
+
+export function restoreActiveMatchState() {
+  const saved =
+    getStoredActiveMatchState();
+
+  const storedResumeMatchId =
+    getStoredResumeMatchId();
+
+  const isUuid =
+    value =>
+      typeof value === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        value.trim()
+      );
+
+  const logicalMatchId =
+    isUuid(storedResumeMatchId)
+      ? storedResumeMatchId.trim()
+      : isUuid(saved?.matchId)
+        ? saved.matchId.trim()
+        : null;
+
+  if (!logicalMatchId) {
+    return false;
+  }
+
+  state.matchId =
+    logicalMatchId;
+
+  state.playerId =
+    saved?.playerId ??
+    state.playerId ??
+    null;
+
+  state.opponent =
+    saved?.opponent ??
+    null;
+
+  state.questions =
+    Array.isArray(
+      saved?.questions
+    )
+      ? saved.questions
+      : [];
+
+  state.selectedAnswers =
+    Array.isArray(
+      saved?.selectedAnswers
+    )
+      ? saved.selectedAnswers
+      : [];
+
+  state.challengeDeadline =
+    Number(
+      saved?.challengeDeadline
+    ) || 0;
+
+  state.timeRemaining =
+    Number(
+      saved?.timeRemaining
+    ) || 0;
+
+  state.gameStarted =
+    saved?.gameStarted === true;
+
+  state.playerReady =
+    saved?.playerReady === true;
+
+  state.matchConnectionConfirmed =
+    false;
+
+  state.challengeSubmitted =
+    saved?.challengeSubmitted === true;
+
+  state.submissionInProgress =
+    false;
+
+  state.checkingMatch =
+    false;
+
+  state.inQueue =
+    false;
+
+  state.resumeAvailable =
+    true;
+
+  state.resumeMatchId =
+    logicalMatchId;
+
+  state.resumeInProgress =
+    false;
+
+  state.reconnecting =
+    false;
+
+  if (state.opponent) {
+    updateOpponent(
+      state.opponent
+    );
+  }
+
+  if (
+    saved &&
+    saved.matchId !==
+      logicalMatchId
+  ) {
+    try {
+      const repairedState = {
+        ...saved,
+
+        matchId:
+          logicalMatchId,
+
+        playerId:
+          state.playerId,
+
+        opponent:
+          state.opponent,
+
+        questions:
+          state.questions,
+
+        selectedAnswers:
+          state.selectedAnswers,
+
+        challengeDeadline:
+          state.challengeDeadline,
+
+        timeRemaining:
+          state.timeRemaining,
+
+        gameStarted:
+          state.gameStarted,
+
+        playerReady:
+          state.playerReady,
+
+        challengeSubmitted:
+          state.challengeSubmitted,
+
+        savedAt:
+          Date.now()
+      };
+
+      localStorage.setItem(
+        ACTIVE_MATCH_STATE_STORAGE_KEY,
+        JSON.stringify(
+          repairedState
+        )
+      );
+    } catch (error) {
+      console.error(
+        "Failed to repair active match state:",
+        error
+      );
+    }
+  }
+
+  try {
+    localStorage.setItem(
+      RESUME_MATCH_STORAGE_KEY,
+      logicalMatchId
+    );
+  } catch (error) {
+    console.error(
+      "Failed to repair resume match key:",
+      error
+    );
+  }
+
+  console.log(
+    "Restored logical match state:",
+    {
+      matchId:
+        state.matchId,
+
+      playerId:
+        state.playerId,
+
+      resumeMatchId:
+        state.resumeMatchId
+    }
+  );
+
+  return true;
+}
+
+export function clearActiveMatchState() {
+  try {
+    localStorage.removeItem(
+      ACTIVE_MATCH_STATE_STORAGE_KEY
+    );
+  } catch (error) {
+    console.error(
+      "Failed to clear active match state:",
+      error
+    );
+  }
+
+  clearResumeMatch();
+}
+
+export function updatePersistedSelectedAnswers(
+  selectedAnswers
+) {
+  if (
+    !Array.isArray(selectedAnswers)
+  ) {
+    return;
+  }
+
+  state.selectedAnswers =
+    [...selectedAnswers];
+
+  saveActiveMatchState();
+}
+
+export function persistCurrentMatchState() {
+  return saveActiveMatchState();
+}
+
+
 /* =========================================================
    COOLDOWN UI
    ========================================================= */
 
-function updateCooldownUI() {
+export function updateCooldownUI() {
   const remainingMs =
     getCooldownRemainingMs();
 
@@ -380,10 +838,14 @@ function updateCooldownUI() {
     clearCooldown();
 
     if (
-      !gameStarted &&
-      !inQueue
+      !state.gameStarted &&
+      !state.inQueue
     ) {
-      enableQueueButton();
+      if (isResumeAvailable()) {
+        enableResumeGame();
+      } else {
+        enableQueueButton();
+      }
     }
 
     return;
@@ -394,33 +856,35 @@ function updateCooldownUI() {
       remainingMs / 1000
     );
 
-  if (startMatchButton) {
-    startMatchButton.disabled = true;
+  if (elements.startMatchButton) {
+    elements.startMatchButton.disabled =
+      true;
 
-    startMatchButton.textContent =
+    elements.startMatchButton.textContent =
       `Cooldown: ${formatCountdown(
         remainingSeconds
       )}`;
   }
 
   if (
-    submitButton &&
-    newGameMode
+    elements.submitButton &&
+    state.newGameMode
   ) {
-    submitButton.style.display =
+    elements.submitButton.style.display =
       "block";
 
-    submitButton.disabled = true;
+    elements.submitButton.disabled =
+      true;
 
-    submitButton.textContent =
+    elements.submitButton.textContent =
       `New Game (${formatCountdown(
         remainingSeconds
       )})`;
   }
 
   if (
-    !gameStarted &&
-    !inQueue
+    !state.gameStarted &&
+    !state.inQueue
   ) {
     setStatus(
       `You can play again in ${formatCountdown(
@@ -430,40 +894,62 @@ function updateCooldownUI() {
   }
 }
 
-function startCooldownTimer() {
+export function startCooldownTimer() {
   stopCooldownTimer();
 
   updateCooldownUI();
 
-  cooldownInterval =
+  state.cooldownInterval =
     setInterval(() => {
       updateCooldownUI();
 
       if (
-        getCooldownRemainingMs() <= 0
+        getCooldownRemainingMs() <=
+        0
       ) {
         stopCooldownTimer();
       }
     }, 250);
 }
 
-function stopCooldownTimer() {
-  if (cooldownInterval) {
+export function stopCooldownTimer() {
+  if (state.cooldownInterval) {
     clearInterval(
-      cooldownInterval
+      state.cooldownInterval
     );
 
-    cooldownInterval = null;
+    state.cooldownInterval =
+      null;
   }
 }
 
-function beginCooldown() {
-  gameStarted = false;
-  inQueue = false;
-  playerReady = false;
-  matchConnectionConfirmed = false;
+export function beginCooldown() {
+  state.gameStarted = false;
+
+  state.inQueue = false;
+
+  state.playerReady = false;
+
+  state.matchConnectionConfirmed =
+    false;
+
+  state.resumeInProgress =
+    false;
+
+  state.reconnecting =
+    false;
 
   clearMatchTimer();
+
+  clearActiveMatchState();
+
+  state.matchId = null;
+
+  state.opponent = null;
+
+  state.questions = [];
+
+  state.selectedAnswers = [];
 
   const until =
     Date.now() +
@@ -471,35 +957,39 @@ function beginCooldown() {
 
   saveCooldownUntil(until);
 
-  newGameMode = true;
+  state.newGameMode = true;
 
-  if (submitButton) {
-    submitButton.style.display =
+  if (elements.submitButton) {
+    elements.submitButton.style.display =
       "block";
 
-    submitButton.disabled = true;
+    elements.submitButton.disabled =
+      true;
 
-    submitButton.textContent =
+    elements.submitButton.textContent =
       `New Game (${formatCountdown(
         Math.ceil(
-          COOLDOWN_DURATION_MS / 1000
+          COOLDOWN_DURATION_MS /
+            1000
         )
       )})`;
   }
 
-  if (startMatchButton) {
-    startMatchButton.disabled = true;
+  if (elements.startMatchButton) {
+    elements.startMatchButton.disabled =
+      true;
 
-    startMatchButton.textContent =
+    elements.startMatchButton.textContent =
       `Cooldown: ${formatCountdown(
         Math.ceil(
-          COOLDOWN_DURATION_MS / 1000
+          COOLDOWN_DURATION_MS /
+            1000
         )
       )}`;
   }
 
-  if (timerDiv) {
-    timerDiv.textContent =
+  if (elements.timerDiv) {
+    elements.timerDiv.textContent =
       "0:00";
   }
 
@@ -512,32 +1002,45 @@ function beginCooldown() {
   startCooldownTimer();
 }
 
-function enableQueueButton() {
-  if (!startMatchButton) {
+export function enableQueueButton() {
+  if (!elements.startMatchButton) {
     return;
   }
 
   if (
-    gameStarted ||
-    inQueue
+    state.gameStarted ||
+    state.inQueue
   ) {
     return;
   }
 
-  startMatchButton.disabled =
+  if (isResumeAvailable()) {
+    enableResumeGame();
+    return;
+  }
+
+  elements.startMatchButton.disabled =
     false;
 
-  startMatchButton.textContent =
+  elements.startMatchButton.removeAttribute(
+    "disabled"
+  );
+
+  elements.startMatchButton.style.display =
+    "block";
+
+  elements.startMatchButton.textContent =
     "Join Queue";
 
   if (
-    submitButton &&
-    newGameMode
+    elements.submitButton &&
+    state.newGameMode
   ) {
-    submitButton.style.display =
+    elements.submitButton.style.display =
       "none";
 
-    submitButton.disabled = true;
+    elements.submitButton.disabled =
+      true;
   }
 
   setStatus(
@@ -547,21 +1050,44 @@ function enableQueueButton() {
   renderCooldownCompleteMessage();
 }
 
-function initializeCooldown() {
-  cooldownUntil =
+export function initializeCooldown() {
+  state.cooldownUntil =
     getStoredCooldownUntil();
 
-  if (isCoolingDown()) {
-    newGameMode = true;
+  if (isResumeAvailable()) {
+    state.newGameMode =
+      false;
 
-    if (submitButton) {
-      submitButton.style.display =
+    stopCooldownTimer();
+
+    if (elements.submitButton) {
+      elements.submitButton.style.display =
+        "none";
+
+      elements.submitButton.disabled =
+        true;
+    }
+
+    enableResumeGame(
+      state.resumeMatchId ||
+      state.matchId
+    );
+
+    return;
+  }
+
+  if (isCoolingDown()) {
+    state.newGameMode =
+      true;
+
+    if (elements.submitButton) {
+      elements.submitButton.style.display =
         "block";
 
-      submitButton.disabled =
+      elements.submitButton.disabled =
         true;
 
-      submitButton.textContent =
+      elements.submitButton.textContent =
         `New Game (${formatCountdown(
           Math.ceil(
             getCooldownRemainingMs() /
@@ -570,11 +1096,11 @@ function initializeCooldown() {
         )})`;
     }
 
-    if (startMatchButton) {
-      startMatchButton.disabled =
+    if (elements.startMatchButton) {
+      elements.startMatchButton.disabled =
         true;
 
-      startMatchButton.textContent =
+      elements.startMatchButton.textContent =
         `Cooldown: ${formatCountdown(
           Math.ceil(
             getCooldownRemainingMs() /
@@ -584,6 +1110,7 @@ function initializeCooldown() {
     }
 
     startCooldownTimer();
+
     renderCooldownPracticeMessage();
 
     return;
@@ -592,56 +1119,137 @@ function initializeCooldown() {
   clearCooldown();
 
   if (
-    !gameStarted &&
-    !inQueue
+    !state.gameStarted &&
+    !state.inQueue
   ) {
     enableQueueButton();
   }
 }
 
+
 /* =========================================================
-   COOLDOWN PRACTICE
+   TOP 3 WEAK TOPICS
    ========================================================= */
 
 function getTopThreeWeakTopics() {
   const topicStats = {};
 
-  const matches =
+  const historicalTopics =
     Array.isArray(
-      window.scoreladderRecentMatches
+      window.scoreladderHistoricalTopics
     )
-      ? window.scoreladderRecentMatches
+      ? window.scoreladderHistoricalTopics
       : [];
 
-  for (const match of matches) {
-    const questionResults =
-      extractQuestionResults(match);
+  for (
+    const entry of historicalTopics
+  ) {
+    if (
+      !Array.isArray(entry) ||
+      entry.length < 2
+    ) {
+      continue;
+    }
+
+    const topic =
+      normalizeTopic(entry[0]);
+
+    const stats =
+      entry[1];
+
+    if (
+      !topic ||
+      !stats ||
+      typeof stats !== "object"
+    ) {
+      continue;
+    }
+
+    const total =
+      Number(
+        stats.total ??
+        stats.questions_answered ??
+        stats.questionsAnswered ??
+        0
+      );
+
+    const correct =
+      Number(
+        stats.correct ??
+        stats.questions_correct ??
+        stats.questionsCorrect ??
+        0
+      );
+
+    if (
+      !Number.isFinite(total) ||
+      total <= 0
+    ) {
+      continue;
+    }
+
+    topicStats[topic] = {
+      correct: Math.max(
+        0,
+        correct
+      ),
+
+      total: Math.max(
+        0,
+        total
+      )
+    };
+  }
+
+  if (
+    Object.keys(topicStats).length === 0
+  ) {
+    const matches =
+      Array.isArray(
+        window.scoreladderRecentMatches
+      )
+        ? window.scoreladderRecentMatches
+        : [];
 
     for (
-      const result of questionResults
+      const match of matches
     ) {
-      const topic =
-        extractResultTopic(result);
+      const questionResults =
+        extractQuestionResults(
+          match
+        );
 
-      if (!topic) {
-        continue;
-      }
-
-      if (!topicStats[topic]) {
-        topicStats[topic] = {
-          correct: 0,
-          total: 0
-        };
-      }
-
-      topicStats[topic].total++;
-
-      if (
-        result.correct === true ||
-        result.correct === 1 ||
-        result.correct === "1"
+      for (
+        const result of
+          questionResults
       ) {
-        topicStats[topic].correct++;
+        const topic =
+          extractResultTopic(
+            result
+          );
+
+        if (!topic) {
+          continue;
+        }
+
+        if (
+          !topicStats[topic]
+        ) {
+          topicStats[topic] = {
+            correct: 0,
+            total: 0
+          };
+        }
+
+        topicStats[topic].total++;
+
+        if (
+          result.correct === true ||
+          result.correct === 1 ||
+          result.correct === "1"
+        ) {
+          topicStats[topic].correct++;
+        }
       }
     }
   }
@@ -654,7 +1262,7 @@ function getTopThreeWeakTopics() {
         stats.total > 0
     )
     .sort(
-      ([, a], [, b]) => {
+      ([topicA, a], [topicB, b]) => {
         const accuracyA =
           a.correct / a.total;
 
@@ -671,17 +1279,31 @@ function getTopThreeWeakTopics() {
           );
         }
 
-        return (
-          b.total -
-          a.total
+        if (
+          a.total !==
+          b.total
+        ) {
+          return (
+            b.total -
+            a.total
+          );
+        }
+
+        return topicA.localeCompare(
+          topicB
         );
       }
     )
     .slice(0, 3);
 }
 
-function renderCooldownPracticeMessage() {
-  if (!resultDiv) {
+
+/* =========================================================
+   COOLDOWN PRACTICE
+   ========================================================= */
+
+export function renderCooldownPracticeMessage() {
+  if (!elements.resultDiv) {
     return;
   }
 
@@ -695,7 +1317,7 @@ function renderCooldownPracticeMessage() {
   selectors.forEach(
     selector => {
       const old =
-        resultDiv.querySelector(
+        elements.resultDiv.querySelector(
           selector
         );
 
@@ -735,7 +1357,7 @@ function renderCooldownPracticeMessage() {
     document.createElement("h4");
 
   weakHeading.textContent =
-    "Top 3 Topics You Struggled With";
+    "Topics You Should Practice";
 
   container.appendChild(
     weakHeading
@@ -751,7 +1373,7 @@ function renderCooldownPracticeMessage() {
       document.createElement("p");
 
     empty.textContent =
-      "Play a few more matches to identify your weakest topics.";
+      "Your topic performance will appear here after you answer some questions.";
 
     container.appendChild(
       empty
@@ -788,18 +1410,18 @@ function renderCooldownPracticeMessage() {
     link
   );
 
-  resultDiv.appendChild(
+  elements.resultDiv.appendChild(
     container
   );
 }
 
-function renderCooldownCompleteMessage() {
-  if (!resultDiv) {
+export function renderCooldownCompleteMessage() {
+  if (!elements.resultDiv) {
     return;
   }
 
   const old =
-    resultDiv.querySelector(
+    elements.resultDiv.querySelector(
       ".cooldown-practice"
     );
 
@@ -808,19 +1430,20 @@ function renderCooldownCompleteMessage() {
   }
 }
 
+
 /* =========================================================
    PLAYER INFORMATION
    ========================================================= */
 
-function updatePlayer(player) {
+export function updatePlayer(player) {
   if (!player) {
     return;
   }
 
-  if (playerNameDiv) {
-    playerNameDiv.textContent =
-      player.username ||
+  if (elements.playerNameDiv) {
+    elements.playerNameDiv.textContent =
       player.display_name ||
+      player.username ||
       "You";
   }
 
@@ -831,23 +1454,24 @@ function updatePlayer(player) {
     player.elo ??
     1200;
 
-  if (playerEloDiv) {
-    playerEloDiv.textContent =
+  if (elements.playerEloDiv) {
+    elements.playerEloDiv.textContent =
       elo;
   }
 }
 
-function updateOpponent(player) {
+export function updateOpponent(player) {
   if (!player) {
     return;
   }
 
-  opponent = player;
+  state.opponent =
+    player;
 
-  if (opponentNameDiv) {
-    opponentNameDiv.textContent =
-      player.username ||
+  if (elements.opponentNameDiv) {
+    elements.opponentNameDiv.textContent =
       player.display_name ||
+      player.username ||
       "Opponent";
   }
 
@@ -858,17 +1482,22 @@ function updateOpponent(player) {
     player.elo ??
     1200;
 
-  if (opponentEloDiv) {
-    opponentEloDiv.textContent =
+  if (elements.opponentEloDiv) {
+    elements.opponentEloDiv.textContent =
       elo;
+  }
+
+  if (state.matchId) {
+    saveActiveMatchState();
   }
 }
 
+
 /* =========================================================
-   REFRESH PLAYER STATS
+   PLAYER STATS
    ========================================================= */
 
-async function refreshPlayerStats() {
+export async function refreshPlayerStats() {
   const sessionId =
     getSessionId();
 
@@ -879,7 +1508,9 @@ async function refreshPlayerStats() {
   try {
     const response =
       await fetch(
-        `${AUTH_API}/me?session=${encodeURIComponent(
+        `${getAuthApiUrl(
+          "me"
+        )}?session=${encodeURIComponent(
           sessionId
         )}`
       );
@@ -899,6 +1530,18 @@ async function refreshPlayerStats() {
 
     updatePlayer(player);
 
+    if (
+      player.id !== undefined &&
+      player.id !== null
+    ) {
+      state.playerId =
+        String(player.id);
+    }
+
+    if (state.matchId) {
+      saveActiveMatchState();
+    }
+
     return player;
   } catch (error) {
     console.error(
@@ -910,80 +1553,12 @@ async function refreshPlayerStats() {
   }
 }
 
-/* =========================================================
-   MATCH HISTORY
-   ========================================================= */
-
-async function loadRecentMatches() {
-  const sessionId =
-    getSessionId();
-
-  if (!sessionId) {
-    return;
-  }
-
-  try {
-    const response =
-      await fetch(
-        `${AUTH_API}/match-history?session=${encodeURIComponent(
-          sessionId
-        )}&limit=5`
-      );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        "Failed to load match history."
-      );
-    }
-
-    const matches =
-      Array.isArray(data.matches)
-        ? data.matches.slice(0, 5)
-        : [];
-
-    window.scoreladderRecentMatches =
-      matches;
-
-    renderRecentMatches(
-      matches
-    );
-
-    const hasQuestionData =
-      matches.some(
-        match =>
-          extractQuestionResults(
-            match
-          ).length > 0
-      );
-
-    if (hasQuestionData) {
-      renderHistoricalTopicPerformance(
-        matches
-      );
-    } else {
-      await loadHistoricalTopicPerformance();
-    }
-
-    if (isCoolingDown()) {
-      renderCooldownPracticeMessage();
-    }
-  } catch (error) {
-    console.error(
-      "Failed to load recent matches:",
-      error
-    );
-  }
-}
 
 /* =========================================================
-   EXTRACT QUESTION RESULTS
+   MATCH HISTORY HELPERS
    ========================================================= */
 
-function extractQuestionResults(match) {
+export function extractQuestionResults(match) {
   if (
     !match ||
     typeof match !== "object"
@@ -1011,7 +1586,7 @@ function extractQuestionResults(match) {
   return [];
 }
 
-function extractResultTopic(result) {
+export function extractResultTopic(result) {
   if (
     !result ||
     typeof result !== "object"
@@ -1029,19 +1604,153 @@ function extractResultTopic(result) {
   );
 }
 
+
 /* =========================================================
-   HISTORICAL TOPIC PERFORMANCE
+   TOPIC PERFORMANCE
    ========================================================= */
 
-function renderHistoricalTopicPerformance(
+export function appendTopicRow(
+  container,
+  topic,
+  stats,
+  struggling
+) {
+  const total =
+    Number(stats.total) || 0;
+
+  const correct =
+    Number(stats.correct) || 0;
+
+  const accuracy =
+    total > 0
+      ? Math.round(
+          (correct / total) * 100
+        )
+      : 0;
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "topic-performance-row";
+
+  if (struggling) {
+    row.classList.add(
+      "topic-struggling"
+    );
+  }
+
+  const name =
+    document.createElement("span");
+
+  name.className =
+    "topic-performance-name";
+
+  name.textContent =
+    getTopicDisplayName(topic);
+
+  const score =
+    document.createElement("span");
+
+  score.className =
+    "topic-performance-score";
+
+  score.textContent =
+    `${correct}/${total} (${accuracy}%)`;
+
+  row.appendChild(name);
+
+  row.appendChild(score);
+
+  if (struggling) {
+    const label =
+      document.createElement("span");
+
+    label.className =
+      "topic-struggling-label";
+
+    label.textContent =
+      "Needs work";
+
+    row.appendChild(label);
+  }
+
+  container.appendChild(row);
+}
+
+export function renderTopicStatsIntoContainer(
+  container,
+  topics
+) {
+  topics = [...topics];
+
+  topics.sort(
+    ([, a], [, b]) => {
+      const accuracyA =
+        a.total > 0
+          ? a.correct / a.total
+          : 0;
+
+      const accuracyB =
+        b.total > 0
+          ? b.correct / b.total
+          : 0;
+
+      if (
+        accuracyA !==
+        accuracyB
+      ) {
+        return (
+          accuracyA -
+          accuracyB
+        );
+      }
+
+      return (
+        b.total -
+        a.total
+      );
+    }
+  );
+
+  const weakestTopics =
+    topics.slice(0, 3);
+
+  if (
+    weakestTopics.length > 0
+  ) {
+    const weakHeading =
+      document.createElement("h4");
+
+    weakHeading.textContent =
+      "Top 3 Topics to Practice";
+
+    container.appendChild(
+      weakHeading
+    );
+
+    weakestTopics.forEach(
+      ([topic, stats]) => {
+        appendTopicRow(
+          container,
+          topic,
+          stats,
+          true
+        );
+      }
+    );
+  }
+}
+
+export function renderHistoricalTopicPerformance(
   matches
 ) {
-  if (!resultDiv) {
+  if (!elements.resultDiv) {
     return;
   }
 
   const oldPerformance =
-    resultDiv.querySelector(
+    elements.resultDiv.querySelector(
       ".historical-topic-performance"
     );
 
@@ -1060,7 +1769,8 @@ function renderHistoricalTopicPerformance(
       );
 
     for (
-      const result of questionResults
+      const result of
+        questionResults
     ) {
       const topic =
         extractResultTopic(
@@ -1071,7 +1781,9 @@ function renderHistoricalTopicPerformance(
         continue;
       }
 
-      if (!topicStats[topic]) {
+      if (
+        !topicStats[topic]
+      ) {
         topicStats[topic] = {
           correct: 0,
           total: 0
@@ -1091,9 +1803,7 @@ function renderHistoricalTopicPerformance(
   }
 
   const topics =
-    Object.entries(
-      topicStats
-    );
+    Object.entries(topicStats);
 
   const container =
     document.createElement("div");
@@ -1137,7 +1847,7 @@ function renderHistoricalTopicPerformance(
       empty
     );
 
-    resultDiv.appendChild(
+    elements.resultDiv.appendChild(
       container
     );
 
@@ -1149,231 +1859,20 @@ function renderHistoricalTopicPerformance(
     topics
   );
 
-  resultDiv.appendChild(
+  elements.resultDiv.appendChild(
     container
   );
 }
 
-/* =========================================================
-   SERVER TOPIC PERFORMANCE
-   ========================================================= */
-
-async function loadHistoricalTopicPerformance() {
-  const sessionId =
-    getSessionId();
-
-  if (!sessionId) {
-    return;
-  }
-
-  try {
-    const response =
-      await fetch(
-        `${AUTH_API}/topic-performance?session=${encodeURIComponent(
-          sessionId
-        )}&limit=5`
-      );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-      renderNoHistoricalTopicData(
-        "The topic performance endpoint returned an error."
-      );
-
-      return;
-    }
-
-    if (
-      !data ||
-      data.success !== true
-    ) {
-      renderNoHistoricalTopicData(
-        "The server could not calculate topic performance."
-      );
-
-      return;
-    }
-
-    let rawTopics = [];
-
-    if (
-      Array.isArray(data.topics)
-    ) {
-      rawTopics =
-        data.topics;
-    } else if (
-      data.topics &&
-      typeof data.topics === "object"
-    ) {
-      rawTopics =
-        Object.entries(
-          data.topics
-        ).map(
-          ([topic, stats]) => ({
-            topic,
-            ...(stats || {})
-          })
-        );
-    } else if (
-      Array.isArray(data.topicStats)
-    ) {
-      rawTopics =
-        data.topicStats;
-    } else if (
-      data.topicStats &&
-      typeof data.topicStats === "object"
-    ) {
-      rawTopics =
-        Object.entries(
-          data.topicStats
-        ).map(
-          ([topic, stats]) => ({
-            topic,
-            ...(stats || {})
-          })
-        );
-    }
-
-    const normalizedStats = {};
-
-    for (
-      const item of rawTopics
-    ) {
-      if (
-        !item ||
-        typeof item !== "object"
-      ) {
-        continue;
-      }
-
-      const topic =
-        normalizeTopic(
-          item.topic ??
-          item.question_type ??
-          item.questionType ??
-          item.type ??
-          item.name
-        );
-
-      if (!topic) {
-        continue;
-      }
-
-      let correct =
-        Number(
-          item.correct ??
-          item.questions_correct ??
-          item.questionsCorrect ??
-          item.correct_count ??
-          item.correctCount ??
-          0
-        );
-
-      let total =
-        Number(
-          item.total ??
-          item.questions_answered ??
-          item.questionsAnswered ??
-          item.total_questions ??
-          item.totalQuestions ??
-          item.total_count ??
-          item.totalCount ??
-          item.attempts ??
-          item.question_count ??
-          item.questionCount ??
-          0
-        );
-
-      if (
-        !Number.isFinite(correct)
-      ) {
-        correct = 0;
-      }
-
-      if (
-        !Number.isFinite(total)
-      ) {
-        total = 0;
-      }
-
-      if (
-        correct === 0 &&
-        total > 0 &&
-        Number.isFinite(
-          Number(item.accuracy)
-        ) &&
-        Number(item.accuracy) > 0
-      ) {
-        let accuracy =
-          Number(item.accuracy);
-
-        if (accuracy > 1) {
-          accuracy /= 100;
-        }
-
-        correct =
-          Math.round(
-            accuracy * total
-          );
-      }
-
-      if (total <= 0) {
-        continue;
-      }
-
-      if (!normalizedStats[topic]) {
-        normalizedStats[topic] = {
-          correct: 0,
-          total: 0
-        };
-      }
-
-      normalizedStats[topic].correct +=
-        correct;
-
-      normalizedStats[topic].total +=
-        total;
-    }
-
-    const topics =
-      Object.entries(
-        normalizedStats
-      );
-
-    if (
-      topics.length === 0
-    ) {
-      renderNoHistoricalTopicData();
-
-      return;
-    }
-
-    renderHistoricalTopicStats(
-      topics
-    );
-  } catch (error) {
-    console.error(
-      "Failed to load historical topic performance:",
-      error
-    );
-
-    renderNoHistoricalTopicData(
-      "Failed to load topic performance."
-    );
-  }
-}
-
-function renderHistoricalTopicStats(
+export function renderHistoricalTopicStats(
   topics
 ) {
-  if (!resultDiv) {
+  if (!elements.resultDiv) {
     return;
   }
 
   const old =
-    resultDiv.querySelector(
+    elements.resultDiv.querySelector(
       ".historical-topic-performance"
     );
 
@@ -1404,189 +1903,39 @@ function renderHistoricalTopicStats(
     "topic-performance-description";
 
   description.textContent =
-    "Based on your recent completed matches.";
+    "Based on your accumulated question-level performance.";
 
   container.appendChild(
     description
   );
+
+  window.scoreladderHistoricalTopics =
+    [...topics];
 
   renderTopicStatsIntoContainer(
     container,
     topics
   );
 
-  resultDiv.appendChild(
+  elements.resultDiv.appendChild(
     container
   );
+
+  if (isCoolingDown()) {
+    renderCooldownPracticeMessage();
+  }
 }
 
-function renderTopicStatsIntoContainer(
-  container,
-  topics
-) {
-  topics = [...topics];
-
-  topics.sort(
-    ([, a], [, b]) => {
-      const accuracyA =
-        a.total > 0
-          ? a.correct / a.total
-          : 0;
-
-      const accuracyB =
-        b.total > 0
-          ? b.correct / b.total
-          : 0;
-
-      return (
-        accuracyA -
-        accuracyB
-      );
-    }
-  );
-
-  const strugglingTopics =
-    topics.filter(
-      ([, stats]) => {
-        const accuracy =
-          stats.total > 0
-            ? stats.correct /
-              stats.total
-            : 0;
-
-        return (
-          stats.total >= 3 &&
-          accuracy < 0.70
-        );
-      }
-    );
-
-  if (
-    strugglingTopics.length === 0
-  ) {
-    const good =
-      document.createElement("p");
-
-    good.textContent =
-      "No clear weak topics yet. Keep playing to build a larger sample.";
-
-    container.appendChild(
-      good
-    );
-  } else {
-    strugglingTopics.forEach(
-      ([topic, stats]) => {
-        appendTopicRow(
-          container,
-          topic,
-          stats,
-          true
-        );
-      }
-    );
-  }
-
-  const allHeading =
-    document.createElement("h4");
-
-  allHeading.textContent =
-    "All Topic Performance";
-
-  container.appendChild(
-    allHeading
-  );
-
-  topics.forEach(
-    ([topic, stats]) => {
-      appendTopicRow(
-        container,
-        topic,
-        stats,
-        false
-      );
-    }
-  );
-}
-
-function appendTopicRow(
-  container,
-  topic,
-  stats,
-  struggling
-) {
-  const total =
-    Number(stats.total) || 0;
-
-  const correct =
-    Number(stats.correct) || 0;
-
-  const accuracy =
-    total > 0
-      ? Math.round(
-          (correct / total) *
-          100
-        )
-      : 0;
-
-  const row =
-    document.createElement("div");
-
-  row.className =
-    "topic-performance-row";
-
-  if (struggling) {
-    row.classList.add(
-      "topic-struggling"
-    );
-  }
-
-  const name =
-    document.createElement("span");
-
-  name.className =
-    "topic-performance-name";
-
-  name.textContent =
-    getTopicDisplayName(topic);
-
-  const score =
-    document.createElement("span");
-
-  score.className =
-    "topic-performance-score";
-
-  score.textContent =
-    `${correct}/${total} (${accuracy}%)`;
-
-  row.appendChild(name);
-  row.appendChild(score);
-
-  if (struggling) {
-    const label =
-      document.createElement("span");
-
-    label.className =
-      "topic-struggling-label";
-
-    label.textContent =
-      "Needs work";
-
-    row.appendChild(label);
-  }
-
-  container.appendChild(row);
-}
-
-function renderNoHistoricalTopicData(
+export function renderNoHistoricalTopicData(
   reason =
     "Topic performance will appear after enough question-level match data is available."
 ) {
-  if (!resultDiv) {
+  if (!elements.resultDiv) {
     return;
   }
 
   const old =
-    resultDiv.querySelector(
+    elements.resultDiv.querySelector(
       ".historical-topic-performance"
     );
 
@@ -1630,24 +1979,25 @@ function renderNoHistoricalTopicData(
     empty
   );
 
-  resultDiv.appendChild(
+  elements.resultDiv.appendChild(
     container
   );
 }
+
 
 /* =========================================================
    RECENT MATCH DISPLAY
    ========================================================= */
 
-function renderRecentMatches(
+export function renderRecentMatches(
   matches
 ) {
-  if (!resultDiv) {
+  if (!elements.resultDiv) {
     return;
   }
 
   const oldHistory =
-    resultDiv.querySelector(
+    elements.resultDiv.querySelector(
       ".recent-match-history"
     );
 
@@ -1684,7 +2034,7 @@ function renderRecentMatches(
       empty
     );
 
-    resultDiv.appendChild(
+    elements.resultDiv.appendChild(
       container
     );
 
@@ -1718,6 +2068,7 @@ function renderRecentMatches(
 
       const opponentName =
         match.opponentUsername ||
+        match.opponent_username ||
         match.opponent?.username ||
         match.opponent?.display_name ||
         match.opponent ||
@@ -1750,14 +2101,12 @@ function renderRecentMatches(
           Number(rawAccuracy)
         )
           ? Number(rawAccuracy)
-          : (
-              total > 0
-                ? Math.round(
-                    (correct / total) *
-                    100
-                  )
-                : 0
-            );
+          : total > 0
+            ? Math.round(
+                (correct / total) *
+                  100
+              )
+            : 0;
 
       const resultText =
         result === "win"
@@ -1792,1172 +2141,670 @@ function renderRecentMatches(
     }
   );
 
-  resultDiv.appendChild(
+  elements.resultDiv.appendChild(
     container
   );
 }
 
-/* =========================================================
-   CURRENT MATCH TOPIC PERFORMANCE
-   ========================================================= */
-
-function renderTopicPerformance(
-  data
-) {
-  if (!resultDiv) {
-    return;
-  }
-
-  const old =
-    resultDiv.querySelector(
-      ".current-topic-performance"
-    );
-
-  if (old) {
-    old.remove();
-  }
-
-  const questionResults =
-    Array.isArray(
-      data.questionResults
-    )
-      ? data.questionResults
-      : [];
-
-  const topicStats = {};
-
-  questions.forEach(
-    (question, questionIndex) => {
-      const result =
-        questionResults.find(
-          item =>
-            Number(
-              item.questionIndex
-            ) === questionIndex
-        );
-
-      if (!result) {
-        return;
-      }
-
-      const topic =
-        normalizeTopic(
-          question.topic ||
-          question.originalTopic ||
-          result.topic
-        );
-
-      if (!topic) {
-        return;
-      }
-
-      if (!topicStats[topic]) {
-        topicStats[topic] = {
-          correct: 0,
-          total: 0
-        };
-      }
-
-      topicStats[topic].total++;
-
-      if (
-        result.correct === true ||
-        result.correct === 1 ||
-        result.correct === "1"
-      ) {
-        topicStats[topic].correct++;
-      }
-    }
-  );
-
-  const topics =
-    Object.entries(
-      topicStats
-    );
-
-  if (
-    topics.length === 0
-  ) {
-    return;
-  }
-
-  topics.sort(
-    ([, a], [, b]) =>
-      a.correct / a.total -
-      b.correct / b.total
-  );
-
-  const performance =
-    document.createElement("div");
-
-  performance.className =
-    "current-topic-performance";
-
-  const heading =
-    document.createElement("h3");
-
-  heading.textContent =
-    "This Match: Topic Performance";
-
-  performance.appendChild(
-    heading
-  );
-
-  topics.forEach(
-    ([topic, stats]) => {
-      appendTopicRow(
-        performance,
-        topic,
-        stats,
-        stats.total >= 2 &&
-        (
-          stats.correct /
-          stats.total
-        ) < 0.70
-      );
-    }
-  );
-
-  resultDiv.appendChild(
-    performance
-  );
-}
 
 /* =========================================================
-   MATCHMAKING
+   LOAD HISTORICAL TOPIC PERFORMANCE
    ========================================================= */
 
-async function startMatchmaking() {
-  if (isCoolingDown()) {
-    updateCooldownUI();
-
-    setStatus(
-      "You are still on cooldown."
-    );
-
-    return;
-  }
-
-  if (inQueue) {
-    return;
-  }
-
+export async function loadHistoricalTopicPerformance() {
   const sessionId =
     getSessionId();
 
   if (!sessionId) {
-    setStatus(
-      "You must be logged in to play multiplayer."
+    renderNoHistoricalTopicData(
+      "No active session was found."
     );
 
     return;
   }
 
-  matchId = null;
-  opponent = null;
-
-  playerReady = false;
-  gameStarted = false;
-
-  challengeSubmitted = false;
-  submissionInProgress = false;
-
-  matchConnectionConfirmed =
-    false;
-
-  inQueue = true;
-
-  if (startMatchButton) {
-    startMatchButton.disabled = true;
-    startMatchButton.textContent =
-      "Joining Queue...";
-  }
-
-  if (submitButton) {
-    submitButton.style.display =
-      "none";
-  }
-
-  setStatus(
-    "Finding an opponent..."
-  );
-
   try {
-    const response =
-      await fetch(
-        `${API}/matchmake?session=${encodeURIComponent(
-          sessionId
-        )}`
-      );
-
-    const data =
-      await response.json();
+    const url =
+      `${getAuthApiUrl(
+        "topic-performance"
+      )}?session=${encodeURIComponent(
+        sessionId
+      )}`;
 
     console.log(
-      "Matchmaking response:",
-      data
+      "Loading historical topic performance:",
+      url
     );
+
+    const response =
+      await fetch(url);
+
+    let data = {};
+
+    try {
+      data =
+        await response.json();
+    } catch {
+      data = {};
+    }
 
     if (!response.ok) {
-      if (data.cooldownUntil) {
-        const serverCooldown =
-          Number(data.cooldownUntil);
-
-        if (
-          Number.isFinite(serverCooldown) &&
-          serverCooldown > Date.now()
-        ) {
-          saveCooldownUntil(
-            serverCooldown
-          );
-
-          newGameMode = true;
-
-          startCooldownTimer();
-
-          renderCooldownPracticeMessage();
-        }
-      }
-
       throw new Error(
         data.error ||
-        "Unable to enter matchmaking."
+        `Topic performance request failed (${response.status})`
       );
     }
 
+    let topics = null;
+
     if (
-      data.status === "cooldown"
+      Array.isArray(data.topics)
     ) {
-      inQueue = false;
+      topics =
+        data.topics;
+    } else if (
+      data.topicPerformance &&
+      typeof data.topicPerformance ===
+        "object"
+    ) {
+      topics =
+        data.topicPerformance;
+    } else if (
+      data.topic_performance &&
+      typeof data.topic_performance ===
+        "object"
+    ) {
+      topics =
+        data.topic_performance;
+    } else if (
+      data.performance &&
+      typeof data.performance ===
+        "object"
+    ) {
+      topics =
+        data.performance;
+    }
 
-      if (data.nextGameAt) {
-        const nextGameAt =
-          Number(data.nextGameAt);
+    if (
+      topics &&
+      !Array.isArray(topics)
+    ) {
+      topics =
+        Object.entries(topics);
+    }
 
-        if (
-          Number.isFinite(nextGameAt) &&
-          nextGameAt > Date.now()
-        ) {
-          saveCooldownUntil(
-            nextGameAt
+    if (
+      !Array.isArray(topics)
+    ) {
+      renderNoHistoricalTopicData(
+        "No question-level topic data is available yet."
+      );
+
+      return;
+    }
+
+    const normalizedTopics = [];
+
+    for (
+      const entry of topics
+    ) {
+      if (
+        Array.isArray(entry) &&
+        entry.length >= 2
+      ) {
+        const topic =
+          normalizeTopic(
+            entry[0]
           );
 
-          newGameMode = true;
-
-          startCooldownTimer();
-
-          renderCooldownPracticeMessage();
-
-          return;
+        if (!topic) {
+          continue;
         }
+
+        const stats =
+          entry[1];
+
+        if (
+          !stats ||
+          typeof stats !== "object"
+        ) {
+          continue;
+        }
+
+        normalizedTopics.push([
+          topic,
+          {
+            correct:
+              Number(
+                stats.correct ??
+                stats.questions_correct ??
+                stats.questionsCorrect ??
+                0
+              ),
+
+            total:
+              Number(
+                stats.total ??
+                stats.questions_answered ??
+                stats.questionsAnswered ??
+                0
+              )
+          }
+        ]);
+
+        continue;
       }
 
-      throw new Error(
-        "Game cooldown is active."
-      );
-    }
+      if (
+        entry &&
+        typeof entry === "object"
+      ) {
+        const topic =
+          normalizeTopic(
+            entry.topic ??
+            entry.question_type ??
+            entry.questionType ??
+            entry.type
+          );
 
-    playerId =
-      data.playerId;
+        if (!topic) {
+          continue;
+        }
 
-    if (data.player) {
-      updatePlayer(
-        data.player
-      );
+        normalizedTopics.push([
+          topic,
+          {
+            correct:
+              Number(
+                entry.correct ??
+                entry.questions_correct ??
+                entry.questionsCorrect ??
+                0
+              ),
+
+            total:
+              Number(
+                entry.total ??
+                entry.questions_answered ??
+                entry.questionsAnswered ??
+                0
+              )
+          }
+        ]);
+      }
     }
 
     if (
-      data.status === "matched"
+      normalizedTopics.length === 0
     ) {
-      matchId =
-        data.matchId;
-
-      inQueue = false;
-
-      updateOpponent(
-        data.opponent
+      renderNoHistoricalTopicData(
+        "No question-level topic data is available yet."
       );
-
-      setStatus(
-        "Opponent found!"
-      );
-
-      startMatchButton.textContent =
-        "Connecting...";
-
-      onMatchFound();
 
       return;
     }
-
-    startMatchButton.textContent =
-      "In Queue";
-
-    setStatus(
-      "Waiting for opponent..."
-    );
-
-    checkForMatch();
-
-  } catch (error) {
-    console.error(
-      "Matchmaking error:",
-      error
-    );
-
-    setStatus(
-      error.message ||
-      "Unable to connect to matchmaking."
-    );
-
-    inQueue = false;
-
-    if (isCoolingDown()) {
-      updateCooldownUI();
-      return;
-    }
-
-    startMatchButton.disabled =
-      false;
-
-    startMatchButton.textContent =
-      "Join Queue";
-
-    if (submitButton) {
-      submitButton.style.display =
-        "none";
-    }
-  }
-}
-
-/* =========================================================
-   CHECK FOR MATCH
-   ========================================================= */
-
-async function checkForMatch() {
-  if (
-    checkingMatch ||
-    !playerId ||
-    matchId
-  ) {
-    return;
-  }
-
-  checkingMatch = true;
-
-  try {
-    const response =
-      await fetch(
-        `${API}/check-match?playerId=${encodeURIComponent(
-          playerId
-        )}`
-      );
-
-    const data =
-      await response.json();
 
     console.log(
-      "Match check:",
-      data
+      "Loaded historical topic performance:",
+      normalizedTopics
     );
 
-    if (
-      response.ok &&
-      data.status === "cooldown"
-    ) {
-      inQueue = false;
+    window.scoreladderHistoricalTopics =
+      normalizedTopics;
 
-      if (data.nextGameAt) {
-        const nextGameAt =
-          Number(data.nextGameAt);
-
-        if (
-          Number.isFinite(nextGameAt) &&
-          nextGameAt > Date.now()
-        ) {
-          saveCooldownUntil(
-            nextGameAt
-          );
-
-          newGameMode = true;
-
-          startCooldownTimer();
-
-          renderCooldownPracticeMessage();
-
-          return;
-        }
-      }
-    }
-
-    if (
-      response.ok &&
-      data.status === "matched"
-    ) {
-      matchId =
-        data.matchId;
-
-      inQueue = false;
-
-      updateOpponent(
-        data.opponent
-      );
-
-      setStatus(
-        "Opponent found!"
-      );
-
-      startMatchButton.textContent =
-        "Connecting...";
-
-      onMatchFound();
-
-      return;
-    }
-
+    renderHistoricalTopicStats(
+      normalizedTopics
+    );
   } catch (error) {
     console.error(
-      "Match check error:",
+      "Failed to load historical topic performance:",
       error
     );
-  } finally {
-    checkingMatch = false;
-  }
 
-  if (
-    !matchId &&
-    inQueue &&
-    !isCoolingDown()
-  ) {
-    setTimeout(
-      checkForMatch,
-      1000
+    renderNoHistoricalTopicData(
+      "Unable to load historical topic performance."
     );
   }
 }
 
-/* =========================================================
-   MATCH FOUND
-   ========================================================= */
-
-function onMatchFound() {
-  console.log(
-    "Match found:",
-    matchId
-  );
-
-  console.log(
-    "Opponent:",
-    opponent
-  );
-
-  matchConnectionConfirmed =
-    false;
-
-  connectToRoom();
-}
 
 /* =========================================================
-   WEBSOCKET
+   LOAD RECENT MATCHES
    ========================================================= */
 
-function connectToRoom() {
-  if (
-    !matchId ||
-    !playerId
-  ) {
-    console.error(
-      "Cannot connect to room:",
-      {
-        matchId,
-        playerId
-      }
+export async function loadRecentMatches() {
+  const sessionId =
+    getSessionId();
+
+  if (!sessionId) {
+    console.warn(
+      "Cannot load recent matches: no session ID."
     );
 
     return;
   }
 
-  const wsAPI =
-    API
-      .replace(
-        "http://",
-        "ws://"
-      )
-      .replace(
-        "https://",
-        "wss://"
+  try {
+    const url =
+      `${getAuthApiUrl(
+        "match-history"
+      )}?session=${encodeURIComponent(
+        sessionId
+      )}&limit=5`;
+
+    console.log(
+      "Loading recent matches:",
+      url
+    );
+
+    const response =
+      await fetch(url);
+
+    let data = {};
+
+    try {
+      data =
+        await response.json();
+    } catch {
+      data = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        `Match history request failed (${response.status})`
+      );
+    }
+
+    const matches =
+      Array.isArray(data.matches)
+        ? data.matches.slice(0, 5)
+        : [];
+
+    console.log(
+      "Loaded recent matches:",
+      matches
+    );
+
+    window.scoreladderRecentMatches =
+      matches;
+
+    const hasQuestionData =
+      matches.some(
+        match =>
+          extractQuestionResults(
+            match
+          ).length > 0
       );
 
-  const socketURL =
-    `${wsAPI}/match?matchId=${encodeURIComponent(
+    if (hasQuestionData) {
+      renderHistoricalTopicPerformance(
+        matches
+      );
+    }
+
+    await loadHistoricalTopicPerformance();
+
+    if (isCoolingDown()) {
+      renderCooldownPracticeMessage();
+    }
+  } catch (error) {
+    console.error(
+      "Failed to load recent matches:",
+      error
+    );
+
+    window.scoreladderRecentMatches =
+      [];
+
+    renderRecentMatches([]);
+
+    await loadHistoricalTopicPerformance();
+  }
+}
+
+
+/* =========================================================
+   MATCH TIMER HELPERS
+   ========================================================= */
+
+export function stopMatchTimer() {
+  if (state.timerInterval) {
+    clearInterval(
+      state.timerInterval
+    );
+
+    state.timerInterval =
+      null;
+  }
+}
+
+export function clearMatchTimer() {
+  stopMatchTimer();
+
+  state.challengeDeadline =
+    0;
+
+  state.timeRemaining =
+    0;
+}
+
+
+/* =========================================================
+   RESUME UI / PERSISTENCE
+   ========================================================= */
+
+export function saveResumeMatch(matchId) {
+  if (
+    typeof matchId !== "string" ||
+    matchId.length === 0
+  ) {
+    return;
+  }
+
+  state.resumeAvailable =
+    true;
+
+  state.resumeMatchId =
+    matchId;
+
+  try {
+    localStorage.setItem(
+      RESUME_MATCH_STORAGE_KEY,
       matchId
-    )}` +
-    `&playerId=${encodeURIComponent(
-      playerId
-    )}`;
-
-  console.log(
-    "Connecting to room:",
-    socketURL
-  );
-
-  if (
-    matchSocket &&
-    matchSocket.readyState !==
-      WebSocket.CLOSED &&
-    matchSocket.readyState !==
-      WebSocket.CLOSING
-  ) {
-    matchSocket.close();
-  }
-
-  const socket =
-    new WebSocket(
-      socketURL
     );
-
-  matchSocket =
-    socket;
-
-  socket.addEventListener(
-    "open",
-    () => {
-      console.log(
-        "WebSocket connected."
-      );
-
-      setStatus(
-        "Connected. Waiting for opponent..."
-      );
-    }
-  );
-
-  socket.addEventListener(
-    "message",
-    event => {
-      console.log(
-        "WebSocket message:",
-        event.data
-      );
-
-      let data;
-
-      try {
-        data =
-          JSON.parse(
-            event.data
-          );
-      } catch (error) {
-        console.error(
-          "Invalid WebSocket message:",
-          event.data
-        );
-
-        return;
-      }
-
-      if (
-        matchSocket !== socket
-      ) {
-        console.warn(
-          "Ignoring message from stale socket."
-        );
-
-        return;
-      }
-
-      switch (data.type) {
-
-        case "connected":
-
-          console.log(
-            "Room connection confirmed:",
-            data
-          );
-
-          if (
-            data.opponent
-          ) {
-            updateOpponent(
-              data.opponent
-            );
-          }
-
-          return;
-
-        case "waiting_for_opponent":
-
-          if (
-            !matchConnectionConfirmed &&
-            !gameStarted
-          ) {
-            setStatus(
-              "Waiting for opponent to connect..."
-            );
-
-            if (startMatchButton) {
-              startMatchButton.disabled =
-                true;
-
-              startMatchButton.textContent =
-                "Waiting for Opponent...";
-            }
-          }
-
-          return;
-
-        case "match_ready":
-
-          matchConnectionConfirmed =
-            true;
-
-          inQueue = true;
-
-          gameStarted = false;
-
-          playerReady = false;
-
-          setStatus(
-            "Both players connected. Ready to start."
-          );
-
-          if (startMatchButton) {
-            startMatchButton.disabled =
-              false;
-
-            startMatchButton.textContent =
-              "Start Match";
-          }
-
-          return;
-
-        case "opponent_ready":
-
-          matchConnectionConfirmed =
-            true;
-
-          if (!gameStarted) {
-            setStatus(
-              "Opponent is ready. Click Start Match when ready."
-            );
-          }
-
-          return;
-
-        case "game_schedule":
-
-          console.log(
-            "Next game scheduled:",
-            data.nextGameAt
-          );
-
-          if (
-            data.nextGameAt &&
-            !gameStarted
-          ) {
-            setStatus(
-              data.message ||
-              "Game scheduled."
-            );
-          }
-
-          return;
-
-        case "game_start":
-
-          matchConnectionConfirmed =
-            true;
-
-          inQueue = false;
-
-          handleGameStart(
-            data
-          );
-
-          return;
-
-        case "answer_update":
-
-          return;
-
-        case "opponent_submitted":
-
-          setStatus(
-            "Opponent has submitted. Finish your answers."
-          );
-
-          return;
-
-        case "submission_received":
-
-          if (data.automatic) {
-            setStatus(
-              "Time expired. Waiting for opponent..."
-            );
-          }
-
-          return;
-
-        case "game_result":
-
-          handleGameResult(
-            data
-          );
-
-          return;
-
-        case "game_error":
-
-          console.error(
-            "Game error:",
-            data.message
-          );
-
-          gameStarted = false;
-          playerReady = false;
-          inQueue = false;
-
-          matchConnectionConfirmed =
-            false;
-
-          clearMatchTimer();
-
-          setStatus(
-            data.message ||
-            "Unable to start match."
-          );
-
-          if (startMatchButton) {
-            startMatchButton.disabled =
-              false;
-
-            startMatchButton.textContent =
-              "Join Queue";
-          }
-
-          return;
-
-        case "game_not_ready":
-
-          setStatus(
-            data.message ||
-            "The game is not ready yet."
-          );
-
-          gameStarted = false;
-          playerReady = false;
-
-          if (
-            matchConnectionConfirmed &&
-            startMatchButton
-          ) {
-            startMatchButton.disabled =
-              false;
-
-            startMatchButton.textContent =
-              "Start Match";
-          }
-
-          return;
-
-        case "opponent_left":
-
-          if (
-            !matchConnectionConfirmed &&
-            !gameStarted
-          ) {
-            console.warn(
-              "Ignoring opponent_left before match was confirmed."
-            );
-
-            return;
-          }
-
-          console.warn(
-            "Opponent disconnected."
-          );
-
-          setStatus(
-            "Opponent disconnected."
-          );
-
-          if (submitButton) {
-            submitButton.disabled =
-              true;
-          }
-
-          if (startMatchButton) {
-            startMatchButton.disabled =
-              true;
-          }
-
-          stopMatchTimer();
-
-          gameStarted = false;
-
-          return;
-
-        default:
-
-          console.warn(
-            "Unknown WebSocket message:",
-            data
-          );
-
-          return;
-      }
-    }
-  );
-
-  socket.addEventListener(
-    "error",
-    error => {
-      if (
-        matchSocket !== socket
-      ) {
-        return;
-      }
-
-      console.error(
-        "WebSocket error:",
-        error
-      );
-
-      setStatus(
-        "Connection to match failed."
-      );
-    }
-  );
-
-  socket.addEventListener(
-    "close",
-    event => {
-      console.log(
-        "WebSocket closed.",
-        {
-          code:
-            event.code,
-          reason:
-            event.reason
-        }
-      );
-
-      if (
-        matchSocket === socket &&
-        !gameStarted
-      ) {
-        console.log(
-          "Socket closed before game start."
-        );
-      }
-    }
-  );
+  } catch (error) {
+    console.error(
+      "Failed to save resume match:",
+      error
+    );
+  }
 }
 
-/* =========================================================
-   HANDLE SERVER GAME START
-   ========================================================= */
+export function getStoredResumeMatchId() {
+  try {
+    const matchId =
+      localStorage.getItem(
+        RESUME_MATCH_STORAGE_KEY
+      );
 
-function handleGameStart(data) {
-  console.log(
-    "GAME START RECEIVED:",
-    data
-  );
+    if (
+      typeof matchId !== "string" ||
+      matchId.length === 0
+    ) {
+      return null;
+    }
 
-  if (
-    !data ||
-    !Array.isArray(data.questions)
-  ) {
+    return matchId;
+  } catch (error) {
     console.error(
-      "Invalid game_start payload:",
-      data
+      "Failed to read resume match:",
+      error
     );
 
-    setStatus(
-      "The server sent an invalid question set."
-    );
-
-    return;
+    return null;
   }
+}
 
-  if (
-    data.questions.length !==
-    TOTAL_QUESTIONS
-  ) {
-    console.error(
-      "Unexpected question count:",
-      data.questions.length
-    );
-
-    setStatus(
-      `The server sent ${data.questions.length} questions instead of ${TOTAL_QUESTIONS}.`
-    );
-
-    return;
-  }
-
-  questions =
-    data.questions;
-
-  selectedAnswers =
-    new Array(
-      questions.length
-    ).fill(-1);
-
-  challengeSubmitted =
+export function clearResumeMatch() {
+  state.resumeAvailable =
     false;
 
-  submissionInProgress =
+  state.resumeMatchId =
+    null;
+
+  state.resumeInProgress =
     false;
 
-  playerReady =
+  state.reconnecting =
+    false;
+
+  try {
+    localStorage.removeItem(
+      RESUME_MATCH_STORAGE_KEY
+    );
+  } catch (error) {
+    console.error(
+      "Failed to clear resume match:",
+      error
+    );
+  }
+}
+
+export function enableResumeGame(
+  matchId = state.matchId
+) {
+  if (!matchId) {
+    matchId =
+      getStoredResumeMatchId();
+  }
+
+  if (!matchId) {
+    return false;
+  }
+
+  state.resumeAvailable =
     true;
 
-  inQueue =
+  state.resumeMatchId =
+    String(matchId);
+
+  state.matchId =
+    String(matchId);
+
+  if (!elements.startMatchButton) {
+    return true;
+  }
+
+  elements.startMatchButton.disabled =
     false;
 
-  gameStarted =
-    true;
-
-  newGameMode =
-    false;
-
-  if (submitButton) {
-    submitButton.style.display =
-      "block";
-
-    submitButton.textContent =
-      "Submit Answers";
-
-    submitButton.disabled =
-      true;
-  }
-
-  if (startMatchButton) {
-    startMatchButton.disabled =
-      true;
-
-    startMatchButton.textContent =
-      "Match In Progress";
-  }
-
-  if (resultDiv) {
-    resultDiv.innerHTML = "";
-  }
-
-  renderQuestions();
-
-  startMatchTimer(
-    data.startTime
+  elements.startMatchButton.removeAttribute(
+    "disabled"
   );
+
+  elements.startMatchButton.style.display =
+    "block";
+
+  elements.startMatchButton.textContent =
+    "Resume Game";
 
   setStatus(
-    "Match started. Answer all questions before time expires."
+    "You were disconnected from your match. Resume the game to reconnect."
   );
 
-  updateSubmitButton();
+  return true;
 }
 
-/* =========================================================
-   MATCH TIMER
-   ========================================================= */
+export function disableResumeGame() {
+  clearActiveMatchState();
 
-function startMatchTimer(
-  serverStartTime
-) {
-  stopMatchTimer();
-
-  const startTime =
-    Number(
-      serverStartTime
-    );
+  if (!elements.startMatchButton) {
+    return;
+  }
 
   if (
-    !Number.isFinite(
-      startTime
+    state.gameStarted ||
+    state.inQueue ||
+    isCoolingDown()
+  ) {
+    return;
+  }
+
+  elements.startMatchButton.disabled =
+    false;
+
+  elements.startMatchButton.textContent =
+    "Join Queue";
+}
+
+export function isResumeAvailable() {
+  const activeState =
+    getStoredActiveMatchState();
+
+  if (
+    activeState &&
+    isLogicalMatchId(
+      activeState.matchId
     )
   ) {
-    console.error(
-      "Invalid server start time:",
-      serverStartTime
-    );
+    state.resumeAvailable =
+      true;
 
-    setStatus(
-      "Unable to start timer."
-    );
+    state.resumeMatchId =
+      activeState.matchId;
 
-    return;
+    return true;
   }
 
-  challengeDeadline =
-    startTime +
-    MATCH_DURATION_MS;
+  const storedMatchId =
+    getStoredResumeMatchId();
 
-  gameStarted =
+  if (
+    isLogicalMatchId(
+      storedMatchId
+    )
+  ) {
+    state.resumeAvailable =
+      true;
+
+    state.resumeMatchId =
+      storedMatchId;
+
+    return true;
+  }
+
+  return (
+    state.resumeAvailable === true &&
+    isLogicalMatchId(
+      state.resumeMatchId
+    )
+  );
+}
+
+export function initializeResumeGame() {
+  const restored =
+    restoreActiveMatchState();
+
+  if (restored) {
+    console.log(
+      "Restored active match state:",
+      {
+        matchId:
+          state.matchId,
+
+        playerId:
+          state.playerId,
+
+        selectedAnswers:
+          state.selectedAnswers,
+
+        questionCount:
+          state.questions.length,
+
+        challengeDeadline:
+          state.challengeDeadline,
+
+        gameStarted:
+          state.gameStarted
+      }
+    );
+  }
+
+  const matchId =
+    state.matchId ||
+    getStoredResumeMatchId();
+
+  if (
+    !isLogicalMatchId(
+      matchId
+    )
+  ) {
+    state.resumeAvailable =
+      false;
+
+    state.resumeMatchId =
+      null;
+
+    return false;
+  }
+
+  state.resumeAvailable =
     true;
 
-  timeRemaining =
-    Math.max(
-      0,
-      Math.ceil(
-        (
-          challengeDeadline -
-          Date.now()
-        ) / 1000
-      )
+  state.resumeMatchId =
+    String(matchId);
+
+  state.matchId =
+    String(matchId);
+
+  state.matchConnectionConfirmed =
+    false;
+
+  state.inQueue =
+    false;
+
+  state.reconnecting =
+    false;
+
+  if (
+    elements.startMatchButton &&
+    !state.gameStarted &&
+    !state.inQueue &&
+    !isCoolingDown()
+  ) {
+    enableResumeGame(
+      state.matchId
     );
-
-  updateMatchTimer();
-
-  timerInterval =
-    setInterval(
-      () => {
-        if (!gameStarted) {
-          stopMatchTimer();
-
-          return;
-        }
-
-        const remaining =
-          Math.max(
-            0,
-            Math.ceil(
-              (
-                challengeDeadline -
-                Date.now()
-              ) / 1000
-            )
-          );
-
-        timeRemaining =
-          remaining;
-
-        updateMatchTimer();
-
-        if (
-          remaining <= 0
-        ) {
-          stopMatchTimer();
-
-          if (
-            gameStarted &&
-            !challengeSubmitted &&
-            !submissionInProgress
-          ) {
-            submitMatch(true);
-          }
-        }
-      },
-      250
-    );
-}
-
-function stopMatchTimer() {
-  if (timerInterval) {
-    clearInterval(
-      timerInterval
-    );
-
-    timerInterval = null;
-  }
-}
-
-function clearMatchTimer() {
-  stopMatchTimer();
-
-  challengeDeadline =
-    0;
-
-  timeRemaining =
-    0;
-}
-
-function updateMatchTimer() {
-  if (!timerDiv) {
-    return;
   }
 
-  if (!gameStarted) {
-    return;
-  }
-
-  const safeSeconds =
-    Math.max(
-      0,
-      Math.ceil(
-        timeRemaining
-      )
-    );
-
-  const minutes =
-    Math.floor(
-      safeSeconds / 60
-    );
-
-  const seconds =
-    safeSeconds % 60;
-
-  timerDiv.textContent =
-    `${minutes}:${String(
-      seconds
-    ).padStart(2, "0")}`;
+  return true;
 }
+
 
 /* =========================================================
    RENDER QUESTIONS
    ========================================================= */
 
 function renderQuestions() {
-  if (!questionsDiv) {
+  if (!elements.questionsDiv) {
     return;
   }
 
-  questionsDiv.innerHTML =
-    "";
+  elements.questionsDiv.innerHTML = "";
 
-  questions.forEach(
+  state.questions.forEach(
     (q, questionIndex) => {
       const card =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       card.className =
         "card";
 
-      const questionNumber =
-        document.createElement(
-          "div"
-        );
+      const number =
+        document.createElement("div");
 
-      questionNumber.className =
+      number.className =
         "question-number";
 
-      questionNumber.textContent =
-        `Question ${
-          questionIndex + 1
-        }`;
+      number.textContent =
+        `Question ${questionIndex + 1}`;
 
       card.appendChild(
-        questionNumber
+        number
       );
 
       const meta =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       meta.className =
         "meta";
 
       meta.textContent =
-        `${getTopicDisplayName(
-          q.topic
-        )}` +
+        `${q.topic || q.originalTopic || ""}` +
         `${
           q.difficulty
-            ? " • " +
-              q.difficulty
+            ? " • " + q.difficulty
             : ""
         }`;
 
@@ -2967,9 +2814,7 @@ function renderQuestions() {
 
       if (q.passage) {
         const passage =
-          document.createElement(
-            "div"
-          );
+          document.createElement("div");
 
         passage.className =
           "passage";
@@ -2985,9 +2830,7 @@ function renderQuestions() {
       }
 
       const questionText =
-        document.createElement(
-          "p"
-        );
+        document.createElement("p");
 
       questionText.textContent =
         q.question || "";
@@ -2999,7 +2842,9 @@ function renderQuestions() {
       const choices =
         Array.isArray(q.choices)
           ? q.choices
-          : [];
+          : Object.values(
+              q.choices || {}
+            );
 
       choices.forEach(
         (
@@ -3018,15 +2863,28 @@ function renderQuestions() {
             "button";
 
           const letter =
-            ["A", "B", "C", "D"][
-              choiceIndex
-            ];
+            [
+              "A",
+              "B",
+              "C",
+              "D"
+            ][choiceIndex] || "?";
+
+          const text =
+            typeof choice ===
+            "object"
+              ? (
+                  choice.text ??
+                  choice.value ??
+                  ""
+                )
+              : choice;
 
           button.innerHTML = `
             <span class="choice-letter">
               ${letter}.
             </span>
-            ${escapeHtml(choice)}
+            ${escapeHtml(text)}
           `;
 
           button.addEventListener(
@@ -3045,695 +2903,299 @@ function renderQuestions() {
         }
       );
 
-      questionsDiv.appendChild(
+      elements.questionsDiv.appendChild(
         card
       );
     }
   );
 }
 
-/* =========================================================
-   SELECT ANSWER
-   ========================================================= */
-
-function selectAnswer(
-  questionIndex,
-  choiceIndex
-) {
-  if (!gameStarted) {
+function restoreSelectedAnswerUI() {
+  if (!elements.questionsDiv) {
     return;
   }
 
-  if (challengeSubmitted) {
-    return;
-  }
+  state.selectedAnswers.forEach(
+    (choiceIndex, questionIndex) => {
+      if (
+        !Number.isInteger(choiceIndex) ||
+        choiceIndex < 0
+      ) {
+        return;
+      }
 
-  if (submissionInProgress) {
-    return;
-  }
+      const card =
+        elements.questionsDiv.children[
+          questionIndex
+        ];
 
-  if (
-    questionIndex < 0 ||
-    questionIndex >=
-      selectedAnswers.length
-  ) {
-    return;
-  }
+      const buttons =
+        card?.querySelectorAll(
+          ".choice"
+        );
 
-  selectedAnswers[
-    questionIndex
-  ] = choiceIndex;
-
-  const card =
-    questionsDiv.children[
-      questionIndex
-    ];
-
-  if (!card) {
-    return;
-  }
-
-  const buttons =
-    card.querySelectorAll(
-      ".choice"
-    );
-
-  buttons.forEach(
-    button => {
-      button.classList.remove(
-        "selected"
-      );
+      if (
+        buttons?.[choiceIndex]
+      ) {
+        buttons[
+          choiceIndex
+        ].classList.add(
+          "selected"
+        );
+      }
     }
   );
-
-  if (
-    buttons[choiceIndex]
-  ) {
-    buttons[choiceIndex]
-      .classList.add(
-        "selected"
-      );
-  }
-
-  updateSubmitButton();
-
-  sendRoomMessage({
-    type:
-      "answer_update",
-
-    questionIndex
-  });
 }
 
-/* =========================================================
-   SUBMIT BUTTON
-   ========================================================= */
-
 function updateSubmitButton() {
-  if (!submitButton) {
+  if (!elements.submitButton) {
     return;
   }
 
-  if (newGameMode) {
-    submitButton.disabled =
+  if (
+    !state.gameStarted ||
+    state.newGameMode
+  ) {
+    elements.submitButton.disabled =
+      true;
+
+    return;
+  }
+
+  if (
+    state.challengeSubmitted ||
+    state.submissionInProgress
+  ) {
+    elements.submitButton.disabled =
       true;
 
     return;
   }
 
   const allAnswered =
-    selectedAnswers.length ===
-      TOTAL_QUESTIONS &&
-    selectedAnswers.every(
-      answer =>
-        answer !== -1
-    );
-
-  submitButton.disabled =
-    !allAnswered ||
-    challengeSubmitted ||
-    submissionInProgress ||
-    !gameStarted;
-}
-
-/* =========================================================
-   SUBMIT MATCH
-   ========================================================= */
-
-async function submitMatch(
-  autoSubmitted = false
-) {
-  if (challengeSubmitted) {
-    return;
-  }
-
-  if (submissionInProgress) {
-    return;
-  }
-
-  if (!gameStarted) {
-    return;
-  }
-
-  if (!autoSubmitted) {
-    const unanswered =
-      selectedAnswers.filter(
-        answer =>
-          answer === -1
-      ).length;
-
-    if (
-      unanswered > 0
-    ) {
-      alert(
-        `You still have ${unanswered} unanswered question${
-          unanswered === 1
-            ? ""
-            : "s"
-        }.`
-      );
-
-      return;
-    }
-  }
-
-  submissionInProgress =
-    true;
-
-  if (submitButton) {
-    submitButton.disabled =
-      true;
-  }
-
-  stopMatchTimer();
-
-  console.log(
-    "Submitting multiplayer answers:",
-    selectedAnswers
-  );
-
-  const sent =
-    sendRoomMessage({
-      type:
-        "submit_answers",
-
-      answers:
-        selectedAnswers.map(
-          (
-            selected,
-            questionIndex
-          ) => ({
-            questionIndex,
-            selected
-          })
-        )
-    });
-
-  if (!sent) {
-    submissionInProgress =
-      false;
-
-    if (submitButton) {
-      submitButton.disabled =
-        false;
-    }
-
-    alert(
-      "Connection to match was lost."
-    );
-
-    return;
-  }
-
-  setStatus(
-    autoSubmitted
-      ? "Time expired. Waiting for opponent..."
-      : "Answers submitted. Waiting for opponent..."
-  );
-}
-
-/* =========================================================
-   GAME RESULT
-   ========================================================= */
-
-async function handleGameResult(
-  data
-) {
-  console.log(
-    "MATCH RESULT RECEIVED:",
-    data
-  );
-
-  gameStarted =
-    false;
-
-  challengeSubmitted =
-    true;
-
-  submissionInProgress =
-    false;
-
-  inQueue =
-    false;
-
-  playerReady =
-    false;
-
-  matchConnectionConfirmed =
-    false;
-
-  clearMatchTimer();
-
-  const yourCorrect =
-    Number(
-      data.yourCorrect ?? 0
-    );
-
-  const yourTotal =
-    Number(
-      data.yourTotal ??
-      questions.length
-    );
-
-  const yourAccuracy =
-    yourTotal > 0
-      ? Math.round(
-          (yourCorrect /
-            yourTotal) *
-          100
-        )
-      : 0;
-
-  let message;
-
-  if (
-    data.result === "win"
-  ) {
-    message =
-      `You won! ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  } else if (
-    data.result === "loss"
-  ) {
-    message =
-      `You lost. ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  } else if (
-    data.result === "tie"
-  ) {
-    message =
-      `Tie! ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  } else {
-    message =
-      `Match complete: ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  }
-
-  showResult(
-    message
-  );
-
-  renderTopicPerformance(
-    data
-  );
-
-  renderResults(
-    data
-  );
-
-  if (
-    data.statsRecorded &&
-    data.statsRecorded.success ===
-      false
-  ) {
-    console.error(
-      "SERVER FAILED TO RECORD STATS:",
-      data.statsRecorded
-    );
-
-    setStatus(
-      "Match complete, but the server could not update your stats."
-    );
-  } else {
-    setStatus(
-      "Match complete. Refreshing stats..."
-    );
-  }
-
-  await refreshPlayerStats();
-
-  await loadRecentMatches();
-
-  beginCooldown();
-}
-
-/* =========================================================
-   RENDER ANSWER RESULTS
-   ========================================================= */
-
-function renderResults(data) {
-  const questionResults =
     Array.isArray(
-      data.questionResults
-    )
-      ? data.questionResults
-      : [];
+      state.selectedAnswers
+    ) &&
+    state.selectedAnswers.length ===
+      state.questions.length &&
+    state.selectedAnswers.every(
+      answer =>
+        Number.isInteger(answer) &&
+        answer >= 0
+    );
 
-  questions.forEach(
-    (q, questionIndex) => {
-      const card =
-        questionsDiv.children[
-          questionIndex
-        ];
-
-      if (!card) {
-        return;
-      }
-
-      const result =
-        questionResults.find(
-          item =>
-            Number(
-              item.questionIndex
-            ) === questionIndex
-        );
-
-      if (!result) {
-        return;
-      }
-
-      const selected =
-        Number.isInteger(
-          result.selected
-        )
-          ? result.selected
-          : -1;
-
-      const correctChoice =
-        Number.isInteger(
-          result.correctChoice
-        )
-          ? result.correctChoice
-          : -1;
-
-      const isCorrect =
-        result.correct === true ||
-        result.correct === 1 ||
-        result.correct === "1";
-
-      const oldBanner =
-        card.querySelector(
-          ".question-result"
-        );
-
-      if (oldBanner) {
-        oldBanner.remove();
-      }
-
-      const resultBanner =
-        document.createElement(
-          "div"
-        );
-
-      resultBanner.className =
-        `question-result ${
-          isCorrect
-            ? "question-result-correct"
-            : "question-result-incorrect"
-        }`;
-
-      if (isCorrect) {
-        resultBanner.innerHTML = `
-          <strong>✓ Correct</strong>
-          <span>
-            You selected
-            ${
-              selected >= 0 &&
-              selected < 4
-                ? ["A", "B", "C", "D"][
-                    selected
-                  ] + "."
-                : "No answer"
-            }
-          </span>
-        `;
-      } else {
-        resultBanner.innerHTML = `
-          <strong>✗ Incorrect</strong>
-
-          <span>
-            You selected:
-            ${
-              selected === -1
-                ? "No answer"
-                : ["A", "B", "C", "D"][
-                    selected
-                  ]
-            }
-          </span>
-
-          <span>
-            Correct answer:
-            ${
-              correctChoice >= 0 &&
-              correctChoice < 4
-                ? ["A", "B", "C", "D"][
-                    correctChoice
-                  ]
-                : "Unknown"
-            }
-          </span>
-        `;
-      }
-
-      card.insertBefore(
-        resultBanner,
-        card.firstChild
-      );
-
-      const buttons =
-        card.querySelectorAll(
-          ".choice"
-        );
-
-      buttons.forEach(
-        (
-          button,
-          choiceIndex
-        ) => {
-          button.disabled =
-            true;
-
-          if (
-            choiceIndex ===
-            correctChoice
-          ) {
-            button.classList.add(
-              "choice-correct"
-            );
-          }
-
-          if (
-            choiceIndex ===
-              selected &&
-            selected !==
-              correctChoice
-          ) {
-            button.classList.add(
-              "choice-incorrect"
-            );
-          }
-        }
-      );
-    }
-  );
+  elements.submitButton.disabled =
+    !allAnswered;
 }
 
+
 /* =========================================================
-   SEND ROOM MESSAGE
+   MATCH CONNECTION MODULES
    ========================================================= */
 
-function sendRoomMessage(
-  message
+/*
+ * These managers contain all WebSocket/disconnect logic.
+ *
+ * The gameplay functions are injected rather than imported
+ * back into these modules, which prevents circular imports.
+ *
+ * NOTE:
+ * If your main gameplay functions are declared later in
+ * this file, move this initialization block to immediately
+ * AFTER those function declarations.
+ */
+
+const disconnectManager =
+  createDisconnectManager({
+    state,
+
+    saveActiveMatchState,
+
+    enableResumeGame,
+
+    setStatus
+  });
+
+const reconnectManager =
+  createReconnectManager({
+    API,
+
+    TOTAL_QUESTIONS,
+
+    MATCH_DURATION_MS,
+
+    state,
+
+    elements,
+
+    setStatus,
+
+    saveActiveMatchState,
+
+    getStoredActiveMatchState,
+
+    getStoredResumeMatchId,
+
+    clearActiveMatchState,
+
+    enableResumeGame,
+
+    enableQueueButton,
+
+    updateOpponent,
+
+    refreshPlayerStats,
+
+    renderQuestions,
+
+    restoreSelectedAnswerUI,
+
+    updateSubmitButton,
+
+    /*
+     * These gameplay functions must exist in the
+     * remainder of your normal gameplay code.
+     */
+    startGame:
+      typeof startGame ===
+      "function"
+        ? startGame
+        : null,
+
+    startMatchTimer:
+      typeof startMatchTimer ===
+      "function"
+        ? startMatchTimer
+        : null,
+
+    handleGameResult:
+      typeof handleGameResult ===
+      "function"
+        ? handleGameResult
+        : null,
+
+    disconnectManager
+  });
+
+const {
+  sendRoomMessage,
+  connectToRoom,
+  resumeExistingMatch,
+  onMatchFound
+} = reconnectManager;
+
+disconnectManager.installPageLifecycleHandlers();
+
+
+/* =========================================================
+   START / RESUME BUTTON HANDLER
+   ========================================================= */
+
+function handleStartMatchButtonClick(
+  event
 ) {
+  if (!elements.startMatchButton) {
+    return;
+  }
+
   if (
-    !matchSocket ||
-    matchSocket.readyState !==
-      WebSocket.OPEN
+    isResumeAvailable() &&
+    elements.startMatchButton.textContent.trim() ===
+      "Resume Game"
   ) {
-    console.error(
-      "WebSocket is not connected."
-    );
+    event.preventDefault();
 
-    return false;
-  }
+    event.stopImmediatePropagation();
 
-  try {
-    matchSocket.send(
-      JSON.stringify(
-        message
-      )
-    );
+    resumeExistingMatch();
 
-    return true;
-  } catch (error) {
-    console.error(
-      "Failed to send room message:",
-      error
-    );
-
-    return false;
+    return;
   }
 }
 
-/* =========================================================
-   START / QUEUE BUTTON
-   ========================================================= */
-
-if (startMatchButton) {
-  startMatchButton.addEventListener(
+if (elements.startMatchButton) {
+  elements.startMatchButton.addEventListener(
     "click",
-    () => {
-
-      if (isCoolingDown()) {
-        updateCooldownUI();
-
-        return;
-      }
-
-      if (!matchId) {
-        if (!inQueue) {
-          startMatchmaking();
-        }
-
-        return;
-      }
-
-      if (gameStarted) {
-        return;
-      }
-
-      if (playerReady) {
-        return;
-      }
-
-      if (!matchConnectionConfirmed) {
-        setStatus(
-          "Waiting for opponent to connect..."
-        );
-
-        return;
-      }
-
-      if (
-        !matchSocket ||
-        matchSocket.readyState !==
-          WebSocket.OPEN
-      ) {
-        console.error(
-          "Cannot start match: WebSocket is not connected."
-        );
-
-        setStatus(
-          "Not connected to match room."
-        );
-
-        return;
-      }
-
-      playerReady =
-        true;
-
-      startMatchButton.disabled =
-        true;
-
-      startMatchButton.textContent =
-        "Waiting for Opponent...";
-
-      setStatus(
-        "Waiting for opponent to start..."
-      );
-
-      const sent =
-        sendRoomMessage({
-          type:
-            "start_ready"
-        });
-
-      if (!sent) {
-        playerReady =
-          false;
-
-        startMatchButton.disabled =
-          false;
-
-        startMatchButton.textContent =
-          "Start Match";
-
-        setStatus(
-          "Unable to start match."
-        );
-      }
-    }
+    handleStartMatchButtonClick,
+    true
   );
 }
 
-/* =========================================================
-   NEW GAME BUTTON
-   ========================================================= */
-
-if (submitButton) {
-  submitButton.addEventListener(
-    "click",
-    () => {
-
-      if (newGameMode) {
-
-        if (isCoolingDown()) {
-          updateCooldownUI();
-
-          return;
-        }
-
-        newGameMode =
-          false;
-
-        submitButton.style.display =
-          "none";
-
-        submitButton.disabled =
-          true;
-
-        matchId = null;
-        opponent = null;
-        playerReady = false;
-        matchConnectionConfirmed =
-          false;
-
-        enableQueueButton();
-
-        return;
-      }
-
-      submitMatch(false);
-    }
-  );
-}
 
 /* =========================================================
-   INITIAL STATE
+   INITIAL SHARED UI
    ========================================================= */
 
-if (startMatchButton) {
-  startMatchButton.disabled =
+if (elements.startMatchButton) {
+  elements.startMatchButton.disabled =
     false;
 
-  startMatchButton.textContent =
-    "Join Queue";
+  if (isResumeAvailable()) {
+    elements.startMatchButton.textContent =
+      "Resume Game";
+
+    setStatus(
+      "You were disconnected from your match. Resume the game to reconnect."
+    );
+  } else {
+    elements.startMatchButton.textContent =
+      "Join Queue";
+  }
 }
 
-if (submitButton) {
-  submitButton.style.display =
+if (elements.submitButton) {
+  elements.submitButton.style.display =
     "none";
 
-  submitButton.disabled =
+  elements.submitButton.disabled =
     true;
 }
 
-if (timerDiv) {
-  timerDiv.textContent =
+if (elements.timerDiv) {
+  elements.timerDiv.textContent =
     "13:00";
 }
 
 setStatus(
-  "Ready to join queue."
+  isResumeAvailable()
+    ? "You were disconnected from your match. Resume the game to reconnect."
+    : "Ready to join queue."
 );
 
+
 /* =========================================================
-   LOAD HISTORY
+   INITIAL LOAD
    ========================================================= */
+
+window.scoreladderRecentMatches =
+  Array.isArray(
+    window.scoreladderRecentMatches
+  )
+    ? window.scoreladderRecentMatches
+    : [];
+
+window.scoreladderHistoricalTopics =
+  Array.isArray(
+    window.scoreladderHistoricalTopics
+  )
+    ? window.scoreladderHistoricalTopics
+    : [];
+
+initializeResumeGame();
+
+initializeCooldown();
+
+if (
+  isResumeAvailable() &&
+  !state.gameStarted &&
+  !state.inQueue
+) {
+  enableResumeGame(
+    state.resumeMatchId ||
+    state.matchId
+  );
+}
 
 loadRecentMatches();
 
-/* =========================================================
-   INITIALIZE COOLDOWN
-   ========================================================= */
-
-initializeCooldown();
+refreshPlayerStats();
