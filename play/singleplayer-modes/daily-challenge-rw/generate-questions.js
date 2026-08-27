@@ -9,9 +9,9 @@ const QUESTION_API_URL =
     "https://dailyai-rw.scoreladder.org/";
 
 // Auth API: handles sessions, users, stats, and score submission
-// IMPORTANT: This MUST match the hostname that sets the session cookie.
 const AUTH_API_URL =
     "https://auth.scoreladder.org";
+
 const LOCAL_SESSION_KEY =
     "scoreladder_session";
 
@@ -23,6 +23,7 @@ let submissionInProgress = false;
 let timeRemaining = 660;
 let timerInterval = null;
 let challengeDeadline = 0;
+
 
 /* =========================================================
    TOPIC NORMALIZATION
@@ -63,6 +64,7 @@ const TOPIC_ALIASES = {
     "form_structure_sense": "form_structure_sense"
 };
 
+
 /* =========================================================
    NORMALIZE TOPIC
    ========================================================= */
@@ -72,12 +74,11 @@ function normalizeTopic(topic) {
         return null;
     }
 
-    const normalized = topic
-        .trim()
-        .toLowerCase();
+    const normalized = topic.trim().toLowerCase();
 
     return TOPIC_ALIASES[normalized] ?? null;
 }
+
 
 /* =========================================================
    CHECK AUTHENTICATION
@@ -86,9 +87,7 @@ function normalizeTopic(topic) {
 async function getCurrentUser() {
     try {
         const params =
-            new URLSearchParams(
-                window.location.search
-            );
+            new URLSearchParams(window.location.search);
 
         // First check whether the auth worker
         // redirected us here with ?session=...
@@ -127,7 +126,6 @@ async function getCurrentUser() {
             }
         }
 
-        // Build the authentication request.
         let meUrl =
             `${AUTH_API_URL}/me`;
 
@@ -192,6 +190,7 @@ async function getCurrentUser() {
     }
 }
 
+
 /* =========================================================
    LOAD DAILY QUESTIONS
    ========================================================= */
@@ -204,15 +203,38 @@ async function loadDailyQuestions() {
     `;
 
     try {
-        const res = await fetch(
-            QUESTION_API_URL,
-            {
-                method: "GET",
-                cache: "no-store"
-            }
+        console.log(
+            "Loading daily questions from:",
+            QUESTION_API_URL
         );
 
-        const data = await res.json();
+        const res =
+            await fetch(
+                QUESTION_API_URL,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+        const responseText =
+            await res.text();
+
+        let data;
+
+        try {
+            data =
+                JSON.parse(responseText);
+        } catch (parseError) {
+            console.error(
+                "Question worker returned invalid JSON:",
+                responseText
+            );
+
+            throw new Error(
+                "The question worker returned invalid JSON."
+            );
+        }
 
         console.log(
             "Daily question response:",
@@ -226,98 +248,257 @@ async function loadDailyQuestions() {
             );
         }
 
-        if (
-            !data ||
-            !Array.isArray(data.questions) ||
-            data.questions.length === 0
+        /*
+         * IMPORTANT:
+         *
+         * The current question worker returns a TOP-LEVEL ARRAY:
+         *
+         * [
+         *   {
+         *     topic: "...",
+         *     question: "...",
+         *     choices: [...],
+         *     answer: 0,
+         *     ...
+         *   }
+         * ]
+         *
+         * Older/frontend code expected:
+         *
+         * {
+         *   questions: [...]
+         * }
+         *
+         * Accept both formats.
+         */
+
+        let rawQuestions;
+
+        if (Array.isArray(data)) {
+            rawQuestions = data;
+
+            console.log(
+                "Question worker returned a top-level question array."
+            );
+        } else if (
+            data &&
+            Array.isArray(data.questions)
         ) {
+            rawQuestions = data.questions;
+
+            console.log(
+                "Question worker returned { questions: [...] }."
+            );
+        } else {
             throw new Error(
-                "No valid questions were returned."
+                "The question worker returned an invalid question format."
             );
         }
 
+        if (rawQuestions.length === 0) {
+            throw new Error(
+                "No questions were returned by the question worker."
+            );
+        }
+
+        /*
+         * The daily challenge requires exactly 10 questions.
+         */
+
         const candidateQuestions =
-            data.questions.slice(0, 10);
+            rawQuestions.slice(0, 10);
 
-        const invalidTopics = [];
+        const invalidQuestions = [];
 
-        const hasValidQuestion = question => {
-            const choices =
-                Array.isArray(question?.choices)
-                    ? question.choices
-                    : Object.values(
-                        question?.choices ?? {}
+        const hasValidQuestion =
+            (question, index) => {
+
+                /*
+                 * choices may be an array:
+                 *
+                 * ["A", "B", "C", "D"]
+                 *
+                 * or an object:
+                 *
+                 * {
+                 *   A: "...",
+                 *   B: "...",
+                 *   C: "...",
+                 *   D: "..."
+                 * }
+                 */
+
+                const choices =
+                    Array.isArray(question?.choices)
+                        ? question.choices
+                        : Object.values(
+                            question?.choices ?? {}
+                        );
+
+                const normalizedTopic =
+                    normalizeTopic(
+                        question?.topic
                     );
 
-            const normalizedTopic =
-                normalizeTopic(
-                    question?.topic
-                );
+                const problems = [];
 
-            if (!normalizedTopic) {
-                invalidTopics.push(
-                    question?.topic ?? "(missing)"
-                );
+                if (!normalizedTopic) {
+                    problems.push(
+                        `invalid topic "${question?.topic ?? "(missing)"}"`
+                    );
+                }
 
-                return false;
-            }
+                if (choices.length !== 4) {
+                    problems.push(
+                        `expected 4 choices, got ${choices.length}`
+                    );
+                }
 
-            return (
-                choices.length === 4 &&
-                Number.isInteger(
-                    question.answer
-                ) &&
-                question.answer >= 0 &&
-                question.answer < choices.length
+                /*
+                 * The worker is currently expected to send
+                 * the correct answer as an integer 0-3.
+                 */
+
+                if (
+                    !Number.isInteger(
+                        question?.answer
+                    ) ||
+                    question.answer < 0 ||
+                    question.answer >= choices.length
+                ) {
+                    problems.push(
+                        `invalid answer "${question?.answer}"`
+                    );
+                }
+
+                if (
+                    typeof question?.question !==
+                    "string" ||
+                    question.question.trim() === ""
+                ) {
+                    problems.push(
+                        "missing question text"
+                    );
+                }
+
+                if (
+                    typeof question?.passage !==
+                    "string"
+                ) {
+                    problems.push(
+                        "missing passage"
+                    );
+                }
+
+                if (problems.length > 0) {
+                    invalidQuestions.push({
+                        index: index + 1,
+                        problems
+                    });
+
+                    return false;
+                }
+
+                return true;
+            };
+
+        const allValid =
+            candidateQuestions.every(
+                hasValidQuestion
             );
-        };
+
+        /*
+         * Require exactly 10 questions.
+         */
 
         if (
             candidateQuestions.length !== 10 ||
-            !candidateQuestions.every(
-                hasValidQuestion
-            )
+            !allValid
         ) {
-            const uniqueInvalidTopics =
-                [...new Set(invalidTopics)];
+            console.error(
+                "Invalid daily questions:",
+                {
+                    received:
+                        rawQuestions.length,
+                    accepted:
+                        candidateQuestions.length,
+                    invalidQuestions
+                }
+            );
 
             if (
-                uniqueInvalidTopics.length > 0
+                candidateQuestions.length !== 10
             ) {
                 throw new Error(
-                    `Invalid question topic(s): ${uniqueInvalidTopics.join(", ")}`
+                    `The daily challenge returned ${candidateQuestions.length} questions, but exactly 10 are required.`
+                );
+            }
+
+            if (
+                invalidQuestions.length > 0
+            ) {
+                const details =
+                    invalidQuestions
+                        .map(
+                            item =>
+                                `Question ${item.index}: ${item.problems.join(", ")}`
+                        )
+                        .join("; ");
+
+                throw new Error(
+                    `Invalid daily question data. ${details}`
                 );
             }
 
             throw new Error(
-                "The daily challenge did not contain 10 valid questions."
+                "The daily challenge contained invalid questions."
             );
         }
 
+        /*
+         * Normalize every question before storing it.
+         */
+
         questions =
-            candidateQuestions.map(question => {
-                return {
-                    ...question,
+            candidateQuestions.map(
+                question => {
 
-                    originalTopic:
-                        question.topic,
-
-                    topic:
+                    const normalizedTopic =
                         normalizeTopic(
                             question.topic
-                        )
-                };
-            });
+                        );
+
+                    return {
+                        ...question,
+
+                        originalTopic:
+                            question.topic,
+
+                        topic:
+                            normalizedTopic
+                    };
+                }
+            );
 
         console.log(
-            "Normalized daily questions:",
-            questions.map(q => ({
-                originalTopic:
-                    q.originalTopic,
-
-                normalizedTopic:
-                    q.topic
-            }))
+            "Loaded and normalized daily questions:",
+            questions.map(
+                (q, index) => ({
+                    number: index + 1,
+                    originalTopic:
+                        q.originalTopic,
+                    normalizedTopic:
+                        q.topic,
+                    answer:
+                        q.answer,
+                    choiceCount:
+                        Array.isArray(q.choices)
+                            ? q.choices.length
+                            : Object.keys(
+                                q.choices || {}
+                            ).length
+                })
+            )
         );
 
         selectedAnswers =
@@ -340,10 +521,14 @@ async function loadDailyQuestions() {
         submitButton.disabled = true;
 
     } catch (err) {
+
         console.error(
             "Failed to load daily questions:",
             err
         );
+
+        questions = [];
+        selectedAnswers = [];
 
         questionsDiv.innerHTML = `
             <div class="card">
@@ -352,18 +537,23 @@ async function loadDailyQuestions() {
                 </h3>
 
                 <p>
-                    ${escapeHtml(err.message)}
+                    ${escapeHtml(
+                        err?.message ||
+                        "Unknown question-loading error."
+                    )}
                 </p>
             </div>
         `;
     }
 }
 
+
 /* =========================================================
    START CHALLENGE
    ========================================================= */
 
 async function startChallenge() {
+
     if (questions.length === 0) {
         alert(
             "Questions are still loading. Please wait."
@@ -378,13 +568,10 @@ async function startChallenge() {
 
     /*
      * Check the actual authenticated session.
-     *
-     * IMPORTANT:
-     * AUTH_API_URL is auth.scoreladder.org because that
-     * is where the session cookie is created.
      */
 
-    const user = await getCurrentUser();
+    const user =
+        await getCurrentUser();
 
     if (!user) {
         alert(
@@ -395,7 +582,6 @@ async function startChallenge() {
     }
 
     challengeStarted = true;
-
     startButton.disabled = true;
     submitButton.disabled = true;
 
@@ -409,37 +595,46 @@ async function startChallenge() {
     renderQuestions();
 
     timerInterval =
-        setInterval(() => {
-            timeRemaining =
-                Math.max(
-                    0,
-                    Math.ceil(
-                        (
-                            challengeDeadline -
-                            Date.now()
-                        ) / 1000
-                    )
-                );
+        setInterval(
+            () => {
 
-            updateTimer();
+                timeRemaining =
+                    Math.max(
+                        0,
+                        Math.ceil(
+                            (
+                                challengeDeadline -
+                                Date.now()
+                            ) / 1000
+                        )
+                    );
 
-            if (timeRemaining <= 0) {
-                clearInterval(
-                    timerInterval
-                );
+                updateTimer();
 
-                timerInterval = null;
+                if (
+                    timeRemaining <= 0
+                ) {
+                    clearInterval(
+                        timerInterval
+                    );
 
-                submitChallenge(true);
-            }
-        }, 1000);
+                    timerInterval = null;
+
+                    submitChallenge(true);
+                }
+
+            },
+            1000
+        );
 }
+
 
 /* =========================================================
    TIMER
    ========================================================= */
 
 function updateTimer() {
+
     const minutes =
         Math.floor(
             timeRemaining / 60
@@ -452,11 +647,13 @@ function updateTimer() {
         `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
+
 /* =========================================================
    RENDER QUESTIONS
    ========================================================= */
 
 function renderQuestions() {
+
     questionsDiv.innerHTML = "";
 
     questions.forEach(
@@ -468,6 +665,11 @@ function renderQuestions() {
                     : Object.values(
                         q.choices || {}
                     );
+
+            /*
+             * Shuffle the choices visually while preserving
+             * their original indexes so q.answer remains valid.
+             */
 
             const shuffled =
                 choices
@@ -606,6 +808,7 @@ function renderQuestions() {
     );
 }
 
+
 /* =========================================================
    SELECT ANSWER
    ========================================================= */
@@ -614,6 +817,7 @@ function selectAnswer(
     questionIndex,
     choiceIndex
 ) {
+
     if (!challengeStarted) {
         return;
     }
@@ -635,6 +839,10 @@ function selectAnswer(
             questionIndex
         ];
 
+    if (!card) {
+        return;
+    }
+
     const buttons =
         card.querySelectorAll(
             ".choice"
@@ -648,19 +856,23 @@ function selectAnswer(
         }
     );
 
-    buttons[choiceIndex]
-        .classList.add(
-            "selected"
-        );
+    if (buttons[choiceIndex]) {
+        buttons[choiceIndex]
+            .classList.add(
+                "selected"
+            );
+    }
 
     updateSubmitButton();
 }
+
 
 /* =========================================================
    UPDATE SUBMIT BUTTON
    ========================================================= */
 
 function updateSubmitButton() {
+
     const allAnswered =
         selectedAnswers.every(
             answer => answer !== -1
@@ -672,6 +884,7 @@ function updateSubmitButton() {
         submissionInProgress;
 }
 
+
 /* =========================================================
    SUBMIT DAILY CHALLENGE
    ========================================================= */
@@ -679,6 +892,7 @@ function updateSubmitButton() {
 async function submitChallenge(
     autoSubmitted = false
 ) {
+
     if (challengeSubmitted) {
         return;
     }
@@ -688,12 +902,14 @@ async function submitChallenge(
     }
 
     if (!autoSubmitted) {
+
         const unanswered =
             selectedAnswers.filter(
                 answer => answer === -1
             ).length;
 
         if (unanswered > 0) {
+
             alert(
                 `You still have ${unanswered} unanswered question${
                     unanswered === 1
@@ -707,7 +923,6 @@ async function submitChallenge(
     }
 
     submissionInProgress = true;
-
     submitButton.disabled = true;
 
     if (timerInterval) {
@@ -719,7 +934,6 @@ async function submitChallenge(
     }
 
     let correct = 0;
-
     const results = [];
 
     questions.forEach(
@@ -735,17 +949,21 @@ async function submitChallenge(
             if (
                 selectedChoice !== -1
             ) {
+
                 const shuffledChoice =
                     q._shuffledChoices[
                         selectedChoice
                     ];
 
-                isCorrect =
-                    shuffledChoice.originalIndex ===
-                    q.answer;
+                if (shuffledChoice) {
 
-                if (isCorrect) {
-                    correct++;
+                    isCorrect =
+                        shuffledChoice.originalIndex ===
+                        q.answer;
+
+                    if (isCorrect) {
+                        correct++;
+                    }
                 }
             }
 
@@ -755,6 +973,7 @@ async function submitChallenge(
                 );
 
             if (!normalizedTopic) {
+
                 console.error(
                     "Cannot submit unknown topic:",
                     q.topic
@@ -779,26 +998,23 @@ async function submitChallenge(
         questions.length;
 
     const accuracy =
-        Math.round(
-            (correct / total) * 100
-        );
+        total > 0
+            ? Math.round(
+                (correct / total) * 100
+            )
+            : 0;
 
     console.log(
         "Submitting daily challenge results:",
         results
     );
 
-    /*
-     * IMPORTANT:
-     *
-     * The session cookie is owned by auth.scoreladder.org.
-     * Therefore this request MUST also go to auth.scoreladder.org.
-     */
-
     try {
+
         let sessionId = null;
 
         try {
+
             const params =
                 new URLSearchParams(
                     window.location.search
@@ -809,7 +1025,9 @@ async function submitChallenge(
                 sessionStorage.getItem(
                     LOCAL_SESSION_KEY
                 );
+
         } catch (error) {
+
             console.error(
                 "Failed to retrieve session:",
                 error
@@ -820,6 +1038,7 @@ async function submitChallenge(
             `${AUTH_API_URL}/daily-complete`;
 
         if (sessionId) {
+
             saveUrl =
                 `${AUTH_API_URL}/daily-complete?session=${encodeURIComponent(
                     sessionId
@@ -829,7 +1048,9 @@ async function submitChallenge(
         console.log(
             "Submitting daily challenge:",
             {
-                sessionFound: Boolean(sessionId),
+                sessionFound:
+                    Boolean(sessionId),
+
                 saveUrl
             }
         );
@@ -839,11 +1060,14 @@ async function submitChallenge(
                 saveUrl,
                 {
                     method: "POST",
+
                     credentials: "include",
+
                     headers: {
                         "Content-Type":
                             "application/json"
                     },
+
                     body:
                         JSON.stringify({
                             results
@@ -857,11 +1081,14 @@ async function submitChallenge(
         let saveData;
 
         try {
+
             saveData =
                 JSON.parse(
                     responseText
                 );
+
         } catch {
+
             saveData = {
                 error:
                     responseText ||
@@ -886,6 +1113,7 @@ async function submitChallenge(
         if (
             saveResponse.status === 401
         ) {
+
             throw new Error(
                 "Your login session is invalid or expired. Please log in again."
             );
@@ -894,6 +1122,7 @@ async function submitChallenge(
         if (
             saveResponse.status === 409
         ) {
+
             throw new Error(
                 saveData?.error ||
                 "You have already completed today's challenge."
@@ -901,6 +1130,7 @@ async function submitChallenge(
         }
 
         if (!saveResponse.ok) {
+
             throw new Error(
                 saveData?.error ||
                 `Failed to save results (HTTP ${saveResponse.status})`
@@ -918,6 +1148,7 @@ async function submitChallenge(
         );
 
     } catch (err) {
+
         console.error(
             "Failed to save daily challenge:",
             err
@@ -931,7 +1162,9 @@ async function submitChallenge(
         updateSubmitButton();
 
         alert(
-            `Failed to save your results.\n\n${err.message}`
+            `Failed to save your results.\n\n${
+                err.message
+            }`
         );
 
         if (
@@ -939,44 +1172,48 @@ async function submitChallenge(
             timeRemaining > 0 &&
             !timerInterval
         ) {
+
             challengeDeadline =
                 Date.now() +
                 timeRemaining * 1000;
 
             timerInterval =
-                setInterval(() => {
+                setInterval(
+                    () => {
 
-                    timeRemaining =
-                        Math.max(
-                            0,
-                            Math.ceil(
-                                (
-                                    challengeDeadline -
-                                    Date.now()
-                                ) / 1000
-                            )
-                        );
+                        timeRemaining =
+                            Math.max(
+                                0,
+                                Math.ceil(
+                                    (
+                                        challengeDeadline -
+                                        Date.now()
+                                    ) / 1000
+                                )
+                            );
 
-                    updateTimer();
+                        updateTimer();
 
-                    if (
-                        timeRemaining <= 0
-                    ) {
-                        clearInterval(
-                            timerInterval
-                        );
+                        if (
+                            timeRemaining <= 0
+                        ) {
 
-                        timerInterval = null;
+                            clearInterval(
+                                timerInterval
+                            );
 
-                        submitChallenge(
-                            true
-                        );
-                    }
+                            timerInterval = null;
 
-                }, 1000);
+                            submitChallenge(true);
+                        }
+
+                    },
+                    1000
+                );
         }
     }
 }
+
 
 /* =========================================================
    RENDER RESULTS
@@ -988,8 +1225,10 @@ function renderResults(
     accuracy,
     autoSubmitted
 ) {
+
     resultDiv.innerHTML = `
         <div class="card result-card">
+
             <h2>Challenge Complete</h2>
 
             <div class="score">
@@ -1015,6 +1254,7 @@ function renderResults(
                         </p>
                     `
             }
+
         </div>
     `;
 
@@ -1064,6 +1304,7 @@ function renderResults(
                 }`;
 
             if (isCorrect) {
+
                 resultBanner.innerHTML = `
                     <strong>✓ Correct</strong>
 
@@ -1076,7 +1317,9 @@ function renderResults(
                         }.
                     </span>
                 `;
+
             } else {
+
                 resultBanner.innerHTML = `
                     <strong>✗ Incorrect</strong>
 
@@ -1116,6 +1359,7 @@ function renderResults(
                         choiceIndex ===
                         correctChoice
                     ) {
+
                         button.classList.add(
                             "choice-correct"
                         );
@@ -1125,6 +1369,7 @@ function renderResults(
                         choiceIndex === selected &&
                         selected !== correctChoice
                     ) {
+
                         button.classList.add(
                             "choice-incorrect"
                         );
@@ -1135,18 +1380,20 @@ function renderResults(
     );
 }
 
+
 /* =========================================================
    FORMAT PASSAGE
    ========================================================= */
 
 function formatPassage(text) {
+
     if (typeof text !== "string") {
         return "";
     }
 
     return escapeHtml(text)
         .replace(
-            /\[UNDERLINED\]\((.*?)\[\/UNDERLINED\]/g,
+            /\[UNDERLINED\]\((.*?)\[\/UNDERLINED\]\)/g,
             "<u>$1</u>"
         )
         .replace(
@@ -1155,11 +1402,13 @@ function formatPassage(text) {
         );
 }
 
+
 /* =========================================================
    ESCAPE HTML
    ========================================================= */
 
 function escapeHtml(text) {
+
     return String(text)
         .replaceAll(
             "&",
@@ -1183,6 +1432,7 @@ function escapeHtml(text) {
         );
 }
 
+
 /* =========================================================
    EVENT LISTENERS
    ========================================================= */
@@ -1197,6 +1447,7 @@ submitButton.addEventListener(
     () =>
         submitChallenge(false)
 );
+
 
 /* =========================================================
    INITIAL LOAD

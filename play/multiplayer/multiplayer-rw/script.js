@@ -1,3 +1,5 @@
+import { getMineralRank } from "../../../ranks.js";
+
 import {
   createDisconnectManager
 } from "./match-disconnect.js";
@@ -6,11 +8,13 @@ import {
   createReconnectManager
 } from "./match-reconnect.js";
 
+
 /* =========================================================
    API
    ========================================================= */
 
-export const API = "http://127.0.0.1:8787";
+export const API =
+  "http://127.0.0.1:8787";
 
 export const AUTH_API =
   "https://auth.scoreladder.org";
@@ -26,7 +30,8 @@ export const ACTIVE_MATCH_STATE_STORAGE_KEY =
    CONSTANTS
    ========================================================= */
 
-export const TOTAL_QUESTIONS = 11;
+export const TOTAL_QUESTIONS =
+  11;
 
 export const MATCH_DURATION_MS =
   13 * 60 * 1000;
@@ -47,34 +52,54 @@ export const KHAN_ACADEMY_SAT_URL =
 
 export const elements = {
   startMatchButton:
-    document.getElementById("startMatchButton"),
+    document.getElementById(
+      "startMatchButton"
+    ),
 
   statusDiv:
-    document.getElementById("status"),
+    document.getElementById(
+      "status"
+    ),
 
   timerDiv:
-    document.getElementById("timer"),
+    document.getElementById(
+      "timer"
+    ),
 
   questionsDiv:
-    document.getElementById("questions"),
+    document.getElementById(
+      "questions"
+    ),
 
   submitButton:
-    document.getElementById("submitButton"),
+    document.getElementById(
+      "submitButton"
+    ),
 
   resultDiv:
-    document.getElementById("result"),
+    document.getElementById(
+      "result"
+    ),
 
   playerNameDiv:
-    document.getElementById("playerName"),
+    document.getElementById(
+      "playerName"
+    ),
 
   playerEloDiv:
-    document.getElementById("playerElo"),
+    document.getElementById(
+      "playerElo"
+    ),
 
   opponentNameDiv:
-    document.getElementById("opponentName"),
+    document.getElementById(
+      "opponentName"
+    ),
 
   opponentEloDiv:
-    document.getElementById("opponentElo")
+    document.getElementById(
+      "opponentElo"
+    )
 };
 
 
@@ -101,11 +126,14 @@ export const state = {
 
   playerReady: false,
 
-  matchConnectionConfirmed: false,
+  matchConnectionConfirmed:
+    false,
 
-  challengeSubmitted: false,
+  challengeSubmitted:
+    false,
 
-  submissionInProgress: false,
+  submissionInProgress:
+    false,
 
   questions: [],
 
@@ -123,15 +151,16 @@ export const state = {
 
   newGameMode: false,
 
-  /* Resume state */
   resumeAvailable: false,
 
   resumeMatchId: null,
 
+  resumeInProgress: false,
+
   /*
-   * Prevent duplicate resume attempts while reconnecting.
+   * Used by the reconnect module.
    */
-  resumeInProgress: false
+  gameFinished: false
 };
 
 
@@ -243,7 +272,10 @@ export const TOPIC_DISPLAY_NAMES = {
 };
 
 export function normalizeTopic(topic) {
-  if (typeof topic !== "string") {
+  if (
+    typeof topic !==
+    "string"
+  ) {
     return null;
   }
 
@@ -251,17 +283,24 @@ export function normalizeTopic(topic) {
     topic.trim().toLowerCase();
 
   return (
-    TOPIC_ALIASES[normalized] ??
-    null
+    TOPIC_ALIASES[
+      normalized
+    ] ?? null
   );
 }
 
-export function getTopicDisplayName(topic) {
+export function getTopicDisplayName(
+  topic
+) {
   const normalized =
-    normalizeTopic(topic);
+    normalizeTopic(
+      topic
+    );
 
   return (
-    TOPIC_DISPLAY_NAMES[normalized] ||
+    TOPIC_DISPLAY_NAMES[
+      normalized
+    ] ||
     topic ||
     "Unknown Topic"
   );
@@ -272,35 +311,67 @@ export function getTopicDisplayName(topic) {
    BASIC UI
    ========================================================= */
 
-export function setStatus(message) {
-  if (elements.statusDiv) {
+export function setStatus(
+  message
+) {
+  if (
+    elements.statusDiv
+  ) {
     elements.statusDiv.textContent =
       message;
   }
 }
 
-export function showResult(message) {
-  if (elements.resultDiv) {
+export function showResult(
+  message
+) {
+  if (
+    elements.resultDiv
+  ) {
     elements.resultDiv.textContent =
       message;
   }
 }
 
-export function escapeHtml(text) {
+export function escapeHtml(
+  text
+) {
   return String(text)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 }
 
-export function formatPassage(text) {
-  if (typeof text !== "string") {
+export function formatPassage(
+  text
+) {
+  if (
+    typeof text !==
+    "string"
+  ) {
     return "";
   }
 
-  return escapeHtml(text)
+  return escapeHtml(
+    text
+  )
     .replace(
       /\[\/\*UNDERLINED\*\/\](.*?)\[\/\*UNDERLINED\*\/\]/gs,
       "<u>$1</u>"
@@ -309,7 +380,10 @@ export function formatPassage(text) {
       /\[\/\*UNDERLINED\*\/\](.*?)\[\/\*UNDERLINED\*\/\]/gs,
       "<u>$1</u>"
     )
-    .replace(/\n/g, "<br>");
+    .replace(
+      /\n/g,
+      "<br>"
+    );
 }
 
 
@@ -322,7 +396,9 @@ export function getSessionId() {
     return sessionStorage.getItem(
       "scoreladder_session"
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to get session:",
       error
@@ -337,12 +413,20 @@ export function getSessionId() {
    AUTH API URL HELPER
    ========================================================= */
 
-export function getAuthApiUrl(path) {
+export function getAuthApiUrl(
+  path
+) {
   const base =
-    AUTH_API.replace(/\/+$/, "");
+    AUTH_API.replace(
+      /\/+$/,
+      ""
+    );
 
   const cleanPath =
-    String(path).replace(/^\/+/, "");
+    String(path).replace(
+      /^\/+/,
+      ""
+    );
 
   return `${base}/${cleanPath}`;
 }
@@ -367,7 +451,9 @@ export function getStoredCooldownUntil() {
       Number(stored);
 
     if (
-      !Number.isFinite(timestamp) ||
+      !Number.isFinite(
+        timestamp
+      ) ||
       timestamp <= 0
     ) {
       localStorage.removeItem(
@@ -378,7 +464,9 @@ export function getStoredCooldownUntil() {
     }
 
     return timestamp;
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to read cooldown:",
       error
@@ -388,7 +476,9 @@ export function getStoredCooldownUntil() {
   }
 }
 
-export function saveCooldownUntil(timestamp) {
+export function saveCooldownUntil(
+  timestamp
+) {
   state.cooldownUntil =
     timestamp;
 
@@ -397,7 +487,9 @@ export function saveCooldownUntil(timestamp) {
       COOLDOWN_STORAGE_KEY,
       String(timestamp)
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to save cooldown:",
       error
@@ -406,13 +498,16 @@ export function saveCooldownUntil(timestamp) {
 }
 
 export function clearCooldown() {
-  state.cooldownUntil = 0;
+  state.cooldownUntil =
+    0;
 
   try {
     localStorage.removeItem(
       COOLDOWN_STORAGE_KEY
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to clear cooldown:",
       error
@@ -423,27 +518,35 @@ export function clearCooldown() {
 }
 
 export function getCooldownRemainingMs() {
-  if (!state.cooldownUntil) {
+  if (
+    !state.cooldownUntil
+  ) {
     return 0;
   }
 
   return Math.max(
     0,
-    state.cooldownUntil - Date.now()
+    state.cooldownUntil -
+      Date.now()
   );
 }
 
 export function isCoolingDown() {
   return (
-    getCooldownRemainingMs() > 0
+    getCooldownRemainingMs() >
+    0
   );
 }
 
-export function formatCountdown(totalSeconds) {
+export function formatCountdown(
+  totalSeconds
+) {
   const safeSeconds =
     Math.max(
       0,
-      Math.ceil(totalSeconds)
+      Math.ceil(
+        totalSeconds
+      )
     );
 
   const minutes =
@@ -480,7 +583,8 @@ export function getStoredActiveMatchState() {
 
     if (
       !parsed ||
-      typeof parsed !== "object"
+      typeof parsed !==
+        "object"
     ) {
       localStorage.removeItem(
         ACTIVE_MATCH_STATE_STORAGE_KEY
@@ -490,8 +594,10 @@ export function getStoredActiveMatchState() {
     }
 
     if (
-      typeof parsed.matchId !== "string" ||
-      parsed.matchId.length === 0
+      typeof parsed.matchId !==
+        "string" ||
+      parsed.matchId.length ===
+        0
     ) {
       localStorage.removeItem(
         ACTIVE_MATCH_STATE_STORAGE_KEY
@@ -501,7 +607,9 @@ export function getStoredActiveMatchState() {
     }
 
     return parsed;
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to read active match state:",
       error
@@ -511,8 +619,13 @@ export function getStoredActiveMatchState() {
   }
 }
 
-function isLogicalMatchId(value) {
-  if (typeof value !== "string") {
+function isLogicalMatchId(
+  value
+) {
+  if (
+    typeof value !==
+    "string"
+  ) {
     return false;
   }
 
@@ -522,8 +635,14 @@ function isLogicalMatchId(value) {
 }
 
 export function saveActiveMatchState() {
+  /*
+   * Never persist a Durable Object ID
+   * as the logical match ID.
+   */
   if (
-    !isLogicalMatchId(state.matchId)
+    !isLogicalMatchId(
+      state.matchId
+    )
   ) {
     console.warn(
       "Refusing to persist invalid logical matchId:",
@@ -541,35 +660,50 @@ export function saveActiveMatchState() {
       state.playerId,
 
     opponent:
-      state.opponent || null,
+      state.opponent ||
+      null,
 
     questions:
-      Array.isArray(state.questions)
+      Array.isArray(
+        state.questions
+      )
         ? state.questions
         : [],
 
     selectedAnswers:
-      Array.isArray(state.selectedAnswers)
-        ? [...state.selectedAnswers]
+      Array.isArray(
+        state.selectedAnswers
+      )
+        ? [
+            ...state.selectedAnswers
+          ]
         : [],
 
     challengeDeadline:
-      Number(state.challengeDeadline) || 0,
+      Number(
+        state.challengeDeadline
+      ) || 0,
 
     timeRemaining:
-      Number(state.timeRemaining) || 0,
+      Number(
+        state.timeRemaining
+      ) || 0,
 
     gameStarted:
-      state.gameStarted === true,
+      state.gameStarted ===
+      true,
 
     playerReady:
-      state.playerReady === true,
+      state.playerReady ===
+      true,
 
     matchConnectionConfirmed:
-      state.matchConnectionConfirmed === true,
+      state.matchConnectionConfirmed ===
+      true,
 
     challengeSubmitted:
-      state.challengeSubmitted === true,
+      state.challengeSubmitted ===
+      true,
 
     savedAt:
       Date.now()
@@ -595,7 +729,9 @@ export function saveActiveMatchState() {
       state.matchId;
 
     return true;
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to save active match state:",
       error
@@ -614,19 +750,29 @@ export function restoreActiveMatchState() {
 
   const isUuid =
     value =>
-      typeof value === "string" &&
+      typeof value ===
+        "string" &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
         value.trim()
       );
 
+  /*
+   * Prefer the lightweight logical UUID.
+   */
   const logicalMatchId =
-    isUuid(storedResumeMatchId)
+    isUuid(
+      storedResumeMatchId
+    )
       ? storedResumeMatchId.trim()
-      : isUuid(saved?.matchId)
+      : isUuid(
+          saved?.matchId
+        )
         ? saved.matchId.trim()
         : null;
 
-  if (!logicalMatchId) {
+  if (
+    !logicalMatchId
+  ) {
     return false;
   }
 
@@ -666,17 +812,46 @@ export function restoreActiveMatchState() {
       saved?.timeRemaining
     ) || 0;
 
-  state.gameStarted =
-    saved?.gameStarted === true;
+const savedDeadline =
+  Number(
+    saved?.challengeDeadline
+  ) || 0;
+
+const matchExpired =
+  savedDeadline > 0 &&
+  savedDeadline <= Date.now();
+
+state.gameStarted =
+  saved?.gameStarted === true &&
+  !matchExpired;
+
+  if (matchExpired) {
+  console.log(
+    "Restored match was already expired. It will not be resumable:",
+    {
+      matchId:
+        logicalMatchId,
+      challengeDeadline:
+        savedDeadline,
+      now:
+        Date.now()
+    }
+  );
+}
 
   state.playerReady =
-    saved?.playerReady === true;
+    saved?.playerReady ===
+    true;
 
+  /*
+   * Refreshing destroys the WebSocket.
+   */
   state.matchConnectionConfirmed =
     false;
 
   state.challengeSubmitted =
-    saved?.challengeSubmitted === true;
+    saved?.challengeSubmitted ===
+    true;
 
   state.submissionInProgress =
     false;
@@ -699,12 +874,18 @@ export function restoreActiveMatchState() {
   state.reconnecting =
     false;
 
-  if (state.opponent) {
+  if (
+    state.opponent
+  ) {
     updateOpponent(
       state.opponent
     );
   }
 
+  /*
+   * Repair an active-state record that contains
+   * an old Durable Object ID.
+   */
   if (
     saved &&
     saved.matchId !==
@@ -754,7 +935,9 @@ export function restoreActiveMatchState() {
           repairedState
         )
       );
-    } catch (error) {
+    } catch (
+      error
+    ) {
       console.error(
         "Failed to repair active match state:",
         error
@@ -767,7 +950,9 @@ export function restoreActiveMatchState() {
       RESUME_MATCH_STORAGE_KEY,
       logicalMatchId
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to repair resume match key:",
       error
@@ -796,7 +981,9 @@ export function clearActiveMatchState() {
     localStorage.removeItem(
       ACTIVE_MATCH_STATE_STORAGE_KEY
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to clear active match state:",
       error
@@ -810,13 +997,17 @@ export function updatePersistedSelectedAnswers(
   selectedAnswers
 ) {
   if (
-    !Array.isArray(selectedAnswers)
+    !Array.isArray(
+      selectedAnswers
+    )
   ) {
     return;
   }
 
   state.selectedAnswers =
-    [...selectedAnswers];
+    [
+      ...selectedAnswers
+    ];
 
   saveActiveMatchState();
 }
@@ -834,14 +1025,18 @@ export function updateCooldownUI() {
   const remainingMs =
     getCooldownRemainingMs();
 
-  if (remainingMs <= 0) {
+  if (
+    remainingMs <= 0
+  ) {
     clearCooldown();
 
     if (
       !state.gameStarted &&
       !state.inQueue
     ) {
-      if (isResumeAvailable()) {
+      if (
+        isResumeAvailable()
+      ) {
         enableResumeGame();
       } else {
         enableQueueButton();
@@ -856,7 +1051,9 @@ export function updateCooldownUI() {
       remainingMs / 1000
     );
 
-  if (elements.startMatchButton) {
+  if (
+    elements.startMatchButton
+  ) {
     elements.startMatchButton.disabled =
       true;
 
@@ -900,20 +1097,25 @@ export function startCooldownTimer() {
   updateCooldownUI();
 
   state.cooldownInterval =
-    setInterval(() => {
-      updateCooldownUI();
+    setInterval(
+      () => {
+        updateCooldownUI();
 
-      if (
-        getCooldownRemainingMs() <=
-        0
-      ) {
-        stopCooldownTimer();
-      }
-    }, 250);
+        if (
+          getCooldownRemainingMs() <=
+          0
+        ) {
+          stopCooldownTimer();
+        }
+      },
+      250
+    );
 }
 
 export function stopCooldownTimer() {
-  if (state.cooldownInterval) {
+  if (
+    state.cooldownInterval
+  ) {
     clearInterval(
       state.cooldownInterval
     );
@@ -923,43 +1125,26 @@ export function stopCooldownTimer() {
   }
 }
 
-export function beginCooldown() {
-  state.gameStarted = false;
-
-  state.inQueue = false;
-
-  state.playerReady = false;
-
-  state.matchConnectionConfirmed =
-    false;
-
-  state.resumeInProgress =
-    false;
-
-  state.reconnecting =
-    false;
-
-  clearMatchTimer();
-
-  clearActiveMatchState();
-
-  state.matchId = null;
-
-  state.opponent = null;
-
-  state.questions = [];
-
-  state.selectedAnswers = [];
+export function beginCooldown(cooldownUntil = null) {
+  const serverUntil =
+    Number(cooldownUntil);
 
   const until =
-    Date.now() +
-    COOLDOWN_DURATION_MS;
+    Number.isFinite(serverUntil) &&
+    serverUntil > Date.now()
+      ? serverUntil
+      : Date.now() +
+        COOLDOWN_DURATION_MS;
 
   saveCooldownUntil(until);
 
   state.newGameMode = true;
 
-  if (elements.submitButton) {
+  if (
+    elements.submitButton &&
+    !state.gameStarted &&
+    !state.inQueue
+  ) {
     elements.submitButton.style.display =
       "block";
 
@@ -969,41 +1154,52 @@ export function beginCooldown() {
     elements.submitButton.textContent =
       `New Game (${formatCountdown(
         Math.ceil(
-          COOLDOWN_DURATION_MS /
-            1000
+          getCooldownRemainingMs() /
+          1000
         )
       )})`;
   }
 
-  if (elements.startMatchButton) {
+  if (
+    elements.startMatchButton &&
+    !state.gameStarted &&
+    !state.inQueue
+  ) {
     elements.startMatchButton.disabled =
       true;
 
     elements.startMatchButton.textContent =
       `Cooldown: ${formatCountdown(
         Math.ceil(
-          COOLDOWN_DURATION_MS /
-            1000
+          getCooldownRemainingMs() /
+          1000
         )
       )}`;
   }
 
-  if (elements.timerDiv) {
-    elements.timerDiv.textContent =
-      "0:00";
+  if (
+    !state.gameStarted &&
+    !state.inQueue
+  ) {
+    if (elements.timerDiv) {
+      elements.timerDiv.textContent =
+        "0:00";
+    }
+
+    setStatus(
+      "Matchmaking cooldown started. You can play again when it expires."
+    );
+
+    renderCooldownPracticeMessage();
   }
-
-  setStatus(
-    "Match complete. Practice your weakest topics while you wait."
-  );
-
-  renderCooldownPracticeMessage();
 
   startCooldownTimer();
 }
 
 export function enableQueueButton() {
-  if (!elements.startMatchButton) {
+  if (
+    !elements.startMatchButton
+  ) {
     return;
   }
 
@@ -1014,7 +1210,9 @@ export function enableQueueButton() {
     return;
   }
 
-  if (isResumeAvailable()) {
+  if (
+    isResumeAvailable()
+  ) {
     enableResumeGame();
     return;
   }
@@ -1054,13 +1252,21 @@ export function initializeCooldown() {
   state.cooldownUntil =
     getStoredCooldownUntil();
 
-  if (isResumeAvailable()) {
+  /*
+   * A resumable match always takes priority
+   * over cooldown.
+   */
+  if (
+    isResumeAvailable()
+  ) {
     state.newGameMode =
       false;
 
     stopCooldownTimer();
 
-    if (elements.submitButton) {
+    if (
+      elements.submitButton
+    ) {
       elements.submitButton.style.display =
         "none";
 
@@ -1076,11 +1282,15 @@ export function initializeCooldown() {
     return;
   }
 
-  if (isCoolingDown()) {
+  if (
+    isCoolingDown()
+  ) {
     state.newGameMode =
       true;
 
-    if (elements.submitButton) {
+    if (
+      elements.submitButton
+    ) {
       elements.submitButton.style.display =
         "block";
 
@@ -1096,7 +1306,9 @@ export function initializeCooldown() {
         )})`;
     }
 
-    if (elements.startMatchButton) {
+    if (
+      elements.startMatchButton
+    ) {
       elements.startMatchButton.disabled =
         true;
 
@@ -1132,7 +1344,8 @@ export function initializeCooldown() {
    ========================================================= */
 
 function getTopThreeWeakTopics() {
-  const topicStats = {};
+  const topicStats =
+    {};
 
   const historicalTopics =
     Array.isArray(
@@ -1142,7 +1355,8 @@ function getTopThreeWeakTopics() {
       : [];
 
   for (
-    const entry of historicalTopics
+    const entry of
+      historicalTopics
   ) {
     if (
       !Array.isArray(entry) ||
@@ -1152,7 +1366,9 @@ function getTopThreeWeakTopics() {
     }
 
     const topic =
-      normalizeTopic(entry[0]);
+      normalizeTopic(
+        entry[0]
+      );
 
     const stats =
       entry[1];
@@ -1160,7 +1376,8 @@ function getTopThreeWeakTopics() {
     if (
       !topic ||
       !stats ||
-      typeof stats !== "object"
+      typeof stats !==
+        "object"
     ) {
       continue;
     }
@@ -1182,27 +1399,35 @@ function getTopThreeWeakTopics() {
       );
 
     if (
-      !Number.isFinite(total) ||
+      !Number.isFinite(
+        total
+      ) ||
       total <= 0
     ) {
       continue;
     }
 
-    topicStats[topic] = {
-      correct: Math.max(
-        0,
-        correct
-      ),
+    topicStats[
+      topic
+    ] = {
+      correct:
+        Math.max(
+          0,
+          correct
+        ),
 
-      total: Math.max(
-        0,
-        total
-      )
+      total:
+        Math.max(
+          0,
+          total
+        )
     };
   }
 
   if (
-    Object.keys(topicStats).length === 0
+    Object.keys(
+      topicStats
+    ).length === 0
   ) {
     const matches =
       Array.isArray(
@@ -1212,7 +1437,8 @@ function getTopThreeWeakTopics() {
         : [];
 
     for (
-      const match of matches
+      const match of
+        matches
     ) {
       const questionResults =
         extractQuestionResults(
@@ -1233,22 +1459,33 @@ function getTopThreeWeakTopics() {
         }
 
         if (
-          !topicStats[topic]
+          !topicStats[
+            topic
+          ]
         ) {
-          topicStats[topic] = {
+          topicStats[
+            topic
+          ] = {
             correct: 0,
             total: 0
           };
         }
 
-        topicStats[topic].total++;
+        topicStats[
+          topic
+        ].total++;
 
         if (
-          result.correct === true ||
-          result.correct === 1 ||
-          result.correct === "1"
+          result.correct ===
+            true ||
+          result.correct ===
+            1 ||
+          result.correct ===
+            "1"
         ) {
-          topicStats[topic].correct++;
+          topicStats[
+            topic
+          ].correct++;
         }
       }
     }
@@ -1262,12 +1499,17 @@ function getTopThreeWeakTopics() {
         stats.total > 0
     )
     .sort(
-      ([topicA, a], [topicB, b]) => {
+      (
+        [topicA, a],
+        [topicB, b]
+      ) => {
         const accuracyA =
-          a.correct / a.total;
+          a.correct /
+          a.total;
 
         const accuracyB =
-          b.correct / b.total;
+          b.correct /
+          b.total;
 
         if (
           accuracyA !==
@@ -1294,7 +1536,10 @@ function getTopThreeWeakTopics() {
         );
       }
     )
-    .slice(0, 3);
+    .slice(
+      0,
+      3
+    );
 }
 
 
@@ -1303,7 +1548,9 @@ function getTopThreeWeakTopics() {
    ========================================================= */
 
 export function renderCooldownPracticeMessage() {
-  if (!elements.resultDiv) {
+  if (
+    !elements.resultDiv
+  ) {
     return;
   }
 
@@ -1328,13 +1575,17 @@ export function renderCooldownPracticeMessage() {
   );
 
   const container =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   container.className =
     "cooldown-practice";
 
   const heading =
-    document.createElement("h3");
+    document.createElement(
+      "h3"
+    );
 
   heading.textContent =
     "While You Wait";
@@ -1344,17 +1595,21 @@ export function renderCooldownPracticeMessage() {
   );
 
   const description =
-    document.createElement("p");
+    document.createElement(
+      "p"
+    );
 
   description.textContent =
-    "Use the cooldown to practice your weakest SAT topics.";
+    "A new question set is loading. Use the cooldown to practice your weakest SAT topics.";
 
   container.appendChild(
     description
   );
 
   const weakHeading =
-    document.createElement("h4");
+    document.createElement(
+      "h4"
+    );
 
   weakHeading.textContent =
     "Topics You Should Practice";
@@ -1367,10 +1622,13 @@ export function renderCooldownPracticeMessage() {
     getTopThreeWeakTopics();
 
   if (
-    weakTopics.length === 0
+    weakTopics.length ===
+    0
   ) {
     const empty =
-      document.createElement("p");
+      document.createElement(
+        "p"
+      );
 
     empty.textContent =
       "Your topic performance will appear here after you answer some questions.";
@@ -1392,7 +1650,9 @@ export function renderCooldownPracticeMessage() {
   }
 
   const link =
-    document.createElement("a");
+    document.createElement(
+      "a"
+    );
 
   link.href =
     KHAN_ACADEMY_SAT_URL;
@@ -1416,7 +1676,9 @@ export function renderCooldownPracticeMessage() {
 }
 
 export function renderCooldownCompleteMessage() {
-  if (!elements.resultDiv) {
+  if (
+    !elements.resultDiv
+  ) {
     return;
   }
 
@@ -1440,13 +1702,6 @@ export function updatePlayer(player) {
     return;
   }
 
-  if (elements.playerNameDiv) {
-    elements.playerNameDiv.textContent =
-      player.display_name ||
-      player.username ||
-      "You";
-  }
-
   const elo =
     player.stats?.rw_elo ??
     player.rw_elo ??
@@ -1454,9 +1709,39 @@ export function updatePlayer(player) {
     player.elo ??
     1200;
 
+  const rank = getMineralRank(elo);
+
+  if (elements.playerNameDiv) {
+    const name =
+      player.display_name ||
+      player.username ||
+      "You";
+
+    elements.playerNameDiv.textContent =
+      rank?.name
+        ? `${name} (${rank.name})`
+        : name;
+
+    elements.playerNameDiv.classList.remove(
+      ...Array.from(elements.playerNameDiv.classList)
+        .filter(className => className.startsWith("rank-"))
+    );
+
+    if (rank?.className) {
+      elements.playerNameDiv.classList.add(rank.className);
+    }
+  }
+
   if (elements.playerEloDiv) {
-    elements.playerEloDiv.textContent =
-      elo;
+    elements.playerEloDiv.textContent = elo;
+  }
+
+  if (elements.playerRankDiv) {
+    elements.playerRankDiv.textContent =
+      rank?.name || "—";
+
+    elements.playerRankDiv.className =
+      rank?.className || "";
   }
 }
 
@@ -1465,15 +1750,7 @@ export function updateOpponent(player) {
     return;
   }
 
-  state.opponent =
-    player;
-
-  if (elements.opponentNameDiv) {
-    elements.opponentNameDiv.textContent =
-      player.display_name ||
-      player.username ||
-      "Opponent";
-  }
+  state.opponent = player;
 
   const elo =
     player.stats?.rw_elo ??
@@ -1482,15 +1759,46 @@ export function updateOpponent(player) {
     player.elo ??
     1200;
 
+  const rank = getMineralRank(elo);
+
+  if (elements.opponentNameDiv) {
+    const name =
+      player.display_name ||
+      player.username ||
+      "Opponent";
+
+    elements.opponentNameDiv.textContent =
+      rank?.name
+        ? `${name} (${rank.name})`
+        : name;
+
+    elements.opponentNameDiv.classList.remove(
+      ...Array.from(elements.opponentNameDiv.classList)
+        .filter(className => className.startsWith("rank-"))
+    );
+
+    if (rank?.className) {
+      elements.opponentNameDiv.classList.add(rank.className);
+    }
+  }
+
   if (elements.opponentEloDiv) {
-    elements.opponentEloDiv.textContent =
-      elo;
+    elements.opponentEloDiv.textContent = elo;
+  }
+
+  if (elements.opponentRankDiv) {
+    elements.opponentRankDiv.textContent =
+      rank?.name || "—";
+
+    elements.opponentRankDiv.className =
+      rank?.className || "";
   }
 
   if (state.matchId) {
     saveActiveMatchState();
   }
 }
+
 
 
 /* =========================================================
@@ -1528,22 +1836,38 @@ export async function refreshPlayerStats() {
       return null;
     }
 
-    updatePlayer(player);
+    updatePlayer(
+      player
+    );
 
     if (
-      player.id !== undefined &&
-      player.id !== null
+      player.id !==
+        undefined &&
+      player.id !==
+        null
     ) {
       state.playerId =
-        String(player.id);
+        String(
+          player.id
+        );
     }
 
-    if (state.matchId) {
+    /*
+     * Do not destroy a valid saved match.
+     */
+    if (
+      state.matchId &&
+      isLogicalMatchId(
+        state.matchId
+      )
+    ) {
       saveActiveMatchState();
     }
 
     return player;
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to refresh player:",
       error
@@ -1558,10 +1882,13 @@ export async function refreshPlayerStats() {
    MATCH HISTORY HELPERS
    ========================================================= */
 
-export function extractQuestionResults(match) {
+export function extractQuestionResults(
+  match
+) {
   if (
     !match ||
-    typeof match !== "object"
+    typeof match !==
+      "object"
   ) {
     return [];
   }
@@ -1576,9 +1903,12 @@ export function extractQuestionResults(match) {
   ];
 
   for (
-    const value of possibleFields
+    const value of
+      possibleFields
   ) {
-    if (Array.isArray(value)) {
+    if (
+      Array.isArray(value)
+    ) {
       return value;
     }
   }
@@ -1586,10 +1916,13 @@ export function extractQuestionResults(match) {
   return [];
 }
 
-export function extractResultTopic(result) {
+export function extractResultTopic(
+  result
+) {
   if (
     !result ||
-    typeof result !== "object"
+    typeof result !==
+      "object"
   ) {
     return null;
   }
@@ -1616,20 +1949,28 @@ export function appendTopicRow(
   struggling
 ) {
   const total =
-    Number(stats.total) || 0;
+    Number(
+      stats.total
+    ) || 0;
 
   const correct =
-    Number(stats.correct) || 0;
+    Number(
+      stats.correct
+    ) || 0;
 
   const accuracy =
     total > 0
       ? Math.round(
-          (correct / total) * 100
+          (correct /
+            total) *
+            100
         )
       : 0;
 
   const row =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   row.className =
     "topic-performance-row";
@@ -1641,16 +1982,22 @@ export function appendTopicRow(
   }
 
   const name =
-    document.createElement("span");
+    document.createElement(
+      "span"
+    );
 
   name.className =
     "topic-performance-name";
 
   name.textContent =
-    getTopicDisplayName(topic);
+    getTopicDisplayName(
+      topic
+    );
 
   const score =
-    document.createElement("span");
+    document.createElement(
+      "span"
+    );
 
   score.className =
     "topic-performance-score";
@@ -1658,13 +2005,19 @@ export function appendTopicRow(
   score.textContent =
     `${correct}/${total} (${accuracy}%)`;
 
-  row.appendChild(name);
+  row.appendChild(
+    name
+  );
 
-  row.appendChild(score);
+  row.appendChild(
+    score
+  );
 
   if (struggling) {
     const label =
-      document.createElement("span");
+      document.createElement(
+        "span"
+      );
 
     label.className =
       "topic-struggling-label";
@@ -1672,28 +2025,35 @@ export function appendTopicRow(
     label.textContent =
       "Needs work";
 
-    row.appendChild(label);
+    row.appendChild(
+      label
+    );
   }
 
-  container.appendChild(row);
+  container.appendChild(
+    row
+  );
 }
 
 export function renderTopicStatsIntoContainer(
   container,
   topics
 ) {
-  topics = [...topics];
+  topics =
+    [...topics];
 
   topics.sort(
     ([, a], [, b]) => {
       const accuracyA =
         a.total > 0
-          ? a.correct / a.total
+          ? a.correct /
+            a.total
           : 0;
 
       const accuracyB =
         b.total > 0
-          ? b.correct / b.total
+          ? b.correct /
+            b.total
           : 0;
 
       if (
@@ -1714,13 +2074,19 @@ export function renderTopicStatsIntoContainer(
   );
 
   const weakestTopics =
-    topics.slice(0, 3);
+    topics.slice(
+      0,
+      3
+    );
 
   if (
-    weakestTopics.length > 0
+    weakestTopics.length >
+    0
   ) {
     const weakHeading =
-      document.createElement("h4");
+      document.createElement(
+        "h4"
+      );
 
     weakHeading.textContent =
       "Top 3 Topics to Practice";
@@ -1745,7 +2111,9 @@ export function renderTopicStatsIntoContainer(
 export function renderHistoricalTopicPerformance(
   matches
 ) {
-  if (!elements.resultDiv) {
+  if (
+    !elements.resultDiv
+  ) {
     return;
   }
 
@@ -1754,14 +2122,18 @@ export function renderHistoricalTopicPerformance(
       ".historical-topic-performance"
     );
 
-  if (oldPerformance) {
+  if (
+    oldPerformance
+  ) {
     oldPerformance.remove();
   }
 
-  const topicStats = {};
+  const topicStats =
+    {};
 
   for (
-    const match of matches
+    const match of
+      matches
   ) {
     const questionResults =
       extractQuestionResults(
@@ -1782,37 +2154,54 @@ export function renderHistoricalTopicPerformance(
       }
 
       if (
-        !topicStats[topic]
+        !topicStats[
+          topic
+        ]
       ) {
-        topicStats[topic] = {
+        topicStats[
+          topic
+        ] = {
           correct: 0,
           total: 0
         };
       }
 
-      topicStats[topic].total++;
+      topicStats[
+        topic
+      ].total++;
 
       if (
-        result.correct === true ||
-        result.correct === 1 ||
-        result.correct === "1"
+        result.correct ===
+          true ||
+        result.correct ===
+          1 ||
+        result.correct ===
+          "1"
       ) {
-        topicStats[topic].correct++;
+        topicStats[
+          topic
+        ].correct++;
       }
     }
   }
 
   const topics =
-    Object.entries(topicStats);
+    Object.entries(
+      topicStats
+    );
 
   const container =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   container.className =
     "historical-topic-performance";
 
   const heading =
-    document.createElement("h3");
+    document.createElement(
+      "h3"
+    );
 
   heading.textContent =
     "Topics You Struggled With";
@@ -1822,7 +2211,9 @@ export function renderHistoricalTopicPerformance(
   );
 
   const description =
-    document.createElement("p");
+    document.createElement(
+      "p"
+    );
 
   description.className =
     "topic-performance-description";
@@ -1835,10 +2226,13 @@ export function renderHistoricalTopicPerformance(
   );
 
   if (
-    topics.length === 0
+    topics.length ===
+    0
   ) {
     const empty =
-      document.createElement("p");
+      document.createElement(
+        "p"
+      );
 
     empty.textContent =
       "No question-level topic data was found in match history.";
@@ -1867,7 +2261,9 @@ export function renderHistoricalTopicPerformance(
 export function renderHistoricalTopicStats(
   topics
 ) {
-  if (!elements.resultDiv) {
+  if (
+    !elements.resultDiv
+  ) {
     return;
   }
 
@@ -1881,13 +2277,17 @@ export function renderHistoricalTopicStats(
   }
 
   const container =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   container.className =
     "historical-topic-performance";
 
   const heading =
-    document.createElement("h3");
+    document.createElement(
+      "h3"
+    );
 
   heading.textContent =
     "Topics You Struggled With";
@@ -1897,7 +2297,9 @@ export function renderHistoricalTopicStats(
   );
 
   const description =
-    document.createElement("p");
+    document.createElement(
+      "p"
+    );
 
   description.className =
     "topic-performance-description";
@@ -1921,7 +2323,9 @@ export function renderHistoricalTopicStats(
     container
   );
 
-  if (isCoolingDown()) {
+  if (
+    isCoolingDown()
+  ) {
     renderCooldownPracticeMessage();
   }
 }
@@ -1930,7 +2334,9 @@ export function renderNoHistoricalTopicData(
   reason =
     "Topic performance will appear after enough question-level match data is available."
 ) {
-  if (!elements.resultDiv) {
+  if (
+    !elements.resultDiv
+  ) {
     return;
   }
 
@@ -1944,13 +2350,17 @@ export function renderNoHistoricalTopicData(
   }
 
   const container =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   container.className =
     "historical-topic-performance";
 
   const heading =
-    document.createElement("h3");
+    document.createElement(
+      "h3"
+    );
 
   heading.textContent =
     "Topics You Struggled With";
@@ -1960,7 +2370,9 @@ export function renderNoHistoricalTopicData(
   );
 
   const description =
-    document.createElement("p");
+    document.createElement(
+      "p"
+    );
 
   description.textContent =
     "Based on your recent completed matches.";
@@ -1970,7 +2382,9 @@ export function renderNoHistoricalTopicData(
   );
 
   const empty =
-    document.createElement("p");
+    document.createElement(
+      "p"
+    );
 
   empty.textContent =
     reason;
@@ -1992,7 +2406,9 @@ export function renderNoHistoricalTopicData(
 export function renderRecentMatches(
   matches
 ) {
-  if (!elements.resultDiv) {
+  if (
+    !elements.resultDiv
+  ) {
     return;
   }
 
@@ -2006,13 +2422,17 @@ export function renderRecentMatches(
   }
 
   const container =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   container.className =
     "recent-match-history";
 
   const heading =
-    document.createElement("h3");
+    document.createElement(
+      "h3"
+    );
 
   heading.textContent =
     "Recent Matches";
@@ -2022,10 +2442,13 @@ export function renderRecentMatches(
   );
 
   if (
-    matches.length === 0
+    matches.length ===
+    0
   ) {
     const empty =
-      document.createElement("p");
+      document.createElement(
+        "p"
+      );
 
     empty.textContent =
       "No completed matches yet.";
@@ -2042,9 +2465,14 @@ export function renderRecentMatches(
   }
 
   matches.forEach(
-    (match, index) => {
+    (
+      match,
+      index
+    ) => {
       const row =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       row.className =
         "recent-match-row";
@@ -2054,15 +2482,18 @@ export function renderRecentMatches(
 
       if (!result) {
         if (
-          match.won === true
+          match.won ===
+          true
         ) {
           result = "win";
         } else if (
-          match.won === false
+          match.won ===
+          false
         ) {
           result = "loss";
         } else {
-          result = "unknown";
+          result =
+            "unknown";
         }
       }
 
@@ -2098,12 +2529,17 @@ export function renderRecentMatches(
 
       const accuracy =
         Number.isFinite(
-          Number(rawAccuracy)
+          Number(
+            rawAccuracy
+          )
         )
-          ? Number(rawAccuracy)
+          ? Number(
+              rawAccuracy
+            )
           : total > 0
             ? Math.round(
-                (correct / total) *
+                (correct /
+                  total) *
                   100
               )
             : 0;
@@ -2123,11 +2559,15 @@ export function renderRecentMatches(
         </div>
 
         <div class="recent-match-opponent">
-          ${escapeHtml(opponentName)}
+          ${escapeHtml(
+            opponentName
+          )}
         </div>
 
         <div class="recent-match-result">
-          ${escapeHtml(resultText)}
+          ${escapeHtml(
+            resultText
+          )}
         </div>
 
         <div class="recent-match-score">
@@ -2177,28 +2617,37 @@ export async function loadHistoricalTopicPerformance() {
     );
 
     const response =
-      await fetch(url);
+      await fetch(
+        url
+      );
 
-    let data = {};
+    let data =
+      {};
 
     try {
       data =
         await response.json();
     } catch {
-      data = {};
+      data =
+        {};
     }
 
-    if (!response.ok) {
+    if (
+      !response.ok
+    ) {
       throw new Error(
         data.error ||
         `Topic performance request failed (${response.status})`
       );
     }
 
-    let topics = null;
+    let topics =
+      null;
 
     if (
-      Array.isArray(data.topics)
+      Array.isArray(
+        data.topics
+      )
     ) {
       topics =
         data.topics;
@@ -2227,14 +2676,20 @@ export async function loadHistoricalTopicPerformance() {
 
     if (
       topics &&
-      !Array.isArray(topics)
+      !Array.isArray(
+        topics
+      )
     ) {
       topics =
-        Object.entries(topics);
+        Object.entries(
+          topics
+        );
     }
 
     if (
-      !Array.isArray(topics)
+      !Array.isArray(
+        topics
+      )
     ) {
       renderNoHistoricalTopicData(
         "No question-level topic data is available yet."
@@ -2243,14 +2698,19 @@ export async function loadHistoricalTopicPerformance() {
       return;
     }
 
-    const normalizedTopics = [];
+    const normalizedTopics =
+      [];
 
     for (
-      const entry of topics
+      const entry of
+        topics
     ) {
       if (
-        Array.isArray(entry) &&
-        entry.length >= 2
+        Array.isArray(
+          entry
+        ) &&
+        entry.length >=
+          2
       ) {
         const topic =
           normalizeTopic(
@@ -2266,38 +2726,42 @@ export async function loadHistoricalTopicPerformance() {
 
         if (
           !stats ||
-          typeof stats !== "object"
+          typeof stats !==
+            "object"
         ) {
           continue;
         }
 
-        normalizedTopics.push([
-          topic,
-          {
-            correct:
-              Number(
-                stats.correct ??
-                stats.questions_correct ??
-                stats.questionsCorrect ??
-                0
-              ),
+        normalizedTopics.push(
+          [
+            topic,
+            {
+              correct:
+                Number(
+                  stats.correct ??
+                  stats.questions_correct ??
+                  stats.questionsCorrect ??
+                  0
+                ),
 
-            total:
-              Number(
-                stats.total ??
-                stats.questions_answered ??
-                stats.questionsAnswered ??
-                0
-              )
-          }
-        ]);
+              total:
+                Number(
+                  stats.total ??
+                  stats.questions_answered ??
+                  stats.questionsAnswered ??
+                  0
+                )
+            }
+          ]
+        );
 
         continue;
       }
 
       if (
         entry &&
-        typeof entry === "object"
+        typeof entry ===
+          "object"
       ) {
         const topic =
           normalizeTopic(
@@ -2311,31 +2775,34 @@ export async function loadHistoricalTopicPerformance() {
           continue;
         }
 
-        normalizedTopics.push([
-          topic,
-          {
-            correct:
-              Number(
-                entry.correct ??
-                entry.questions_correct ??
-                entry.questionsCorrect ??
-                0
-              ),
+        normalizedTopics.push(
+          [
+            topic,
+            {
+              correct:
+                Number(
+                  entry.correct ??
+                  entry.questions_correct ??
+                  entry.questionsCorrect ??
+                  0
+                ),
 
-            total:
-              Number(
-                entry.total ??
-                entry.questions_answered ??
-                entry.questionsAnswered ??
-                0
-              )
-          }
-        ]);
+              total:
+                Number(
+                  entry.total ??
+                  entry.questions_answered ??
+                  entry.questionsAnswered ??
+                  0
+                )
+            }
+          ]
+        );
       }
     }
 
     if (
-      normalizedTopics.length === 0
+      normalizedTopics.length ===
+      0
     ) {
       renderNoHistoricalTopicData(
         "No question-level topic data is available yet."
@@ -2355,7 +2822,9 @@ export async function loadHistoricalTopicPerformance() {
     renderHistoricalTopicStats(
       normalizedTopics
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to load historical topic performance:",
       error
@@ -2398,18 +2867,24 @@ export async function loadRecentMatches() {
     );
 
     const response =
-      await fetch(url);
+      await fetch(
+        url
+      );
 
-    let data = {};
+    let data =
+      {};
 
     try {
       data =
         await response.json();
     } catch {
-      data = {};
+      data =
+        {};
     }
 
-    if (!response.ok) {
+    if (
+      !response.ok
+    ) {
       throw new Error(
         data.error ||
         `Match history request failed (${response.status})`
@@ -2417,8 +2892,13 @@ export async function loadRecentMatches() {
     }
 
     const matches =
-      Array.isArray(data.matches)
-        ? data.matches.slice(0, 5)
+      Array.isArray(
+        data.matches
+      )
+        ? data.matches.slice(
+            0,
+            5
+          )
         : [];
 
     console.log(
@@ -2434,10 +2914,13 @@ export async function loadRecentMatches() {
         match =>
           extractQuestionResults(
             match
-          ).length > 0
+          ).length >
+          0
       );
 
-    if (hasQuestionData) {
+    if (
+      hasQuestionData
+    ) {
       renderHistoricalTopicPerformance(
         matches
       );
@@ -2445,10 +2928,14 @@ export async function loadRecentMatches() {
 
     await loadHistoricalTopicPerformance();
 
-    if (isCoolingDown()) {
+    if (
+      isCoolingDown()
+    ) {
       renderCooldownPracticeMessage();
     }
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to load recent matches:",
       error
@@ -2457,7 +2944,9 @@ export async function loadRecentMatches() {
     window.scoreladderRecentMatches =
       [];
 
-    renderRecentMatches([]);
+    renderRecentMatches(
+      []
+    );
 
     await loadHistoricalTopicPerformance();
   }
@@ -2469,7 +2958,9 @@ export async function loadRecentMatches() {
    ========================================================= */
 
 export function stopMatchTimer() {
-  if (state.timerInterval) {
+  if (
+    state.timerInterval
+  ) {
     clearInterval(
       state.timerInterval
     );
@@ -2494,10 +2985,14 @@ export function clearMatchTimer() {
    RESUME UI / PERSISTENCE
    ========================================================= */
 
-export function saveResumeMatch(matchId) {
+export function saveResumeMatch(
+  matchId
+) {
   if (
-    typeof matchId !== "string" ||
-    matchId.length === 0
+    typeof matchId !==
+      "string" ||
+    matchId.length ===
+      0
   ) {
     return;
   }
@@ -2513,7 +3008,9 @@ export function saveResumeMatch(matchId) {
       RESUME_MATCH_STORAGE_KEY,
       matchId
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to save resume match:",
       error
@@ -2529,14 +3026,18 @@ export function getStoredResumeMatchId() {
       );
 
     if (
-      typeof matchId !== "string" ||
-      matchId.length === 0
+      typeof matchId !==
+        "string" ||
+      matchId.length ===
+        0
     ) {
       return null;
     }
 
     return matchId;
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to read resume match:",
       error
@@ -2563,7 +3064,9 @@ export function clearResumeMatch() {
     localStorage.removeItem(
       RESUME_MATCH_STORAGE_KEY
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Failed to clear resume match:",
       error
@@ -2583,6 +3086,19 @@ export function enableResumeGame(
     return false;
   }
 
+  if (
+    !isLogicalMatchId(
+      matchId
+    )
+  ) {
+    console.error(
+      "Refusing to enable Resume Game for invalid logical matchId:",
+      matchId
+    );
+
+    return false;
+  }
+
   state.resumeAvailable =
     true;
 
@@ -2592,7 +3108,12 @@ export function enableResumeGame(
   state.matchId =
     String(matchId);
 
-  if (!elements.startMatchButton) {
+  state.reconnecting =
+    false;
+
+  if (
+    !elements.startMatchButton
+  ) {
     return true;
   }
 
@@ -2619,7 +3140,9 @@ export function enableResumeGame(
 export function disableResumeGame() {
   clearActiveMatchState();
 
-  if (!elements.startMatchButton) {
+  if (
+    !elements.startMatchButton
+  ) {
     return;
   }
 
@@ -2642,12 +3165,58 @@ export function isResumeAvailable() {
   const activeState =
     getStoredActiveMatchState();
 
+  /*
+   * A saved match is resumable only if:
+   *
+   * 1. The logical match ID is valid.
+   * 2. The saved match has not already expired.
+   *
+   * The server remains authoritative, but we should
+   * never present an obviously expired local match
+   * as "Resume Game".
+   */
+
   if (
     activeState &&
-    isLogicalMatchId(
-      activeState.matchId
-    )
+    isLogicalMatchId(activeState.matchId)
   ) {
+    const deadline =
+      Number(
+        activeState.challengeDeadline
+      ) || 0;
+
+    /*
+     * If the saved match has a deadline and that
+     * deadline has already passed, it is no longer
+     * resumable.
+     */
+    if (
+      deadline > 0 &&
+      deadline <= Date.now()
+    ) {
+      console.log(
+        "Saved match has expired. Clearing resume state:",
+        {
+          matchId:
+            activeState.matchId,
+          challengeDeadline:
+            deadline,
+          now:
+            Date.now()
+        }
+      );
+
+      clearActiveMatchState();
+
+      state.resumeAvailable =
+        false;
+
+      state.resumeMatchId =
+        null;
+
+      return false;
+    }
+
     state.resumeAvailable =
       true;
 
@@ -2660,10 +3229,17 @@ export function isResumeAvailable() {
   const storedMatchId =
     getStoredResumeMatchId();
 
+  /*
+   * A lightweight resume key by itself does not contain
+   * enough information to determine whether the match
+   * expired, so only use it when there is no active-state
+   * record.
+   */
   if (
     isLogicalMatchId(
       storedMatchId
-    )
+    ) &&
+    !activeState
   ) {
     state.resumeAvailable =
       true;
@@ -2686,7 +3262,9 @@ export function initializeResumeGame() {
   const restored =
     restoreActiveMatchState();
 
-  if (restored) {
+  if (
+    restored
+  ) {
     console.log(
       "Restored active match state:",
       {
@@ -2763,328 +3341,191 @@ export function initializeResumeGame() {
 
 
 /* =========================================================
-   RENDER QUESTIONS
+   RECONNECT MODULE BRIDGE
    ========================================================= */
 
-function renderQuestions() {
-  if (!elements.questionsDiv) {
-    return;
-  }
+/*
+ * IMPORTANT:
+ *
+ * script.js no longer constructs the reconnect manager
+ * itself because the reconnect manager depends on gameplay
+ * functions that belong to game.js.
+ *
+ * game.js should call initializeMatchConnectionModules(...)
+ * after its gameplay functions are defined.
+ */
 
-  elements.questionsDiv.innerHTML = "";
+let disconnectManager =
+  null;
 
-  state.questions.forEach(
-    (q, questionIndex) => {
-      const card =
-        document.createElement("div");
+let reconnectManager =
+  null;
 
-      card.className =
-        "card";
+let reconnectBridge =
+  null;
 
-      const number =
-        document.createElement("div");
-
-      number.className =
-        "question-number";
-
-      number.textContent =
-        `Question ${questionIndex + 1}`;
-
-      card.appendChild(
-        number
-      );
-
-      const meta =
-        document.createElement("div");
-
-      meta.className =
-        "meta";
-
-      meta.textContent =
-        `${q.topic || q.originalTopic || ""}` +
-        `${
-          q.difficulty
-            ? " • " + q.difficulty
-            : ""
-        }`;
-
-      card.appendChild(
-        meta
-      );
-
-      if (q.passage) {
-        const passage =
-          document.createElement("div");
-
-        passage.className =
-          "passage";
-
-        passage.innerHTML =
-          formatPassage(
-            q.passage
-          );
-
-        card.appendChild(
-          passage
-        );
-      }
-
-      const questionText =
-        document.createElement("p");
-
-      questionText.textContent =
-        q.question || "";
-
-      card.appendChild(
-        questionText
-      );
-
-      const choices =
-        Array.isArray(q.choices)
-          ? q.choices
-          : Object.values(
-              q.choices || {}
-            );
-
-      choices.forEach(
-        (
-          choice,
-          choiceIndex
-        ) => {
-          const button =
-            document.createElement(
-              "button"
-            );
-
-          button.className =
-            "choice";
-
-          button.type =
-            "button";
-
-          const letter =
-            [
-              "A",
-              "B",
-              "C",
-              "D"
-            ][choiceIndex] || "?";
-
-          const text =
-            typeof choice ===
-            "object"
-              ? (
-                  choice.text ??
-                  choice.value ??
-                  ""
-                )
-              : choice;
-
-          button.innerHTML = `
-            <span class="choice-letter">
-              ${letter}.
-            </span>
-            ${escapeHtml(text)}
-          `;
-
-          button.addEventListener(
-            "click",
-            () => {
-              selectAnswer(
-                questionIndex,
-                choiceIndex
-              );
-            }
-          );
-
-          card.appendChild(
-            button
-          );
-        }
-      );
-
-      elements.questionsDiv.appendChild(
-        card
-      );
-    }
-  );
-}
-
-function restoreSelectedAnswerUI() {
-  if (!elements.questionsDiv) {
-    return;
-  }
-
-  state.selectedAnswers.forEach(
-    (choiceIndex, questionIndex) => {
-      if (
-        !Number.isInteger(choiceIndex) ||
-        choiceIndex < 0
-      ) {
-        return;
-      }
-
-      const card =
-        elements.questionsDiv.children[
-          questionIndex
-        ];
-
-      const buttons =
-        card?.querySelectorAll(
-          ".choice"
-        );
-
-      if (
-        buttons?.[choiceIndex]
-      ) {
-        buttons[
-          choiceIndex
-        ].classList.add(
-          "selected"
-        );
-      }
-    }
-  );
-}
-
-function updateSubmitButton() {
-  if (!elements.submitButton) {
-    return;
-  }
-
+export function initializeMatchConnectionModules(
+  callbacks = {}
+) {
+  /*
+   * Do not initialize twice.
+   */
   if (
-    !state.gameStarted ||
-    state.newGameMode
+    reconnectManager
   ) {
-    elements.submitButton.disabled =
-      true;
-
-    return;
+    return reconnectBridge;
   }
 
-  if (
-    state.challengeSubmitted ||
-    state.submissionInProgress
-  ) {
-    elements.submitButton.disabled =
-      true;
+  disconnectManager =
+    createDisconnectManager({
+      state,
 
-    return;
-  }
+      saveActiveMatchState,
 
-  const allAnswered =
-    Array.isArray(
-      state.selectedAnswers
-    ) &&
-    state.selectedAnswers.length ===
-      state.questions.length &&
-    state.selectedAnswers.every(
-      answer =>
-        Number.isInteger(answer) &&
-        answer >= 0
-    );
+      enableResumeGame,
 
-  elements.submitButton.disabled =
-    !allAnswered;
+      setStatus
+    });
+
+  reconnectManager =
+    createReconnectManager({
+      API,
+
+      TOTAL_QUESTIONS,
+
+      MATCH_DURATION_MS,
+
+      state,
+
+      elements,
+
+      setStatus,
+
+      saveActiveMatchState,
+
+      getStoredActiveMatchState,
+
+      getStoredResumeMatchId,
+
+      clearActiveMatchState,
+
+      enableResumeGame,
+
+      enableQueueButton,
+
+      updateOpponent,
+
+      refreshPlayerStats,
+
+      renderQuestions:
+        callbacks.renderQuestions,
+
+      restoreSelectedAnswerUI:
+        callbacks.restoreSelectedAnswerUI,
+
+      updateSubmitButton:
+        callbacks.updateSubmitButton,
+
+      startGame:
+        callbacks.startGame,
+
+      startMatchTimer:
+        callbacks.startMatchTimer,
+
+      handleGameResult:
+        callbacks.handleGameResult,
+
+      disconnectManager
+    });
+
+  reconnectBridge =
+    reconnectManager;
+
+  disconnectManager.installPageLifecycleHandlers();
+
+  return reconnectBridge;
 }
 
 
 /* =========================================================
-   MATCH CONNECTION MODULES
+   RECONNECT ACCESSORS
    ========================================================= */
 
-/*
- * These managers contain all WebSocket/disconnect logic.
- *
- * The gameplay functions are injected rather than imported
- * back into these modules, which prevents circular imports.
- *
- * NOTE:
- * If your main gameplay functions are declared later in
- * this file, move this initialization block to immediately
- * AFTER those function declarations.
- */
+export function getReconnectManager() {
+  return reconnectManager;
+}
 
-const disconnectManager =
-  createDisconnectManager({
-    state,
+export function getDisconnectManager() {
+  return disconnectManager;
+}
 
-    saveActiveMatchState,
+export function sendRoomMessage(
+  message
+) {
+  if (
+    !reconnectManager
+  ) {
+    console.error(
+      "Reconnect manager has not been initialized."
+    );
 
-    enableResumeGame,
+    return false;
+  }
 
-    setStatus
-  });
+  return reconnectManager.sendRoomMessage(
+    message
+  );
+}
 
-const reconnectManager =
-  createReconnectManager({
-    API,
+export function connectToRoom(
+  isResume = false
+) {
+  if (
+    !reconnectManager
+  ) {
+    console.error(
+      "Reconnect manager has not been initialized."
+    );
 
-    TOTAL_QUESTIONS,
+    return null;
+  }
 
-    MATCH_DURATION_MS,
+  return reconnectManager.connectToRoom(
+    isResume
+  );
+}
 
-    state,
+export async function resumeExistingMatch() {
+  if (
+    !reconnectManager
+  ) {
+    console.error(
+      "Reconnect manager has not been initialized."
+    );
 
-    elements,
+    return false;
+  }
 
-    setStatus,
+  return reconnectManager.resumeExistingMatch();
+}
 
-    saveActiveMatchState,
+export function onMatchFound(
+  isResume = false
+) {
+  if (
+    !reconnectManager
+  ) {
+    console.error(
+      "Reconnect manager has not been initialized."
+    );
 
-    getStoredActiveMatchState,
+    return false;
+  }
 
-    getStoredResumeMatchId,
-
-    clearActiveMatchState,
-
-    enableResumeGame,
-
-    enableQueueButton,
-
-    updateOpponent,
-
-    refreshPlayerStats,
-
-    renderQuestions,
-
-    restoreSelectedAnswerUI,
-
-    updateSubmitButton,
-
-    /*
-     * These gameplay functions must exist in the
-     * remainder of your normal gameplay code.
-     */
-    startGame:
-      typeof startGame ===
-      "function"
-        ? startGame
-        : null,
-
-    startMatchTimer:
-      typeof startMatchTimer ===
-      "function"
-        ? startMatchTimer
-        : null,
-
-    handleGameResult:
-      typeof handleGameResult ===
-      "function"
-        ? handleGameResult
-        : null,
-
-    disconnectManager
-  });
-
-const {
-  sendRoomMessage,
-  connectToRoom,
-  resumeExistingMatch,
-  onMatchFound
-} = reconnectManager;
-
-disconnectManager.installPageLifecycleHandlers();
+  return reconnectManager.onMatchFound(
+    isResume
+  );
+}
 
 
 /* =========================================================
@@ -3094,7 +3535,9 @@ disconnectManager.installPageLifecycleHandlers();
 function handleStartMatchButtonClick(
   event
 ) {
-  if (!elements.startMatchButton) {
+  if (
+    !elements.startMatchButton
+  ) {
     return;
   }
 
@@ -3113,7 +3556,9 @@ function handleStartMatchButtonClick(
   }
 }
 
-if (elements.startMatchButton) {
+if (
+  elements.startMatchButton
+) {
   elements.startMatchButton.addEventListener(
     "click",
     handleStartMatchButtonClick,
@@ -3126,11 +3571,15 @@ if (elements.startMatchButton) {
    INITIAL SHARED UI
    ========================================================= */
 
-if (elements.startMatchButton) {
+if (
+  elements.startMatchButton
+) {
   elements.startMatchButton.disabled =
     false;
 
-  if (isResumeAvailable()) {
+  if (
+    isResumeAvailable()
+  ) {
     elements.startMatchButton.textContent =
       "Resume Game";
 
@@ -3143,7 +3592,9 @@ if (elements.startMatchButton) {
   }
 }
 
-if (elements.submitButton) {
+if (
+  elements.submitButton
+) {
   elements.submitButton.style.display =
     "none";
 
@@ -3151,7 +3602,9 @@ if (elements.submitButton) {
     true;
 }
 
-if (elements.timerDiv) {
+if (
+  elements.timerDiv
+) {
   elements.timerDiv.textContent =
     "13:00";
 }
@@ -3181,10 +3634,16 @@ window.scoreladderHistoricalTopics =
     ? window.scoreladderHistoricalTopics
     : [];
 
+/*
+ * Restore persisted state.
+ */
 initializeResumeGame();
 
 initializeCooldown();
 
+/*
+ * Make Resume Game win over normal button setup.
+ */
 if (
   isResumeAvailable() &&
   !state.gameStarted &&
@@ -3199,3 +3658,134 @@ if (
 loadRecentMatches();
 
 refreshPlayerStats();
+
+/*
+ * =========================================================
+ * ACTIVE MATCH LEAVE WARNING
+ * =========================================================
+ *
+ * Prevents accidental:
+ * - Page refresh
+ * - Tab/window close
+ * - Browser back
+ * - Browser forward
+ * - Navigation to another page
+ *
+ * Only active while a match is actually in progress.
+ * =========================================================
+ */
+
+function isMatchInProgress() {
+  return Boolean(
+    state.matchId &&
+    !state.matchFinished &&
+    !state.gameFinished
+  );
+}
+
+
+/*
+ * Browser refresh / tab close / back / forward
+ *
+ * Browsers intentionally ignore custom beforeunload
+ * messages and show their own native confirmation text.
+ */
+
+function handleBeforeUnload(event) {
+  if (!isMatchInProgress()) {
+    return;
+  }
+
+  event.preventDefault();
+  event.returnValue = "";
+}
+
+window.addEventListener(
+  "beforeunload",
+  handleBeforeUnload
+);
+
+
+/*
+ * Normal page navigation
+ *
+ * This handles links/buttons that navigate to another
+ * page without triggering beforeunload first.
+ */
+
+document.addEventListener("click", event => {
+  if (!isMatchInProgress()) {
+    return;
+  }
+
+  const link = event.target.closest("a[href]");
+
+  if (!link) {
+    return;
+  }
+
+  const href = link.href;
+
+  if (!href) {
+    return;
+  }
+
+  /*
+   * Ignore:
+   * - Same-page anchors
+   * - javascript links
+   * - downloads
+   * - new-tab links
+   * - modifier-clicks
+   */
+
+  if (
+    href.startsWith("#") ||
+    link.target === "_blank" ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey ||
+    event.metaKey ||
+    link.hasAttribute("download")
+  ) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "WARNING: Do not leave or refresh while a match is in progress.\n\n" +
+    "Disconnecting may prevent you from rejoining the match " +
+    "or entering a new match. Reconnection is currently unreliable.\n\n" +
+    "Are you sure you want to leave?"
+  );
+
+  if (!confirmed) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+}, true);
+
+
+/*
+ * Browser back / forward
+ *
+ * beforeunload normally catches the resulting navigation,
+ * but this provides an additional guard for SPA/history
+ * navigation.
+ */
+
+window.addEventListener("popstate", () => {
+  if (!isMatchInProgress()) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "WARNING: Your match is still in progress.\n\n" +
+    "Leaving may prevent you from rejoining the match " +
+    "or entering a new match. Reconnection is currently unreliable.\n\n" +
+    "Are you sure you want to leave?"
+  );
+
+  if (!confirmed) {
+    history.pushState(null, "", window.location.href);
+  }
+});

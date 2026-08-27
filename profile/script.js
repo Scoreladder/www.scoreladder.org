@@ -78,7 +78,44 @@ async function load() {
       user
     );
 
-    renderProfile(user);
+
+    // --------------------------------------------------------
+    // LOAD MINERAL RANKS
+    //
+    // This is deliberately dynamic so this profile script
+    // remains a normal script and global functions such as
+    // logout() and goSettings() continue to work.
+    // --------------------------------------------------------
+
+    let getMineralRank = null;
+
+    try {
+      const ranks =
+        await import("../ranks.js");
+
+      if (
+        typeof ranks.getMineralRank === "function"
+      ) {
+        getMineralRank =
+          ranks.getMineralRank;
+      } else {
+        console.error(
+          "ranks.js does not export getMineralRank"
+        );
+      }
+
+    } catch (rankError) {
+      console.error(
+        "Failed to load ranks.js:",
+        rankError
+      );
+    }
+
+
+    renderProfile(
+      user,
+      getMineralRank
+    );
 
   } catch (error) {
     console.error(
@@ -95,7 +132,10 @@ async function load() {
 // RENDER PROFILE
 // ============================================================
 
-function renderProfile(user) {
+function renderProfile(
+  user,
+  getMineralRank
+) {
   const profile =
     user.profile || {};
 
@@ -104,6 +144,32 @@ function renderProfile(user) {
 
   const questionTypeStats =
     user.question_type_stats || [];
+
+
+  // ==========================================================
+  // ELO
+  // ==========================================================
+
+  const rwElo =
+    Number(stats.rw_elo ?? 1200);
+
+  const mathElo =
+    Number(stats.math_elo ?? 1200);
+
+
+  // ==========================================================
+  // MINERAL RANKS
+  // ==========================================================
+
+  const rwRank =
+    getMineralRank
+      ? getMineralRank(rwElo)
+      : null;
+
+  const mathRank =
+    getMineralRank
+      ? getMineralRank(mathElo)
+      : null;
 
 
   // -------------------------
@@ -157,9 +223,9 @@ function renderProfile(user) {
       : "https://cdn.discordapp.com/embed/avatars/0.png";
 
 
-  // -------------------------
+  // ==========================================================
   // OVERALL ACCURACY
-  // -------------------------
+  // ==========================================================
 
   const rwAnswered =
     Number(
@@ -196,73 +262,95 @@ function renderProfile(user) {
       : 0;
 
 
-  // -------------------------
-  // OVERALL STATS
-  // -------------------------
+// ==========================================================
+// OVERALL STATS
+// ==========================================================
 
-  document.getElementById(
-    "stats"
-  ).innerHTML = `
-    <div class="stat">
-      <span>RW Elo</span>
-      <b>${stats.rw_elo ?? 1200}</b>
-    </div>
+document.getElementById(
+  "stats"
+).innerHTML = `
+  <div class="stat">
+    <span>RW Elo</span>
+    <b>${rwElo}</b>
+  </div>
 
-    <div class="stat">
-      <span>Math Elo</span>
-      <b>${stats.math_elo ?? 1200}</b>
-    </div>
+  <div class="stat">
+    <span>RW Rank</span>
+<b class="${rwRank?.className || ""}">
+  ${rwRank?.name || "Unranked"}
+</b>
+  </div>
 
-    <div class="stat">
-      <span>RW Wins</span>
-      <b>${stats.rw_wins ?? 0}</b>
-    </div>
+  <div class="stat">
+    <span>Math Elo</span>
+    <b>${mathElo}</b>
+  </div>
 
-    <div class="stat">
-      <span>Math Wins</span>
-      <b>${stats.math_wins ?? 0}</b>
-    </div>
+  <div class="stat">
+    <span>Math Rank</span>
+<b class="${mathRank?.className || ""}">
+  ${mathRank?.name || "Unranked"}
+</b>
+  </div>
 
-    <div class="stat">
-      <span>RW Accuracy</span>
-      <b>${rwAccuracy}%</b>
-    </div>
+  <div class="stat">
+    <span>RW Wins</span>
+    <b>${stats.rw_wins ?? 0}</b>
+  </div>
 
-    <div class="stat">
-      <span>Math Accuracy</span>
-      <b>${mathAccuracy}%</b>
-    </div>
+  <div class="stat">
+    <span>Math Wins</span>
+    <b>${stats.math_wins ?? 0}</b>
+  </div>
 
-    <div class="stat">
-      <span>Daily Challenge Streak</span>
-      <b>${stats.daily_streak ?? 0}</b>
-    </div>
-  `;
+  <div class="stat">
+    <span>RW Accuracy</span>
+    <b>${rwAccuracy}%</b>
+  </div>
+
+  <div class="stat">
+    <span>Math Accuracy</span>
+    <b>${mathAccuracy}%</b>
+  </div>
+
+  <div class="stat">
+    <span>Daily Challenge Streak</span>
+    <b>${stats.daily_streak ?? 0}</b>
+  </div>
+`;
 
 
-  // -------------------------
+  // ==========================================================
   // QUESTION TYPE STATS
-  // -------------------------
+  // ==========================================================
 
   renderQuestionTypeStats(
     questionTypeStats
   );
 
 
-  // -------------------------
+  // ==========================================================
   // SOCIAL LINKS
-  // -------------------------
+  // ==========================================================
 
   const socials = [];
 
-  const twitterUrl = getSafeExternalUrl(profile.twitter);
+  const twitterUrl =
+    getSafeExternalUrl(
+      profile.twitter
+    );
 
   function getSafeExternalUrl(value) {
     try {
-      const url = new URL(String(value));
-      return ["https:", "http:"].includes(url.protocol)
+      const url =
+        new URL(String(value));
+
+      return ["https:", "http:"].includes(
+        url.protocol
+      )
         ? url.href
         : null;
+
     } catch {
       return null;
     }
@@ -318,7 +406,8 @@ function renderProfile(user) {
 
   document.getElementById(
     "socials"
-  ).innerHTML = socials.join("");
+  ).innerHTML =
+    socials.join("");
 }
 
 
@@ -451,10 +540,14 @@ function renderQuestionTypeStats(
 
 
     row.appendChild(name);
+
     row.appendChild(
       accuracyElement
     );
-    row.appendChild(count);
+
+    row.appendChild(
+      count
+    );
 
     section.appendChild(row);
   }
@@ -491,10 +584,22 @@ function renderQuestionTypeStats(
 
 function escapeAttribute(value) {
   return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    );
 }
 
 
@@ -503,7 +608,8 @@ function escapeAttribute(value) {
 // ============================================================
 
 function goSettings() {
-  location.href = "/settings/";
+  location.href =
+    "/settings/";
 }
 
 
@@ -525,6 +631,7 @@ async function logout() {
           credentials: "include"
         }
       );
+
     } else {
       await fetch(
         `${Auth_API}/logout`,

@@ -9,33 +9,59 @@ import {
   formatPassage,
   getTopicDisplayName,
   normalizeTopic,
-  sendRoomMessage,
   stopMatchTimer,
   clearMatchTimer,
   refreshPlayerStats,
   loadRecentMatches,
-  beginCooldown,
-  appendTopicRow
+  saveActiveMatchState,
+  appendTopicRow,
+  initializeMatchConnectionModules,
+  sendRoomMessage
 } from "./script.js";
+
 
 /* =========================================================
    GAME START
    ========================================================= */
 
 export function handleGameStart(
-  data
+  data,
+  isResume = false
 ) {
   console.log(
     "GAME START RECEIVED:",
-    data
+    data,
+    "isResume:",
+    isResume
   );
 
-  if (
-    !data ||
-    !Array.isArray(
-      data.questions
-    )
-  ) {
+  /*
+   * The multiplayer server may send the question set
+   * directly as an array:
+   *
+   * [
+   *   { question: "...", choices: [...] },
+   *   ...
+   * ]
+   *
+   * Older/local resume paths may send:
+   *
+   * {
+   *   questions: [...],
+   *   startTime: ...
+   * }
+   *
+   * Normalize both forms here.
+   */
+  const questions =
+    Array.isArray(data)
+      ? data
+      : data &&
+        Array.isArray(data.questions)
+        ? data.questions
+        : null;
+
+  if (!questions) {
     console.error(
       "Invalid game_start payload:",
       data
@@ -48,29 +74,118 @@ export function handleGameStart(
     return;
   }
 
+  /*
+   * Preserve startTime when the server sends it inside
+   * the game_start object.
+   *
+   * If the payload is only the question array, use the
+   * existing match start time if one has already been
+   * established by the reconnect/match system.
+   */
+  const startTime =
+    Array.isArray(data)
+      ? (
+          Number.isFinite(
+            Number(state.matchStartTime)
+          )
+            ? Number(state.matchStartTime)
+            : Date.now()
+        )
+      : data.startTime;
+
+  console.log(
+    "Normalized game_start:",
+    {
+      questionCount:
+        questions.length,
+      startTime
+    }
+  );
+
   if (
-    data.questions.length !==
+    questions.length !==
     TOTAL_QUESTIONS
   ) {
     console.error(
       "Unexpected question count:",
-      data.questions.length
+      questions.length,
+      "Expected:",
+      TOTAL_QUESTIONS
     );
 
     setStatus(
-      `The server sent ${data.questions.length} questions instead of ${TOTAL_QUESTIONS}.`
+      `The server sent ${questions.length} questions instead of ${TOTAL_QUESTIONS}.`
     );
 
     return;
   }
 
-  state.questions =
-    data.questions;
+  /*
+   * On a normal new game, create a completely new
+   * answer array.
+   *
+   * On resume, preserve the answers saved locally
+   * before the page was refreshed.
+   */
+  const savedAnswers =
+    Array.isArray(
+      state.selectedAnswers
+    )
+      ? [...state.selectedAnswers]
+      : [];
 
-  state.selectedAnswers =
-    new Array(
-      state.questions.length
-    ).fill(-1);
+  state.questions =
+    questions
+      .slice(
+        0,
+        TOTAL_QUESTIONS
+      )
+      .map(
+        question => {
+          const choices =
+            Array.isArray(
+              question?.choices
+            )
+              ? question.choices
+              : Object.values(
+                  question?.choices ||
+                  {}
+                );
+
+          return {
+            ...question,
+
+            choices,
+
+            originalTopic:
+              question.topic,
+
+            topic:
+              normalizeTopic(
+                question.topic
+              )
+          };
+        }
+      );
+
+  if (
+    isResume &&
+    savedAnswers.length ===
+      state.questions.length &&
+    savedAnswers.every(
+      answer =>
+        Number.isInteger(answer) &&
+        answer >= 0
+    )
+  ) {
+    state.selectedAnswers =
+      savedAnswers;
+  } else {
+    state.selectedAnswers =
+      new Array(
+        state.questions.length
+      ).fill(-1);
+  }
 
   state.challengeSubmitted =
     false;
@@ -79,7 +194,7 @@ export function handleGameStart(
     false;
 
   state.playerReady =
-    true;
+    false;
 
   state.inQueue =
     false;
@@ -89,6 +204,25 @@ export function handleGameStart(
 
   state.newGameMode =
     false;
+
+  state.reconnecting =
+    false;
+
+  state.matchConnectionConfirmed =
+    true;
+
+  /*
+   * If the normalized payload contained a start time,
+   * preserve it for future reconnect/resume handling.
+   */
+  if (
+    Number.isFinite(
+      Number(startTime)
+    )
+  ) {
+    state.matchStartTime =
+      Number(startTime);
+  }
 
   if (
     elements.submitButton
@@ -109,8 +243,8 @@ export function handleGameStart(
     elements.startMatchButton.disabled =
       true;
 
-    elements.startMatchButton.textContent =
-      "Match In Progress";
+    elements.startMatchButton.style.display =
+      "none";
   }
 
   if (
@@ -122,22 +256,112 @@ export function handleGameStart(
 
   renderQuestions();
 
-  startMatchTimer(
-    data.startTime
-  );
+  restoreSelectedAnswerUI();
+
+  /*
+   * Use the actual server start time when available.
+   */
+  if (
+    Number.isFinite(
+      Number(startTime)
+    )
+  ) {
+    startMatchTimer(
+      Number(startTime)
+    );
+  } else {
+    console.error(
+      "Missing valid match start time:",
+      startTime
+    );
+
+    setStatus(
+      "Unable to start match timer."
+    );
+
+    return;
+  }
 
   setStatus(
-    "Match started. Answer all questions before time expires."
+    isResume
+      ? "Match resumed. Continue where you left off."
+      : "Match started. Answer all questions before time expires."
   );
 
   updateSubmitButton();
+
+  saveActiveMatchState();
+
+  console.log(
+    isResume
+      ? "RESUME GAME RESTORED:"
+      : "NEW GAME STARTED:",
+    {
+      matchId:
+        state.matchId,
+
+      questionCount:
+        state.questions.length,
+
+      selectedAnswers:
+        state.selectedAnswers,
+
+      challengeDeadline:
+        state.challengeDeadline,
+
+      timeRemaining:
+        state.timeRemaining
+    }
+  );
 }
+
+/* =========================================================
+   START GAME ADAPTER
+   ========================================================= */
+
+/*
+ * match-reconnect.js expects a function named startGame().
+ *
+ * Keep that adapter here so the reconnect module does not
+ * need to know anything about the internal game-start logic.
+ */
+
+export function startGame(
+  questions,
+  startTime,
+  isResume = false
+) {
+  handleGameStart(
+    {
+      questions,
+      startTime
+    },
+    isResume
+  );
+}
+
+
+/* =========================================================
+   RESUME GAME STATE
+   ========================================================= */
+
+export function startResumedGame(
+  questions,
+  startTime
+) {
+  startGame(
+    questions,
+    startTime,
+    true
+  );
+}
+
 
 /* =========================================================
    TIMER
    ========================================================= */
 
-function startMatchTimer(
+export function startMatchTimer(
   serverStartTime
 ) {
   stopMatchTimer();
@@ -188,13 +412,13 @@ function startMatchTimer(
     setInterval(
       () => {
         if (
-          !state.gameStarted
+          state.challengeSubmitted &&
+          state.timeRemaining <= 0
         ) {
           stopMatchTimer();
 
           return;
         }
-
         const remaining =
           Math.max(
             0,
@@ -267,11 +491,12 @@ function updateMatchTimer() {
     ).padStart(2, "0")}`;
 }
 
+
 /* =========================================================
    QUESTIONS
    ========================================================= */
 
-function renderQuestions() {
+export function renderQuestions() {
   if (
     !elements.questionsDiv
   ) {
@@ -372,7 +597,9 @@ function renderQuestions() {
           q.choices
         )
           ? q.choices
-          : [];
+          : Object.values(
+              q.choices || {}
+            );
 
       choices.forEach(
         (
@@ -398,13 +625,24 @@ function renderQuestions() {
               "D"
             ][
               choiceIndex
-            ];
+            ] ||
+            "?";
+
+          const text =
+            typeof choice ===
+            "object"
+              ? (
+                  choice.text ??
+                  choice.value ??
+                  ""
+                )
+              : choice;
 
           button.innerHTML = `
             <span class="choice-letter">
               ${letter}.
             </span>
-            ${escapeHtml(choice)}
+            ${escapeHtml(text)}
           `;
 
           button.addEventListener(
@@ -430,11 +668,62 @@ function renderQuestions() {
   );
 }
 
+
+/* =========================================================
+   RESTORE SELECTED ANSWERS
+   ========================================================= */
+
+export function restoreSelectedAnswerUI() {
+  if (
+    !elements.questionsDiv
+  ) {
+    return;
+  }
+
+  state.selectedAnswers.forEach(
+    (
+      choiceIndex,
+      questionIndex
+    ) => {
+      if (
+        !Number.isInteger(
+          choiceIndex
+        ) ||
+        choiceIndex < 0
+      ) {
+        return;
+      }
+
+      const card =
+        elements.questionsDiv
+          .children[
+            questionIndex
+          ];
+
+      const buttons =
+        card?.querySelectorAll(
+          ".choice"
+        );
+
+      if (
+        buttons?.[choiceIndex]
+      ) {
+        buttons[
+          choiceIndex
+        ].classList.add(
+          "selected"
+        );
+      }
+    }
+  );
+}
+
+
 /* =========================================================
    ANSWERS
    ========================================================= */
 
-function selectAnswer(
+export function selectAnswer(
   questionIndex,
   choiceIndex
 ) {
@@ -491,6 +780,8 @@ function selectAnswer(
     );
   }
 
+  saveActiveMatchState();
+
   updateSubmitButton();
 
   /*
@@ -505,11 +796,12 @@ function selectAnswer(
   });
 }
 
+
 /* =========================================================
    SUBMIT BUTTON
    ========================================================= */
 
-function updateSubmitButton() {
+export function updateSubmitButton() {
   if (
     !elements.submitButton
   ) {
@@ -517,7 +809,10 @@ function updateSubmitButton() {
   }
 
   if (
-    state.newGameMode
+    state.newGameMode ||
+    !state.gameStarted ||
+    state.challengeSubmitted ||
+    state.submissionInProgress
   ) {
     elements.submitButton.disabled =
       true;
@@ -530,21 +825,22 @@ function updateSubmitButton() {
       TOTAL_QUESTIONS &&
     state.selectedAnswers.every(
       answer =>
-        answer !== -1
+        Number.isInteger(
+          answer
+        ) &&
+        answer >= 0
     );
 
   elements.submitButton.disabled =
-    !allAnswered ||
-    state.challengeSubmitted ||
-    state.submissionInProgress ||
-    !state.gameStarted;
+    !allAnswered;
 }
+
 
 /* =========================================================
    SUBMISSION
    ========================================================= */
 
-async function submitMatch(
+export async function submitMatch(
   autoSubmitted = false
 ) {
   if (
@@ -582,14 +878,7 @@ async function submitMatch(
   state.submissionInProgress =
     true;
 
-  if (
-    elements.submitButton
-  ) {
-    elements.submitButton.disabled =
-      true;
-  }
-
-  stopMatchTimer();
+  updateSubmitButton();
 
   console.log(
     "Submitting multiplayer answers:",
@@ -608,6 +897,7 @@ async function submitMatch(
             questionIndex
           ) => ({
             questionIndex,
+
             selected
           })
         )
@@ -617,12 +907,7 @@ async function submitMatch(
     state.submissionInProgress =
       false;
 
-    if (
-      elements.submitButton
-    ) {
-      elements.submitButton.disabled =
-        false;
-    }
+    updateSubmitButton();
 
     alert(
       "Connection to match was lost."
@@ -631,12 +916,21 @@ async function submitMatch(
     return;
   }
 
+  /*
+   * Do NOT mark the submission as complete yet.
+   *
+   * The server must acknowledge it with
+   * submission_received.
+   */
+  saveActiveMatchState();
+
   setStatus(
     autoSubmitted
       ? "Time expired. Waiting for opponent..."
       : "Answers submitted. Waiting for opponent..."
   );
 }
+
 
 /* =========================================================
    GAME RESULT
@@ -666,6 +960,9 @@ export async function handleGameResult(
     false;
 
   state.matchConnectionConfirmed =
+    false;
+
+  state.reconnecting =
     false;
 
   clearMatchTimer();
@@ -716,6 +1013,13 @@ export async function handleGameResult(
       `Match complete: ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
   }
 
+  if (
+    elements.submitButton
+  ) {
+    elements.submitButton.disabled =
+      true;
+  }
+
   showResult(
     message
   );
@@ -750,9 +1054,8 @@ export async function handleGameResult(
   await refreshPlayerStats();
 
   await loadRecentMatches();
-
-  beginCooldown();
 }
+
 
 /* =========================================================
    CURRENT MATCH TOPIC PERFORMANCE
@@ -854,8 +1157,10 @@ function renderTopicPerformance(
 
   topics.sort(
     ([, a], [, b]) =>
-      a.correct / a.total -
-      b.correct / b.total
+      a.correct /
+        a.total -
+      b.correct /
+        b.total
   );
 
   const performance =
@@ -897,6 +1202,7 @@ function renderTopicPerformance(
     performance
   );
 }
+
 
 /* =========================================================
    ANSWER RESULTS
@@ -1085,6 +1391,7 @@ function renderResults(
   );
 }
 
+
 /* =========================================================
    NEW GAME BUTTON
    ========================================================= */
@@ -1133,11 +1440,17 @@ if (
       state.matchConnectionConfirmed =
         false;
 
+      state.reconnecting =
+        false;
+
       if (
         elements.startMatchButton
       ) {
         elements.startMatchButton.disabled =
           false;
+
+        elements.startMatchButton.style.display =
+          "block";
 
         elements.startMatchButton.textContent =
           "Join Queue";
@@ -1150,13 +1463,31 @@ if (
   );
 }
 
+
 /* =========================================================
    EXPORTS
    ========================================================= */
 
 export {
-  startMatchTimer,
-  submitMatch,
-  renderQuestions,
-  selectAnswer
+  renderTopicPerformance,
+  renderResults
 };
+
+/* =========================================================
+   INITIALIZE MATCH CONNECTION MODULES
+   ========================================================= */
+
+initializeMatchConnectionModules({
+  renderQuestions,
+
+  restoreSelectedAnswerUI,
+
+  updateSubmitButton,
+
+  startGame:
+    handleGameStart,
+
+  startMatchTimer,
+
+  handleGameResult
+});

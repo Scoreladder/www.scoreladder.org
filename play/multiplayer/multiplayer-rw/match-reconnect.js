@@ -17,15 +17,19 @@
  *
  * - question rendering
  * - answer selection
- * - submission implementation
- * - match result rendering
+ * - submission UI
+ * - result rendering
  *
- * Those remain in script.js and are supplied as callbacks.
+ * Gameplay functions are supplied as callbacks.
  */
+
+
+/* =========================================================
+   RECONNECT MANAGER
+   ========================================================= */
 
 export function createReconnectManager({
   API,
-  TOTAL_QUESTIONS,
   MATCH_DURATION_MS,
 
   state,
@@ -42,16 +46,21 @@ export function createReconnectManager({
   updateOpponent,
   refreshPlayerStats,
 
-  renderQuestions,
-  restoreSelectedAnswerUI,
-  updateSubmitButton,
-
+  /*
+   * Gameplay callbacks.
+   *
+   * These are supplied by game.js through script.js.
+   */
   startGame,
   startMatchTimer,
   handleGameResult,
 
   disconnectManager
 }) {
+  /* =======================================================
+     SEND ROOM MESSAGE
+     ======================================================= */
+
   function sendRoomMessage(
     message
   ) {
@@ -82,6 +91,11 @@ export function createReconnectManager({
       return false;
     }
   }
+
+
+  /* =======================================================
+     ROOM STATE
+     ======================================================= */
 
   function handleRoomState(
     data
@@ -144,6 +158,11 @@ export function createReconnectManager({
       return;
     }
 
+
+    /* =====================================================
+       FINISHED
+       ===================================================== */
+
     if (
       data.gameFinished ||
       data.roomStatus ===
@@ -160,14 +179,11 @@ export function createReconnectManager({
       return;
     }
 
-    /*
-     * The server says the match is active.
-     *
-     * We can rebuild from our locally persisted
-     * questions/answers immediately. The server's
-     * game_start message will also arrive when the
-     * backend provides it.
-     */
+
+    /* =====================================================
+       ACTIVE GAME
+       ===================================================== */
+
     if (
       data.gameStarted
     ) {
@@ -183,12 +199,13 @@ export function createReconnectManager({
       state.newGameMode =
         false;
 
-      state.challengeSubmitted =
-        false;
-
-      state.submissionInProgress =
-        false;
-
+      /*
+       * Do NOT blindly force challengeSubmitted=false
+       * if the server already says this player submitted.
+       *
+       * The actual submission state remains controlled by
+       * the submission_received message.
+       */
       state.matchConnectionConfirmed =
         true;
 
@@ -217,85 +234,75 @@ export function createReconnectManager({
       }
 
       /*
-       * Rebuild from locally saved questions.
+       * Tell the gameplay module that the room is active.
+       *
+       * game.js owns rendering/restoring questions.
        */
       if (
-        Array.isArray(
-          state.questions
-        ) &&
-        state.questions.length > 0
+        typeof startGame ===
+        "function"
       ) {
-        renderQuestions();
+        startGame(
+          Array.isArray(
+            data.questions
+          )
+            ? data.questions
+            : state.questions,
 
-        restoreSelectedAnswerUI();
-      }
+          data.startTime,
 
-      if (
-        elements.startMatchButton
-      ) {
-        elements.startMatchButton.disabled =
-          true;
-
-        elements.startMatchButton.style.display =
-          "none";
-      }
-
-      if (
-        elements.submitButton
-      ) {
-        elements.submitButton.style.display =
-          "block";
-
-        elements.submitButton.textContent =
-          "Submit Answers";
-      }
-
-      if (
-        data.startTime
-      ) {
-        startMatchTimer(
-          data.startTime
+          true
         );
-      }
+      } else {
+        /*
+         * Fallback in case the room_state does not contain
+         * questions and game.js must use locally saved state.
+         */
+        if (
+          elements.startMatchButton
+        ) {
+          elements.startMatchButton.disabled =
+            true;
 
-      updateSubmitButton();
-
-      setStatus(
-        "Match resumed. Continue where you left off."
-      );
-
-      saveActiveMatchState();
-
-      console.log(
-        "RESUME ROOM STATE APPLIED:",
-        {
-          matchId:
-            state.matchId,
-
-          gameStarted:
-            state.gameStarted,
-
-          questionCount:
-            state.questions.length,
-
-          selectedAnswers:
-            state.selectedAnswers,
-
-          timeRemaining:
-            state.timeRemaining,
-
-          submitDisabled:
-            elements.submitButton
-              ?.disabled
+          elements.startMatchButton.style.display =
+            "none";
         }
-      );
+
+        if (
+          elements.submitButton
+        ) {
+          elements.submitButton.style.display =
+            "block";
+
+          elements.submitButton.textContent =
+            "Submit Answers";
+        }
+
+        if (
+          data.startTime &&
+          typeof startMatchTimer ===
+            "function"
+        ) {
+          startMatchTimer(
+            data.startTime
+          );
+        }
+
+        setStatus(
+          "Match resumed. Continue where you left off."
+        );
+
+        saveActiveMatchState();
+      }
 
       return;
     }
 
-    /*
-     * Both players connected, but game hasn't started.
-     */
+
+    /* =====================================================
+       BOTH PLAYERS CONNECTED, GAME NOT STARTED
+       ===================================================== */
+
     if (
       data.opponentConnected ||
       data.connectedCount === 2 ||
@@ -329,9 +336,11 @@ export function createReconnectManager({
       return;
     }
 
-    /*
-     * Only one player currently connected.
-     */
+
+    /* =====================================================
+       ONLY ONE PLAYER CONNECTED
+       ===================================================== */
+
     if (
       data.roomStatus ===
       "waiting_for_opponent"
@@ -344,6 +353,11 @@ export function createReconnectManager({
       );
     }
   }
+
+
+  /* =======================================================
+     CONNECT TO ROOM
+     ======================================================= */
 
   function connectToRoom(
     isResume = false
@@ -369,7 +383,7 @@ export function createReconnectManager({
       state.reconnecting =
         false;
 
-      return;
+      return null;
     }
 
     const wsAPI =
@@ -384,10 +398,7 @@ export function createReconnectManager({
         );
 
     /*
-     * IMPORTANT:
-     *
      * state.matchId is the logical matchmaking UUID.
-     * That is what the Worker uses to find the room.
      */
     const socketURL =
       `${wsAPI}/match?matchId=${encodeURIComponent(
@@ -405,6 +416,11 @@ export function createReconnectManager({
       }
     );
 
+
+    /* -----------------------------------------------------
+       Close old socket
+       ----------------------------------------------------- */
+
     if (
       state.matchSocket &&
       state.matchSocket.readyState !==
@@ -415,6 +431,7 @@ export function createReconnectManager({
       } catch {}
     }
 
+
     const socket =
       new WebSocket(
         socketURL
@@ -422,6 +439,11 @@ export function createReconnectManager({
 
     state.matchSocket =
       socket;
+
+
+    /* =====================================================
+       OPEN
+       ===================================================== */
 
     socket.addEventListener(
       "open",
@@ -450,6 +472,9 @@ export function createReconnectManager({
             "Reconnected. Restoring your match..."
           );
 
+          /*
+           * Ask the room for authoritative state.
+           */
           sendRoomMessage({
             type:
               "request_room_state"
@@ -464,6 +489,11 @@ export function createReconnectManager({
         }
       }
     );
+
+
+    /* =====================================================
+       MESSAGE
+       ===================================================== */
 
     socket.addEventListener(
       "message",
@@ -496,16 +526,16 @@ export function createReconnectManager({
           data
         );
 
+
         switch (
           data.type
         ) {
+
+          /* ===============================================
+             CONNECTED
+             =============================================== */
+
           case "connected": {
-            /*
-             * data.matchId is the Durable Object
-             * internal ID.
-             *
-             * NEVER copy it into state.matchId.
-             */
             console.log(
               "Connected to match room:",
               {
@@ -520,6 +550,9 @@ export function createReconnectManager({
               }
             );
 
+            /*
+             * NEVER copy data.matchId into state.matchId.
+             */
             if (
               data.playerId !==
                 undefined &&
@@ -571,6 +604,11 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             ROOM STATE
+             =============================================== */
+
           case "room_state": {
             handleRoomState(
               data
@@ -578,6 +616,11 @@ export function createReconnectManager({
 
             return;
           }
+
+
+          /* ===============================================
+             WAITING
+             =============================================== */
 
           case "waiting_for_opponent": {
             if (
@@ -591,6 +634,11 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             OPPONENT CONNECTED
+             =============================================== */
+
           case "opponent_connected": {
             if (
               data.opponent
@@ -603,6 +651,9 @@ export function createReconnectManager({
             if (
               !state.gameStarted
             ) {
+              state.reconnecting =
+                false;
+
               setStatus(
                 "Both players connected. Ready to start."
               );
@@ -611,11 +662,19 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             MATCH READY
+             =============================================== */
+
           case "match_ready": {
             if (
               !state.gameStarted
             ) {
               state.playerReady =
+                false;
+
+              state.reconnecting =
                 false;
 
               if (
@@ -639,6 +698,11 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             OPPONENT READY
+             =============================================== */
+
           case "opponent_ready": {
             if (
               !state.gameStarted
@@ -651,6 +715,11 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             GAME SCHEDULE
+             =============================================== */
+
           case "game_schedule": {
             console.log(
               "Next game scheduled:",
@@ -660,25 +729,35 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             GAME START
+             =============================================== */
+
           case "game_start": {
             console.log(
               "Game state received from server:",
               data
             );
 
-            /*
-             * The normal startGame() function already
-             * supports preserving answers when isResume
-             * is true.
-             */
-            startGame(
-              data.questions,
-              data.startTime,
-              isResume
-            );
+            if (
+              typeof startGame ===
+              "function"
+            ) {
+              startGame(
+                data.questions,
+                data.startTime,
+                isResume
+              );
+            }
 
             return;
           }
+
+
+          /* ===============================================
+             ANSWER UPDATE
+             =============================================== */
 
           case "answer_update": {
             /*
@@ -686,6 +765,11 @@ export function createReconnectManager({
              */
             return;
           }
+
+
+          /* ===============================================
+             OPPONENT SUBMITTED
+             =============================================== */
 
           case "opponent_submitted": {
             setStatus(
@@ -695,7 +779,16 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             SUBMISSION RECEIVED
+             =============================================== */
+
           case "submission_received": {
+            /*
+             * The server has accepted this player's
+             * submission.
+             */
             state.challengeSubmitted =
               true;
 
@@ -720,13 +813,28 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             GAME RESULT
+             =============================================== */
+
           case "game_result": {
-            handleGameResult(
-              data
-            );
+            if (
+              typeof handleGameResult ===
+              "function"
+            ) {
+              handleGameResult(
+                data
+              );
+            }
 
             return;
           }
+
+
+          /* ===============================================
+             GAME ERROR
+             =============================================== */
 
           case "game_error": {
             console.error(
@@ -748,6 +856,11 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             OPPONENT LEFT
+             =============================================== */
+
           case "opponent_left": {
             console.warn(
               "Opponent disconnected."
@@ -764,6 +877,11 @@ export function createReconnectManager({
             return;
           }
 
+
+          /* ===============================================
+             UNKNOWN
+             =============================================== */
+
           default: {
             console.warn(
               "Unknown WebSocket message:",
@@ -773,6 +891,11 @@ export function createReconnectManager({
         }
       }
     );
+
+
+    /* =====================================================
+       ERROR
+       ===================================================== */
 
     socket.addEventListener(
       "error",
@@ -784,12 +907,50 @@ export function createReconnectManager({
           return;
         }
 
-        disconnectManager.handleSocketError(
-          error,
-          isResume
+        console.error(
+          "WebSocket error:",
+          error
         );
+
+        if (
+          disconnectManager &&
+          typeof disconnectManager.handleSocketError ===
+            "function"
+        ) {
+          disconnectManager.handleSocketError(
+            error,
+            isResume
+          );
+        } else {
+          state.resumeInProgress =
+            false;
+
+          state.reconnecting =
+            false;
+
+          if (
+            isResume
+          ) {
+            setStatus(
+              "Unable to reconnect to your match."
+            );
+
+            enableResumeGame(
+              state.matchId
+            );
+          } else {
+            setStatus(
+              "Connection to match failed."
+            );
+          }
+        }
       }
     );
+
+
+    /* =====================================================
+       CLOSE
+       ===================================================== */
 
     socket.addEventListener(
       "close",
@@ -801,15 +962,86 @@ export function createReconnectManager({
           return;
         }
 
-        disconnectManager.handleSocketClose(
-          event,
-          isResume
+        console.log(
+          "WebSocket closed:",
+          {
+            code:
+              event.code,
+
+            reason:
+              event.reason
+          }
         );
+
+        state.matchConnectionConfirmed =
+          false;
+
+        state.resumeInProgress =
+          false;
+
+
+        if (
+          disconnectManager &&
+          typeof disconnectManager.handleSocketClose ===
+            "function"
+        ) {
+          disconnectManager.handleSocketClose(
+            event,
+            isResume
+          );
+
+          return;
+        }
+
+
+        /*
+         * Preserve unfinished match.
+         */
+        if (
+          state.gameStarted &&
+          !state.challengeSubmitted &&
+          !state.newGameMode
+        ) {
+          saveActiveMatchState();
+
+          state.resumeAvailable =
+            true;
+
+          state.resumeMatchId =
+            state.matchId;
+
+          enableResumeGame(
+            state.matchId
+          );
+
+          return;
+        }
+
+
+        /*
+         * Preserve matched-but-not-started room.
+         */
+        if (
+          state.matchId &&
+          !state.challengeSubmitted &&
+          !state.newGameMode
+        ) {
+          saveActiveMatchState();
+
+          enableResumeGame(
+            state.matchId
+          );
+        }
       }
     );
 
     return socket;
   }
+
+
+  /* =======================================================
+     RESUME EXISTING MATCH
+     ======================================================= */
 
   async function resumeExistingMatch() {
     if (
@@ -824,9 +1056,6 @@ export function createReconnectManager({
     const storedResumeMatchId =
       getStoredResumeMatchId();
 
-    /*
-     * Prefer the lightweight logical UUID.
-     */
     const savedMatchId =
       storedResumeMatchId ||
       state.resumeMatchId ||
@@ -846,30 +1075,27 @@ export function createReconnectManager({
       return;
     }
 
+
+    /*
+     * Restore persisted state manually here.
+     *
+     * Persistence itself remains owned by script.js.
+     */
     if (
       saved
     ) {
-      /*
-       * restoreActiveMatchState() itself is
-       * intentionally left in script.js because
-       * it owns persistence.
-       */
-      if (
-        typeof state.matchId !==
-          "string" ||
-        state.matchId !==
+      state.matchId =
+        String(
           savedMatchId
-      ) {
-        state.matchId =
-          String(
-            savedMatchId
-          );
+        );
 
-        state.resumeMatchId =
-          String(
-            savedMatchId
-          );
-      }
+      state.resumeMatchId =
+        String(
+          savedMatchId
+        );
+
+      state.resumeAvailable =
+        true;
 
       state.playerId =
         saved.playerId ??
@@ -908,34 +1134,27 @@ export function createReconnectManager({
         ) || 0;
 
       state.gameStarted =
-        saved.gameStarted === true;
-
-      state.playerReady =
-        false;
-
-      state.inQueue =
-        false;
+        saved.gameStarted ===
+        true;
 
       state.challengeSubmitted =
         false;
 
       state.submissionInProgress =
         false;
+    } else {
+      state.matchId =
+        String(
+          savedMatchId
+        );
 
-      state.matchConnectionConfirmed =
-        false;
+      state.resumeMatchId =
+        state.matchId;
+
+      state.resumeAvailable =
+        true;
     }
 
-    state.matchId =
-      String(
-        savedMatchId
-      );
-
-    state.resumeMatchId =
-      state.matchId;
-
-    state.resumeAvailable =
-      true;
 
     state.inQueue =
       false;
@@ -949,47 +1168,10 @@ export function createReconnectManager({
     state.reconnecting =
       true;
 
-    if (
-      Array.isArray(
-        state.questions
-      ) &&
-      state.questions.length > 0
-    ) {
-      state.gameStarted =
-        true;
 
-      state.newGameMode =
-        false;
-
-      state.challengeSubmitted =
-        false;
-
-      state.submissionInProgress =
-        false;
-
-      if (
-        state.challengeDeadline >
-        0
-      ) {
-        state.timeRemaining =
-          Math.max(
-            0,
-            Math.ceil(
-              (
-                state.challengeDeadline -
-                Date.now()
-              ) / 1000
-            )
-          );
-      }
-
-      renderQuestions();
-
-      restoreSelectedAnswerUI();
-
-      updateSubmitButton();
-    }
-
+    /*
+     * Make sure we have the authenticated player ID.
+     */
     if (
       !state.playerId
     ) {
@@ -1009,6 +1191,7 @@ export function createReconnectManager({
       }
     }
 
+
     if (
       !state.playerId
     ) {
@@ -1025,6 +1208,36 @@ export function createReconnectManager({
 
       return;
     }
+
+
+    /*
+     * Rebuild the local UI immediately if questions were
+     * saved before the refresh.
+     *
+     * Actual rendering belongs to game.js.
+     *
+     * We intentionally do NOT call renderQuestions()
+     * from this module.
+     */
+    if (
+      Array.isArray(
+        state.questions
+      ) &&
+      state.questions.length > 0
+    ) {
+      state.gameStarted =
+        true;
+
+      state.newGameMode =
+        false;
+
+      state.challengeSubmitted =
+        false;
+
+      state.submissionInProgress =
+        false;
+    }
+
 
     if (
       elements.startMatchButton
@@ -1082,6 +1295,11 @@ export function createReconnectManager({
     );
   }
 
+
+  /* =======================================================
+     MATCH FOUND
+     ======================================================= */
+
   function onMatchFound(
     isResume = false
   ) {
@@ -1101,10 +1319,15 @@ export function createReconnectManager({
       }
     );
 
-    connectToRoom(
+    return connectToRoom(
       isResume
     );
   }
+
+
+  /* =======================================================
+     PUBLIC API
+     ======================================================= */
 
   return {
     sendRoomMessage,

@@ -11,7 +11,8 @@ import {
   saveCooldownUntil,
   startCooldownTimer,
   renderCooldownPracticeMessage,
-  sendRoomMessage
+  sendRoomMessage,
+  beginCooldown
 } from "./script.js";
 
 import {
@@ -210,7 +211,7 @@ async function startMatchmaking() {
 
           state.newGameMode = true;
 
-          startCooldownTimer();
+          beginCooldown();
           renderCooldownPracticeMessage();
 
           return;
