@@ -514,56 +514,16 @@ a.card:hover {
    MINERAL RANK COLORS
    ============================================================ */
 
-.rank-bronze {
-  color: #FF8C00;
-}
-
-.rank-iron {
-  color: #E34234;
-}
-
-.rank-silver {
-  color: #C0C0C0;
-}
-
-.rank-gold {
-  color: #FFD000;
-}
-
-.rank-platinum {
-  color: #00A8FF;
-}
-
-.rank-sapphire {
-  color: #0066FF;
-}
-
-.rank-emerald {
-  color: #00D26A;
-}
-
-.rank-amethyst {
-  color: #A855F7;
-}
-
-.rank-diamond {
-  color: #00E5FF;
-}
-
-.rank-painite {
-  color: #FF1A1A;
-}
-
 .stat b.rank-bronze {
   color: #FF8C00;
 }
 
 .stat b.rank-iron {
-  color: #E34234;
+  color: #a4473f;
 }
 
 .stat b.rank-silver {
-  color: #C0C0C0;
+  color: #7c7c7c;
 }
 
 .stat b.rank-gold {
@@ -571,11 +531,11 @@ a.card:hover {
 }
 
 .stat b.rank-platinum {
-  color: #00A8FF;
+  color: #117bb8;
 }
 
 .stat b.rank-sapphire {
-  color: #0066FF;
+  color: #002fff;
 }
 
 .stat b.rank-emerald {
@@ -587,10 +547,50 @@ a.card:hover {
 }
 
 .stat b.rank-diamond {
-  color: #00E5FF;
+  color: #00fbff;
 }
 
 .stat b.rank-painite {
+  color: #FF1A1A;
+}
+
+.rank-bronze {
+  color: #FF8C00;
+}
+
+.rank-iron {
+  color: #a4473f;
+}
+
+.rank-silver {
+  color: #7c7c7c;
+}
+
+.rank-gold {
+  color: #FFD000;
+}
+
+.rank-platinum {
+  color: #117bb8;
+}
+
+.rank-sapphire {
+  color: #002fff;
+}
+
+.rank-emerald {
+  color: #00D26A;
+}
+
+.rank-amethyst {
+  color: #A855F7;
+}
+
+.rank-diamond {
+  color: #00fbff;
+}
+
+.rank-painite {
   color: #FF1A1A;
 }
 
