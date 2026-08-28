@@ -8,7 +8,8 @@
  * - Reconnect manager
  * - Room connection wrappers
  *
- * Gameplay-specific callbacks are injected from script.js.
+ * Gameplay-specific callbacks are injected from game.js /
+ * script.js through initializeMatchConnectionModules().
  * =========================================================
  */
 
@@ -41,65 +42,119 @@ import {
 } from "./match-reconnect.js";
 
 
-let disconnectManager =
-  null;
+/* =========================================================
+   MANAGERS
+   ========================================================= */
 
-let reconnectManager =
-  null;
+let disconnectManager = null;
+let reconnectManager = null;
+let reconnectBridge = null;
 
-let reconnectBridge =
-  null;
 
+/* =========================================================
+   INITIALIZE CONNECTION MODULES
+   ========================================================= */
 
 export function initializeMatchConnectionModules(
   callbacks = {}
 ) {
-  if (
-    reconnectManager
-  ) {
+  /*
+   * Managers should only be initialized once.
+   */
+  if (reconnectManager) {
     return reconnectBridge;
   }
+
+
+  /* =======================================================
+     GAMEPLAY CALLBACKS
+     =======================================================
+
+     Gameplay logic belongs to match-game.js.
+
+     The connection layer only forwards the relevant
+     server events to the supplied callbacks.
+  */
+
+  const startGame =
+    typeof callbacks.startGame === "function"
+      ? callbacks.startGame
+      : null;
+
+  const startMatchTimer =
+    typeof callbacks.startMatchTimer === "function"
+      ? callbacks.startMatchTimer
+      : null;
+
+  const handleGameResult =
+    typeof callbacks.handleGameResult === "function"
+      ? callbacks.handleGameResult
+      : null;
+
+  const handleSubmissionReceived =
+    typeof callbacks.handleSubmissionReceived === "function"
+      ? callbacks.handleSubmissionReceived
+      : null;
+
+
+  /* =======================================================
+     DISCONNECT MANAGER
+     ======================================================= */
 
   disconnectManager =
     createDisconnectManager({
       state,
-
       saveActiveMatchState,
-
       enableResumeGame,
-
       setStatus
     });
 
-reconnectManager =
-createReconnectManager({
-  API,
-  MATCH_DURATION_MS,
 
-  state,
-  elements,
+  /* =======================================================
+     RECONNECT MANAGER
+     ======================================================= */
 
-  setStatus,
-  saveActiveMatchState,
-  getStoredActiveMatchState,
-  getStoredResumeMatchId,
-  clearActiveMatchState,
-  enableResumeGame,
-  enableQueueButton,
+  reconnectManager =
+    createReconnectManager({
+      API,
+      MATCH_DURATION_MS,
 
-  updateOpponent,
-  refreshPlayerStats,
+      state,
+      elements,
 
-  startGame,
-  startMatchTimer,
-  handleGameResult,
-  handleSubmissionReceived,
-  setAnswerSelectionLocked,
+      setStatus,
 
-  disconnectManager
-});
+      saveActiveMatchState,
+      getStoredActiveMatchState,
+      getStoredResumeMatchId,
+      clearActiveMatchState,
+
+      enableResumeGame,
+      enableQueueButton,
+
+      updateOpponent,
+      refreshPlayerStats,
+
+      /*
+       * Gameplay callbacks.
+       */
+      startGame,
+      startMatchTimer,
+      handleGameResult,
+      handleSubmissionReceived,
+
+      setAnswerSelectionLocked,
+
+      disconnectManager
+    });
+
   reconnectBridge =
     reconnectManager;
+
+
+  /* =======================================================
+     PAGE LIFECYCLE
+     ======================================================= */
 
   disconnectManager.installPageLifecycleHandlers();
 
@@ -107,15 +162,27 @@ createReconnectManager({
 }
 
 
+/* =========================================================
+   GET RECONNECT MANAGER
+   ========================================================= */
+
 export function getReconnectManager() {
   return reconnectManager;
 }
 
 
+/* =========================================================
+   GET DISCONNECT MANAGER
+   ========================================================= */
+
 export function getDisconnectManager() {
   return disconnectManager;
 }
 
+
+/* =========================================================
+   SEND ROOM MESSAGE
+   ========================================================= */
 
 export function sendRoomMessage(
   message
@@ -134,6 +201,10 @@ export function sendRoomMessage(
 }
 
 
+/* =========================================================
+   CONNECT TO ROOM
+   ========================================================= */
+
 export function connectToRoom(
   isResume = false
 ) {
@@ -151,6 +222,10 @@ export function connectToRoom(
 }
 
 
+/* =========================================================
+   RESUME EXISTING MATCH
+   ========================================================= */
+
 export async function resumeExistingMatch() {
   if (!reconnectManager) {
     console.error(
@@ -163,6 +238,10 @@ export async function resumeExistingMatch() {
   return reconnectManager.resumeExistingMatch();
 }
 
+
+/* =========================================================
+   MATCH FOUND
+   ========================================================= */
 
 export function onMatchFound(
   isResume = false

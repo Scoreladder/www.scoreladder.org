@@ -27,6 +27,7 @@ import {
   sendRoomMessage
 } from "./match-connection.js";
 
+
 /* =========================================================
    GAME START
    ========================================================= */
@@ -89,16 +90,6 @@ export function handleGameStart(
         )
       : Number(data.startTime);
 
-  console.log(
-    "Normalized game_start:",
-    {
-      questionCount:
-        questions.length,
-
-      startTime
-    }
-  );
-
   if (
     questions.length !==
     TOTAL_QUESTIONS
@@ -124,45 +115,30 @@ export function handleGameStart(
    */
 
   const savedAnswers =
-    Array.isArray(
-      state.selectedAnswers
-    )
+    Array.isArray(state.selectedAnswers)
       ? [...state.selectedAnswers]
       : [];
 
   state.questions =
     questions
-      .slice(
-        0,
-        TOTAL_QUESTIONS
-      )
-      .map(
-        question => {
-          const choices =
-            Array.isArray(
-              question?.choices
-            )
-              ? question.choices
-              : Object.values(
-                  question?.choices ||
-                  {}
-                );
+      .slice(0, TOTAL_QUESTIONS)
+      .map(question => {
+        const choices =
+          Array.isArray(question?.choices)
+            ? question.choices
+            : Object.values(
+                question?.choices || {}
+              );
 
-          return {
-            ...question,
-
-            choices,
-
-            originalTopic:
-              question.topic,
-
-            topic:
-              normalizeTopic(
-                question.topic
-              )
-          };
-        }
-      );
+        return {
+          ...question,
+          choices,
+          originalTopic: question.topic,
+          topic: normalizeTopic(
+            question.topic
+          )
+        };
+      });
 
   if (
     isResume &&
@@ -184,41 +160,33 @@ export function handleGameStart(
    * ---------------------------------------------------------
    */
 
-  state.inQueue =
-    false;
-
-  state.playerReady =
-    false;
-
-  state.gameStarted =
-    true;
-
-  state.newGameMode =
-    false;
-
-  state.reconnecting =
-    false;
-
-  state.matchConnectionConfirmed =
-    true;
+  state.inQueue = false;
+  state.playerReady = false;
+  state.gameStarted = true;
 
   /*
-   * IMPORTANT:
+   * matchFinished is the authoritative finished-state flag.
    *
+   * A new/resumed game is active, so it must not remain
+   * marked as finished from a previous match.
+   */
+  state.matchFinished = false;
+
+  state.newGameMode = false;
+  state.reconnecting = false;
+  state.matchConnectionConfirmed = true;
+
+  /*
    * Do NOT reset challengeSubmitted during a resume.
    *
    * A reconnect can receive game_start after the player
    * has already submitted.
    *
-   * The server's submission_received message is what
-   * confirms a submission.
+   * submission_received is what confirms a submission.
    */
   if (!isResume) {
-    state.challengeSubmitted =
-      false;
-
-    state.submissionInProgress =
-      false;
+    state.challengeSubmitted = false;
+    state.submissionInProgress = false;
   }
 
   /*
@@ -242,9 +210,7 @@ export function handleGameStart(
    * ---------------------------------------------------------
    */
 
-  if (
-    elements.submitButton
-  ) {
+  if (elements.submitButton) {
     elements.submitButton.style.display =
       "block";
 
@@ -258,9 +224,7 @@ export function handleGameStart(
       state.submissionInProgress;
   }
 
-  if (
-    elements.startMatchButton
-  ) {
+  if (elements.startMatchButton) {
     elements.startMatchButton.disabled =
       true;
 
@@ -268,21 +232,11 @@ export function handleGameStart(
       "none";
   }
 
-  if (
-    elements.resultDiv
-  ) {
-    elements.resultDiv.innerHTML =
-      "";
+  if (elements.resultDiv) {
+    elements.resultDiv.innerHTML = "";
   }
 
-  /*
-   * Render questions first.
-   */
   renderQuestions();
-
-  /*
-   * Then restore locally saved answers.
-   */
   restoreSelectedAnswerUI();
 
   /*
@@ -318,22 +272,15 @@ export function handleGameStart(
    * ---------------------------------------------------------
    */
 
-  if (
+  setStatus(
     state.challengeSubmitted
-  ) {
-    setStatus(
-      "Answers submitted. Waiting for opponent..."
-    );
-  } else {
-    setStatus(
-      isResume
+      ? "Answers submitted. Waiting for opponent..."
+      : isResume
         ? "Match resumed. Continue where you left off."
         : "Match started. Answer all questions before time expires."
-    );
-  }
+  );
 
   updateSubmitButton();
-
   saveActiveMatchState();
 
   console.log(
@@ -341,26 +288,19 @@ export function handleGameStart(
       ? "RESUME GAME RESTORED:"
       : "NEW GAME STARTED:",
     {
-      matchId:
-        state.matchId,
-
-      questionCount:
-        state.questions.length,
-
-      selectedAnswers:
-        state.selectedAnswers,
-
+      matchId: state.matchId,
+      questionCount: state.questions.length,
+      selectedAnswers: state.selectedAnswers,
       challengeSubmitted:
         state.challengeSubmitted,
-
       submissionInProgress:
         state.submissionInProgress,
-
       challengeDeadline:
         state.challengeDeadline,
-
       timeRemaining:
-        state.timeRemaining
+        state.timeRemaining,
+      matchFinished:
+        state.matchFinished
     }
   );
 }
@@ -411,14 +351,10 @@ export function startMatchTimer(
   stopMatchTimer();
 
   const startTime =
-    Number(
-      serverStartTime
-    );
+    Number(serverStartTime);
 
   if (
-    !Number.isFinite(
-      startTime
-    )
+    !Number.isFinite(startTime)
   ) {
     console.error(
       "Invalid server start time:",
@@ -436,8 +372,7 @@ export function startMatchTimer(
     startTime +
     MATCH_DURATION_MS;
 
-  state.gameStarted =
-    true;
+  state.gameStarted = true;
 
   state.timeRemaining =
     Math.max(
@@ -479,11 +414,10 @@ export function startMatchTimer(
           if (
             state.gameStarted &&
             !state.challengeSubmitted &&
-            !state.submissionInProgress
+            !state.submissionInProgress &&
+            !state.matchFinished
           ) {
-            submitMatch(
-              true
-            );
+            submitMatch(true);
           }
         }
       },
@@ -494,12 +428,7 @@ export function startMatchTimer(
 
 function updateMatchTimer() {
   if (
-    !elements.timerDiv
-  ) {
-    return;
-  }
-
-  if (
+    !elements.timerDiv ||
     !state.gameStarted
   ) {
     return;
@@ -539,8 +468,7 @@ export function renderQuestions() {
     return;
   }
 
-  elements.questionsDiv.innerHTML =
-    "";
+  elements.questionsDiv.innerHTML = "";
 
   state.questions.forEach(
     (
@@ -548,78 +476,54 @@ export function renderQuestions() {
       questionIndex
     ) => {
       const card =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
-      card.className =
-        "card";
+      card.className = "card";
 
       const questionNumber =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       questionNumber.className =
         "question-number";
 
       questionNumber.textContent =
-        `Question ${
-          questionIndex + 1
-        }`;
+        `Question ${questionIndex + 1}`;
 
       card.appendChild(
         questionNumber
       );
 
       const meta =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
-      meta.className =
-        "meta";
+      meta.className = "meta";
 
       meta.textContent =
-        `${getTopicDisplayName(
-          q.topic
-        )}` +
+        `${getTopicDisplayName(q.topic)}` +
         `${
           q.difficulty
-            ? " • " +
-              q.difficulty
+            ? " • " + q.difficulty
             : ""
         }`;
 
-      card.appendChild(
-        meta
-      );
+      card.appendChild(meta);
 
-      if (
-        q.passage
-      ) {
+      if (q.passage) {
         const passage =
-          document.createElement(
-            "div"
-          );
+          document.createElement("div");
 
-        passage.className =
-          "passage";
+        passage.className = "passage";
 
         passage.innerHTML =
           formatPassage(
             q.passage
           );
 
-        card.appendChild(
-          passage
-        );
+        card.appendChild(passage);
       }
 
       const questionText =
-        document.createElement(
-          "p"
-        );
+        document.createElement("p");
 
       questionText.textContent =
         q.question || "";
@@ -629,9 +533,7 @@ export function renderQuestions() {
       );
 
       const choices =
-        Array.isArray(
-          q.choices
-        )
+        Array.isArray(q.choices)
           ? q.choices
           : Object.values(
               q.choices || {}
@@ -643,30 +545,18 @@ export function renderQuestions() {
           choiceIndex
         ) => {
           const button =
-            document.createElement(
-              "button"
-            );
+            document.createElement("button");
 
-          button.className =
-            "choice";
-
-          button.type =
-            "button";
+          button.className = "choice";
+          button.type = "button";
 
           const letter =
-            [
-              "A",
-              "B",
-              "C",
-              "D"
-            ][
+            ["A", "B", "C", "D"][
               choiceIndex
-            ] ||
-            "?";
+            ] || "?";
 
           const text =
-            typeof choice ===
-            "object"
+            typeof choice === "object"
               ? (
                   choice.text ??
                   choice.value ??
@@ -691,9 +581,7 @@ export function renderQuestions() {
             }
           );
 
-          card.appendChild(
-            button
-          );
+          card.appendChild(button);
         }
       );
 
@@ -754,7 +642,7 @@ export function restoreSelectedAnswerUI() {
   );
 
   /*
-   * A submitted match must remain locked even after
+   * Submitted or finished matches remain locked after
    * the page is refreshed and the UI is rebuilt.
    */
   if (
@@ -762,17 +650,56 @@ export function restoreSelectedAnswerUI() {
     state.submissionInProgress ||
     state.matchFinished
   ) {
-    const choiceButtons =
-      elements.questionsDiv.querySelectorAll(
-        ".choice"
-      );
-
-    choiceButtons.forEach(
-      button => {
-        button.disabled = true;
-      }
-    );
+    lockAnswerButtons();
   }
+}
+
+
+/* =========================================================
+   ANSWER BUTTON LOCK
+   ========================================================= */
+
+function lockAnswerButtons() {
+  if (
+    !elements.questionsDiv
+  ) {
+    return;
+  }
+
+  const choiceButtons =
+    elements.questionsDiv.querySelectorAll(
+      ".choice"
+    );
+
+  choiceButtons.forEach(
+    button => {
+      button.disabled = true;
+    }
+  );
+}
+
+
+/* =========================================================
+   ANSWER BUTTON UNLOCK
+   ========================================================= */
+
+function unlockAnswerButtons() {
+  if (
+    !elements.questionsDiv
+  ) {
+    return;
+  }
+
+  const choiceButtons =
+    elements.questionsDiv.querySelectorAll(
+      ".choice"
+    );
+
+  choiceButtons.forEach(
+    button => {
+      button.disabled = false;
+    }
+  );
 }
 
 
@@ -787,11 +714,8 @@ export function selectAnswer(
   /*
    * HARD CLIENT-SIDE LOCK.
    *
-   * Once submission has been accepted by the server,
-   * or while a submission is being sent, answers cannot
-   * be changed.
-   *
-   * The same guard also applies to a finished match.
+   * Answers cannot be changed after submission,
+   * during submission, or after the match finishes.
    */
   if (
     !state.gameStarted ||
@@ -812,8 +736,7 @@ export function selectAnswer(
 
   state.selectedAnswers[
     questionIndex
-  ] =
-    choiceIndex;
+  ] = choiceIndex;
 
   const card =
     elements.questionsDiv?.children[
@@ -848,7 +771,6 @@ export function selectAnswer(
   }
 
   saveActiveMatchState();
-
   updateSubmitButton();
 
   /*
@@ -856,9 +778,7 @@ export function selectAnswer(
    * Never send the actual answer through answer_update.
    */
   sendRoomMessage({
-    type:
-      "answer_update",
-
+    type: "answer_update",
     questionIndex
   });
 }
@@ -881,9 +801,7 @@ export function updateSubmitButton() {
   if (
     state.challengeSubmitted
   ) {
-    elements.submitButton.disabled =
-      true;
-
+    elements.submitButton.disabled = true;
     elements.submitButton.textContent =
       "Answers Submitted";
 
@@ -897,9 +815,7 @@ export function updateSubmitButton() {
   if (
     state.submissionInProgress
   ) {
-    elements.submitButton.disabled =
-      true;
-
+    elements.submitButton.disabled = true;
     elements.submitButton.textContent =
       "Submitting...";
 
@@ -914,9 +830,7 @@ export function updateSubmitButton() {
     !state.gameStarted ||
     state.matchFinished
   ) {
-    elements.submitButton.disabled =
-      true;
-
+    elements.submitButton.disabled = true;
     elements.submitButton.textContent =
       "Submit Answers";
 
@@ -928,9 +842,7 @@ export function updateSubmitButton() {
       TOTAL_QUESTIONS &&
     state.selectedAnswers.every(
       answer =>
-        Number.isInteger(
-          answer
-        ) &&
+        Number.isInteger(answer) &&
         answer >= 0
     );
 
@@ -961,18 +873,13 @@ export async function submitMatch(
     return;
   }
 
-  if (
-    !autoSubmitted
-  ) {
+  if (!autoSubmitted) {
     const unanswered =
       state.selectedAnswers.filter(
-        answer =>
-          answer === -1
+        answer => answer === -1
       ).length;
 
-    if (
-      unanswered > 0
-    ) {
+    if (unanswered > 0) {
       alert(
         `You still have ${unanswered} unanswered question${
           unanswered === 1
@@ -986,41 +893,19 @@ export async function submitMatch(
   }
 
   /*
-   * Mark submission as in progress.
+   * Mark submission as in progress immediately.
    *
-   * This immediately prevents:
-   *
+   * This prevents:
    * - changing answers
    * - pressing submit again
    *
-   * challengeSubmitted remains false until the server
-   * sends submission_received.
+   * challengeSubmitted remains false until
+   * submission_received arrives from the server.
    */
-  state.submissionInProgress =
-    true;
+  state.submissionInProgress = true;
 
   updateSubmitButton();
-
-  /*
-   * Immediately disable the answer buttons as well.
-   *
-   * This closes the gap between clicking Submit and
-   * receiving submission_received.
-   */
-  if (
-    elements.questionsDiv
-  ) {
-    const choiceButtons =
-      elements.questionsDiv.querySelectorAll(
-        ".choice"
-      );
-
-    choiceButtons.forEach(
-      button => {
-        button.disabled = true;
-      }
-    );
-  }
+  lockAnswerButtons();
 
   console.log(
     "Submitting multiplayer answers:",
@@ -1029,9 +914,7 @@ export async function submitMatch(
 
   const sent =
     sendRoomMessage({
-      type:
-        "submit_answers",
-
+      type: "submit_answers",
       answers:
         state.selectedAnswers.map(
           (
@@ -1039,7 +922,6 @@ export async function submitMatch(
             questionIndex
           ) => ({
             questionIndex,
-
             selected
           })
         )
@@ -1048,32 +930,13 @@ export async function submitMatch(
   /*
    * WebSocket was unavailable or send() failed.
    *
-   * Since the server did not receive the submission,
-   * allow another attempt.
+   * The server did not receive the submission, so the
+   * player may attempt to submit again.
    */
   if (!sent) {
-    state.submissionInProgress =
-      false;
+    state.submissionInProgress = false;
 
-    /*
-     * Re-enable answers because submission was never
-     * accepted by the server.
-     */
-    if (
-      elements.questionsDiv
-    ) {
-      const choiceButtons =
-        elements.questionsDiv.querySelectorAll(
-          ".choice"
-        );
-
-      choiceButtons.forEach(
-        button => {
-          button.disabled = false;
-        }
-      );
-    }
-
+    unlockAnswerButtons();
     updateSubmitButton();
 
     setStatus(
@@ -1118,35 +981,18 @@ export async function handleGameResult(
    * =========================================================
    */
 
-  state.gameStarted =
-    false;
+  state.gameStarted = false;
+  state.matchFinished = true;
 
-  state.gameFinished =
-    true;
+  state.challengeSubmitted = true;
+  state.submissionInProgress = false;
 
-  state.matchFinished =
-    true;
+  state.inQueue = false;
+  state.playerReady = false;
 
-  state.challengeSubmitted =
-    true;
-
-  state.submissionInProgress =
-    false;
-
-  state.inQueue =
-    false;
-
-  state.playerReady =
-    false;
-
-  state.matchConnectionConfirmed =
-    false;
-
-  state.reconnecting =
-    false;
-
-  state.resumeInProgress =
-    false;
+  state.matchConnectionConfirmed = false;
+  state.reconnecting = false;
+  state.resumeInProgress = false;
 
   /*
    * Stop the local match timer.
@@ -1158,19 +1004,12 @@ export async function handleGameResult(
    */
   clearActiveMatchState();
 
-  /*
-   * Clear in-memory resume state.
-   */
-  state.resumeAvailable =
-    false;
-
-  state.resumeMatchId =
-    null;
+  state.resumeAvailable = false;
+  state.resumeMatchId = null;
 
   const yourCorrect =
     Number(
-      data.yourCorrect ??
-      0
+      data.yourCorrect ?? 0
     );
 
   const yourTotal =
@@ -1185,29 +1024,19 @@ export async function handleGameResult(
           (
             yourCorrect /
             yourTotal
-          ) *
-          100
+          ) * 100
         )
       : 0;
 
   let message;
 
-  if (
-    data.result ===
-    "win"
-  ) {
+  if (data.result === "win") {
     message =
       `You won! ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  } else if (
-    data.result ===
-    "loss"
-  ) {
+  } else if (data.result === "loss") {
     message =
       `You lost. ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  } else if (
-    data.result ===
-    "tie"
-  ) {
+  } else if (data.result === "tie") {
     message =
       `Tie! ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
   } else {
@@ -1215,19 +1044,13 @@ export async function handleGameResult(
       `Match complete: ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
   }
 
-  if (
-    elements.submitButton
-  ) {
-    elements.submitButton.disabled =
-      true;
-
+  if (elements.submitButton) {
+    elements.submitButton.disabled = true;
     elements.submitButton.style.display =
       "none";
   }
 
-  if (
-    elements.startMatchButton
-  ) {
+  if (elements.startMatchButton) {
     elements.startMatchButton.style.display =
       "";
 
@@ -1242,22 +1065,14 @@ export async function handleGameResult(
       "Join Queue";
   }
 
-  showResult(
-    message
-  );
+  showResult(message);
 
-  renderTopicPerformance(
-    data
-  );
-
-  renderResults(
-    data
-  );
+  renderTopicPerformance(data);
+  renderResults(data);
 
   if (
     data.statsRecorded &&
-    data.statsRecorded.success ===
-      false
+    data.statsRecorded.success === false
   ) {
     console.error(
       "SERVER FAILED TO RECORD STATS:",
@@ -1274,7 +1089,6 @@ export async function handleGameResult(
   }
 
   await refreshPlayerStats();
-
   await loadRecentMatches();
 
   setStatus(
@@ -1302,32 +1116,15 @@ export function handleSubmissionReceived(
    * This is the ONLY point where the client changes
    * challengeSubmitted to true.
    */
-  state.submissionInProgress =
-    false;
-
-  state.challengeSubmitted =
-    true;
+  state.submissionInProgress = false;
+  state.challengeSubmitted = true;
 
   /*
    * Permanently lock every answer button for this match.
    */
-  if (
-    elements.questionsDiv
-  ) {
-    const choiceButtons =
-      elements.questionsDiv.querySelectorAll(
-        ".choice"
-      );
-
-    choiceButtons.forEach(
-      button => {
-        button.disabled = true;
-      }
-    );
-  }
+  lockAnswerButtons();
 
   updateSubmitButton();
-
   saveActiveMatchState();
 
   setStatus(
@@ -1379,8 +1176,7 @@ function renderTopicPerformance(
           item =>
             Number(
               item.questionIndex
-            ) ===
-            questionIndex
+            ) === questionIndex
         );
 
       if (!result) {
@@ -1398,9 +1194,7 @@ function renderTopicPerformance(
         return;
       }
 
-      if (
-        !topicStats[topic]
-      ) {
+      if (!topicStats[topic]) {
         topicStats[topic] = {
           correct: 0,
           total: 0
@@ -1410,16 +1204,11 @@ function renderTopicPerformance(
       topicStats[topic].total++;
 
       if (
-        result.correct ===
-          true ||
-        result.correct ===
-          1 ||
-        result.correct ===
-          "1"
+        result.correct === true ||
+        result.correct === 1 ||
+        result.correct === "1"
       ) {
-        topicStats[
-          topic
-        ].correct++;
+        topicStats[topic].correct++;
       }
     }
   );
@@ -1430,32 +1219,25 @@ function renderTopicPerformance(
     );
 
   if (
-    topics.length ===
-    0
+    topics.length === 0
   ) {
     return;
   }
 
   topics.sort(
     ([, a], [, b]) =>
-      a.correct /
-        a.total -
-      b.correct /
-        b.total
+      a.correct / a.total -
+      b.correct / b.total
   );
 
   const performance =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   performance.className =
     "current-topic-performance";
 
   const heading =
-    document.createElement(
-      "h3"
-    );
+    document.createElement("h3");
 
   heading.textContent =
     "This Match: Topic Performance";
@@ -1470,11 +1252,8 @@ function renderTopicPerformance(
         performance,
         topic,
         stats,
-        stats.total >=
-          2 &&
-          stats.correct /
-            stats.total <
-            0.70
+        stats.total >= 2 &&
+        stats.correct / stats.total < 0.70
       );
     }
   );
@@ -1518,8 +1297,7 @@ function renderResults(
           item =>
             Number(
               item.questionIndex
-            ) ===
-            questionIndex
+            ) === questionIndex
         );
 
       if (!result) {
@@ -1541,12 +1319,9 @@ function renderResults(
           : -1;
 
       const isCorrect =
-        result.correct ===
-          true ||
-        result.correct ===
-          1 ||
-        result.correct ===
-          "1";
+        result.correct === true ||
+        result.correct === 1 ||
+        result.correct === "1";
 
       const oldBanner =
         card.querySelector(
@@ -1558,9 +1333,7 @@ function renderResults(
       }
 
       const resultBanner =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       resultBanner.className =
         `question-result ${
@@ -1569,25 +1342,16 @@ function renderResults(
             : "question-result-incorrect"
         }`;
 
-      if (
-        isCorrect
-      ) {
+      if (isCorrect) {
         resultBanner.innerHTML = `
           <strong>✓ Correct</strong>
 
           <span>
             You selected
             ${
-              selected >=
-                0 &&
+              selected >= 0 &&
               selected < 4
-                ? [
-                    "A",
-                    "B",
-                    "C",
-                    "D"
-                  ][selected] +
-                  "."
+                ? ["A", "B", "C", "D"][selected] + "."
                 : "No answer"
             }
           </span>
@@ -1599,30 +1363,18 @@ function renderResults(
           <span>
             You selected:
             ${
-              selected ===
-              -1
+              selected === -1
                 ? "No answer"
-                : [
-                    "A",
-                    "B",
-                    "C",
-                    "D"
-                  ][selected]
+                : ["A", "B", "C", "D"][selected]
             }
           </span>
 
           <span>
             Correct answer:
             ${
-              correctChoice >=
-                0 &&
+              correctChoice >= 0 &&
               correctChoice < 4
-                ? [
-                    "A",
-                    "B",
-                    "C",
-                    "D"
-                  ][correctChoice]
+                ? ["A", "B", "C", "D"][correctChoice]
                 : "Unknown"
             }
           </span>
@@ -1644,8 +1396,7 @@ function renderResults(
           button,
           choiceIndex
         ) => {
-          button.disabled =
-            true;
+          button.disabled = true;
 
           if (
             choiceIndex ===
@@ -1657,10 +1408,8 @@ function renderResults(
           }
 
           if (
-            choiceIndex ===
-              selected &&
-            selected !==
-              correctChoice
+            choiceIndex === selected &&
+            selected !== correctChoice
           ) {
             button.classList.add(
               "choice-incorrect"
@@ -1683,13 +1432,8 @@ if (
   elements.submitButton.addEventListener(
     "click",
     () => {
-      if (
-        !state.newGameMode
-      ) {
-        submitMatch(
-          false
-        );
-
+      if (!state.newGameMode) {
+        submitMatch(false);
         return;
       }
 
@@ -1700,8 +1444,7 @@ if (
         return;
       }
 
-      state.newGameMode =
-        false;
+      state.newGameMode = false;
 
       elements.submitButton.style.display =
         "none";
@@ -1709,20 +1452,14 @@ if (
       elements.submitButton.disabled =
         true;
 
-      state.matchId =
-        null;
-
-      state.opponent =
-        null;
-
-      state.playerReady =
-        false;
+      state.matchId = null;
+      state.opponent = null;
+      state.playerReady = false;
 
       state.matchConnectionConfirmed =
         false;
 
-      state.reconnecting =
-        false;
+      state.reconnecting = false;
 
       if (
         elements.startMatchButton
@@ -1761,17 +1498,10 @@ export {
 
 initializeMatchConnectionModules({
   renderQuestions,
-
   restoreSelectedAnswerUI,
-
   updateSubmitButton,
-
-  startGame:
-    handleGameStart,
-
+  startGame: handleGameStart,
   startMatchTimer,
-
   handleGameResult,
-
   handleSubmissionReceived
 });

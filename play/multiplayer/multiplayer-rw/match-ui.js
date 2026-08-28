@@ -4,6 +4,7 @@
  * =========================================================
  *
  * Owns:
+ *
  * - DOM elements
  * - Status/result text
  * - Player/opponent rendering
@@ -11,66 +12,46 @@
  * - Match history rendering
  * - Topic-performance rendering
  * - Resume/queue button presentation
+ *
  * =========================================================
  */
 
 import {
   state,
-
   TOTAL_QUESTIONS,
-
   KHAN_ACADEMY_SAT_URL,
-
   getSessionId,
-
   getAuthApiUrl,
-
   getStoredCooldownUntil,
-
-  saveCooldownUntil,
-
   clearCooldown,
-
   getCooldownRemainingMs,
-
   isCoolingDown,
-
   formatCountdown,
-
   beginCooldown as beginCooldownState,
-
   startCooldownTimer,
-
   stopCooldownTimer,
-
   isLogicalMatchId,
-
   getStoredActiveMatchState,
-
   isPersistedMatchExpired,
-
   clearActiveMatchState,
-
   getStoredResumeMatchId,
-
-  clearResumeMatch,
-
   isResumeAvailable,
-
   restoreActiveMatchState,
-
   normalizeTopic,
-
   getTopicDisplayName,
-
-  saveActiveMatchState,
-
-  COOLDOWN_DURATION_MS
+  saveActiveMatchState
 } from "./match-state.js";
 
 import {
   getMineralRank
 } from "../../../ranks.js";
+
+
+/*
+ * =========================================================
+ * DOM ELEMENTS
+ * =========================================================
+ */
 
 export const elements = {
   startMatchButton:
@@ -110,17 +91,19 @@ export const elements = {
     document.getElementById("opponentRank")
 };
 
-/* =========================================================
-   ANSWER SELECTION LOCK
-   ========================================================= */
+
+/*
+ * =========================================================
+ * ANSWER SELECTION LOCK
+ * =========================================================
+ */
 
 export function setAnswerSelectionLocked(locked) {
   if (!elements.questionsDiv) {
     return;
   }
 
-  const isLocked =
-    locked === true;
+  const isLocked = locked === true;
 
   const answerInputs =
     elements.questionsDiv.querySelectorAll(
@@ -129,8 +112,7 @@ export function setAnswerSelectionLocked(locked) {
 
   answerInputs.forEach(input => {
     if ("disabled" in input) {
-      input.disabled =
-        isLocked;
+      input.disabled = isLocked;
     }
 
     if (isLocked) {
@@ -154,31 +136,31 @@ export function setAnswerSelectionLocked(locked) {
   });
 
   /*
-   * game.js answer-selection handlers must check this
-   * flag before changing state.selectedAnswers.
+   * game.js answer-selection handlers should
+   * check this flag before changing
+   * state.selectedAnswers.
    */
   elements.questionsDiv.dataset.answersLocked =
-    isLocked
-      ? "true"
-      : "false";
+    isLocked ? "true" : "false";
 }
 
-/* =========================================================
-   BASIC UI
-   ========================================================= */
+
+/*
+ * =========================================================
+ * BASIC UI
+ * =========================================================
+ */
 
 export function setStatus(message) {
   if (elements.statusDiv) {
-    elements.statusDiv.textContent =
-      message;
+    elements.statusDiv.textContent = message;
   }
 }
 
 
 export function showResult(message) {
   if (elements.resultDiv) {
-    elements.resultDiv.textContent =
-      message;
+    elements.resultDiv.textContent = message;
   }
 }
 
@@ -211,9 +193,11 @@ export function formatPassage(text) {
 }
 
 
-/* =========================================================
-   PLAYER UI
-   ========================================================= */
+/*
+ * =========================================================
+ * PLAYER UI
+ * =========================================================
+ */
 
 export function updatePlayer(player) {
   if (!player) {
@@ -230,9 +214,7 @@ export function updatePlayer(player) {
   const rank =
     getMineralRank(elo);
 
-  if (
-    elements.playerNameDiv
-  ) {
+  if (elements.playerNameDiv) {
     const name =
       player.display_name ||
       player.username ||
@@ -248,9 +230,7 @@ export function updatePlayer(player) {
         elements.playerNameDiv.classList
       ).filter(
         className =>
-          className.startsWith(
-            "rank-"
-          )
+          className.startsWith("rank-")
       )
     );
 
@@ -261,16 +241,11 @@ export function updatePlayer(player) {
     }
   }
 
-  if (
-    elements.playerEloDiv
-  ) {
-    elements.playerEloDiv.textContent =
-      elo;
+  if (elements.playerEloDiv) {
+    elements.playerEloDiv.textContent = elo;
   }
 
-  if (
-    elements.playerRankDiv
-  ) {
+  if (elements.playerRankDiv) {
     elements.playerRankDiv.textContent =
       rank?.name || "—";
 
@@ -297,9 +272,7 @@ export function updateOpponent(player) {
   const rank =
     getMineralRank(elo);
 
-  if (
-    elements.opponentNameDiv
-  ) {
+  if (elements.opponentNameDiv) {
     const name =
       player.display_name ||
       player.username ||
@@ -315,9 +288,7 @@ export function updateOpponent(player) {
         elements.opponentNameDiv.classList
       ).filter(
         className =>
-          className.startsWith(
-            "rank-"
-          )
+          className.startsWith("rank-")
       )
     );
 
@@ -328,16 +299,11 @@ export function updateOpponent(player) {
     }
   }
 
-  if (
-    elements.opponentEloDiv
-  ) {
-    elements.opponentEloDiv.textContent =
-      elo;
+  if (elements.opponentEloDiv) {
+    elements.opponentEloDiv.textContent = elo;
   }
 
-  if (
-    elements.opponentRankDiv
-  ) {
+  if (elements.opponentRankDiv) {
     elements.opponentRankDiv.textContent =
       rank?.name || "—";
 
@@ -347,23 +313,21 @@ export function updateOpponent(player) {
 
   if (
     state.matchId &&
-    isLogicalMatchId(
-      state.matchId
-    )
+    isLogicalMatchId(state.matchId)
   ) {
     saveActiveMatchState();
   }
 }
 
 
-/* =========================================================
-   QUEUE / RESUME UI
-   ========================================================= */
+/*
+ * =========================================================
+ * QUEUE / RESUME UI
+ * =========================================================
+ */
 
 export function enableQueueButton() {
-  if (
-    !elements.startMatchButton
-  ) {
+  if (!elements.startMatchButton) {
     return;
   }
 
@@ -377,15 +341,12 @@ export function enableQueueButton() {
   /*
    * Re-check resume state every time.
    */
-  if (
-    isResumeAvailable()
-  ) {
+  if (isResumeAvailable()) {
     enableResumeGame();
     return;
   }
 
-  elements.startMatchButton.disabled =
-    false;
+  elements.startMatchButton.disabled = false;
 
   elements.startMatchButton.removeAttribute(
     "disabled"
@@ -428,11 +389,7 @@ export function enableResumeGame(
     return false;
   }
 
-  if (
-    !isLogicalMatchId(
-      matchId
-    )
-  ) {
+  if (!isLogicalMatchId(matchId)) {
     console.error(
       "Refusing to enable Resume Game for invalid logical matchId:",
       matchId
@@ -446,11 +403,8 @@ export function enableResumeGame(
 
   if (
     activeState &&
-    activeState.matchId ===
-      matchId &&
-    isPersistedMatchExpired(
-      activeState
-    )
+    activeState.matchId === matchId &&
+    isPersistedMatchExpired(activeState)
   ) {
     console.log(
       "Refusing to enable Resume Game because saved match is expired:",
@@ -463,13 +417,10 @@ export function enableResumeGame(
     state.resumeAvailable = false;
     state.resumeMatchId = null;
     state.gameStarted = false;
-    state.gameFinished = true;
+    state.matchFinished = true;
 
-    if (
-      elements.startMatchButton
-    ) {
-      elements.startMatchButton.disabled =
-        false;
+    if (elements.startMatchButton) {
+      elements.startMatchButton.disabled = false;
 
       elements.startMatchButton.removeAttribute(
         "disabled"
@@ -489,29 +440,17 @@ export function enableResumeGame(
     return false;
   }
 
-  state.resumeAvailable =
-    true;
+  state.resumeAvailable = true;
+  state.resumeMatchId = String(matchId);
+  state.matchId = String(matchId);
+  state.reconnecting = false;
+  state.matchFinished = false;
 
-  state.resumeMatchId =
-    String(matchId);
-
-  state.matchId =
-    String(matchId);
-
-  state.reconnecting =
-    false;
-
-  state.gameFinished =
-    false;
-
-  if (
-    !elements.startMatchButton
-  ) {
+  if (!elements.startMatchButton) {
     return true;
   }
 
-  elements.startMatchButton.disabled =
-    false;
+  elements.startMatchButton.disabled = false;
 
   elements.startMatchButton.removeAttribute(
     "disabled"
@@ -534,9 +473,7 @@ export function enableResumeGame(
 export function disableResumeGame() {
   clearActiveMatchState();
 
-  if (
-    !elements.startMatchButton
-  ) {
+  if (!elements.startMatchButton) {
     return;
   }
 
@@ -548,8 +485,7 @@ export function disableResumeGame() {
     return;
   }
 
-  elements.startMatchButton.disabled =
-    false;
+  elements.startMatchButton.disabled = false;
 
   elements.startMatchButton.textContent =
     "Join Queue";
@@ -566,18 +502,25 @@ export function initializeResumeGame() {
       {
         matchId:
           state.matchId,
+
         playerId:
           state.playerId,
+
         selectedAnswers:
           state.selectedAnswers,
+
         questionCount:
           state.questions.length,
+
         challengeDeadline:
           state.challengeDeadline,
+
         matchStartedAt:
           state.matchStartedAt,
+
         gameStarted:
           state.gameStarted,
+
         challengeSubmitted:
           state.challengeSubmitted
       }
@@ -597,12 +540,8 @@ export function initializeResumeGame() {
      * resume UI is presented so the player cannot
      * interact with answer controls during resume.
      */
-    if (
-      state.challengeSubmitted
-    ) {
-      setAnswerSelectionLocked(
-        true
-      );
+    if (state.challengeSubmitted) {
+      setAnswerSelectionLocked(true);
     }
   }
 
@@ -610,21 +549,13 @@ export function initializeResumeGame() {
     isResumeAvailable();
 
   if (!resumable) {
-    state.resumeAvailable =
-      false;
-
-    state.resumeMatchId =
-      null;
-
-    state.inQueue =
-      false;
-
-    state.reconnecting =
-      false;
+    state.resumeAvailable = false;
+    state.resumeMatchId = null;
+    state.inQueue = false;
+    state.reconnecting = false;
 
     if (!state.gameStarted) {
-      state.matchId =
-        null;
+      state.matchId = null;
     }
 
     return false;
@@ -634,55 +565,29 @@ export function initializeResumeGame() {
     state.resumeMatchId ||
     state.matchId;
 
-  if (
-    !isLogicalMatchId(
-      matchId
-    )
-  ) {
-    state.resumeAvailable =
-      false;
-
-    state.resumeMatchId =
-      null;
-
-    state.matchId =
-      null;
+  if (!isLogicalMatchId(matchId)) {
+    state.resumeAvailable = false;
+    state.resumeMatchId = null;
+    state.matchId = null;
 
     return false;
   }
 
-  state.resumeAvailable =
-    true;
-
-  state.resumeMatchId =
-    String(matchId);
-
-  state.matchId =
-    String(matchId);
-
-  state.matchConnectionConfirmed =
-    false;
-
-  state.inQueue =
-    false;
-
-  state.reconnecting =
-    false;
-
-  state.gameFinished =
-    false;
+  state.resumeAvailable = true;
+  state.resumeMatchId = String(matchId);
+  state.matchId = String(matchId);
+  state.matchConnectionConfirmed = false;
+  state.inQueue = false;
+  state.reconnecting = false;
+  state.matchFinished = false;
 
   /*
    * Never unlock answers while restoring a match.
    * If the restored state says the submission already
    * happened, the submitted state wins.
    */
-  if (
-    state.challengeSubmitted
-  ) {
-    setAnswerSelectionLocked(
-      true
-    );
+  if (state.challengeSubmitted) {
+    setAnswerSelectionLocked(true);
   }
 
   if (
@@ -700,9 +605,11 @@ export function initializeResumeGame() {
 }
 
 
-/* =========================================================
-   COOLDOWN UI
-   ========================================================= */
+/*
+ * =========================================================
+ * COOLDOWN UI
+ * =========================================================
+ */
 
 export function updateCooldownUI() {
   const remainingMs =
@@ -715,9 +622,7 @@ export function updateCooldownUI() {
       !state.gameStarted &&
       !state.inQueue
     ) {
-      if (
-        isResumeAvailable()
-      ) {
+      if (isResumeAvailable()) {
         enableResumeGame();
       } else {
         enableQueueButton();
@@ -733,8 +638,7 @@ export function updateCooldownUI() {
     );
 
   if (elements.startMatchButton) {
-    elements.startMatchButton.disabled =
-      true;
+    elements.startMatchButton.disabled = true;
 
     elements.startMatchButton.textContent =
       `Cooldown: ${formatCountdown(
@@ -792,8 +696,7 @@ export function beginCooldown(
     elements.submitButton.textContent =
       `New Game (${formatCountdown(
         Math.ceil(
-          getCooldownRemainingMs() /
-            1000
+          getCooldownRemainingMs() / 1000
         )
       )})`;
   }
@@ -809,8 +712,7 @@ export function beginCooldown(
     elements.startMatchButton.textContent =
       `Cooldown: ${formatCountdown(
         Math.ceil(
-          getCooldownRemainingMs() /
-            1000
+          getCooldownRemainingMs() / 1000
         )
       )}`;
   }
@@ -837,17 +739,12 @@ export function initializeCooldown() {
   state.cooldownUntil =
     getStoredCooldownUntil();
 
-  if (
-    isResumeAvailable()
-  ) {
-    state.newGameMode =
-      false;
+  if (isResumeAvailable()) {
+    state.newGameMode = false;
 
     stopCooldownTimer();
 
-    if (
-      elements.submitButton
-    ) {
+    if (elements.submitButton) {
       elements.submitButton.style.display =
         "none";
 
@@ -863,15 +760,10 @@ export function initializeCooldown() {
     return;
   }
 
-  if (
-    isCoolingDown()
-  ) {
-    state.newGameMode =
-      true;
+  if (isCoolingDown()) {
+    state.newGameMode = true;
 
-    if (
-      elements.submitButton
-    ) {
+    if (elements.submitButton) {
       elements.submitButton.style.display =
         "block";
 
@@ -881,23 +773,19 @@ export function initializeCooldown() {
       elements.submitButton.textContent =
         `New Game (${formatCountdown(
           Math.ceil(
-            getCooldownRemainingMs() /
-              1000
+            getCooldownRemainingMs() / 1000
           )
         )})`;
     }
 
-    if (
-      elements.startMatchButton
-    ) {
+    if (elements.startMatchButton) {
       elements.startMatchButton.disabled =
         true;
 
       elements.startMatchButton.textContent =
         `Cooldown: ${formatCountdown(
           Math.ceil(
-            getCooldownRemainingMs() /
-              1000
+            getCooldownRemainingMs() / 1000
           )
         )}`;
     }
@@ -920,13 +808,13 @@ export function initializeCooldown() {
 }
 
 
-/* =========================================================
-   QUESTION / TOPIC DATA
-   ========================================================= */
+/*
+ * =========================================================
+ * QUESTION / TOPIC DATA
+ * =========================================================
+ */
 
-export function extractQuestionResults(
-  match
-) {
+export function extractQuestionResults(match) {
   if (
     !match ||
     typeof match !== "object"
@@ -943,9 +831,7 @@ export function extractQuestionResults(
     match.question_level_results
   ];
 
-  for (
-    const value of possibleFields
-  ) {
+  for (const value of possibleFields) {
     if (Array.isArray(value)) {
       return value;
     }
@@ -955,9 +841,7 @@ export function extractQuestionResults(
 }
 
 
-export function extractResultTopic(
-  result
-) {
+export function extractResultTopic(result) {
   if (
     !result ||
     typeof result !== "object"
@@ -986,9 +870,7 @@ function getTopThreeWeakTopics() {
       ? window.scoreladderHistoricalTopics
       : [];
 
-  for (
-    const entry of historicalTopics
-  ) {
+  for (const entry of historicalTopics) {
     if (
       !Array.isArray(entry) ||
       entry.length < 2
@@ -997,9 +879,7 @@ function getTopThreeWeakTopics() {
     }
 
     const topic =
-      normalizeTopic(
-        entry[0]
-      );
+      normalizeTopic(entry[0]);
 
     const stats =
       entry[1];
@@ -1036,23 +916,13 @@ function getTopThreeWeakTopics() {
     }
 
     topicStats[topic] = {
-      correct:
-        Math.max(
-          0,
-          correct
-        ),
-
-      total:
-        Math.max(
-          0,
-          total
-        )
+      correct: Math.max(0, correct),
+      total: Math.max(0, total)
     };
   }
 
   if (
-    Object.keys(topicStats).length ===
-    0
+    Object.keys(topicStats).length === 0
   ) {
     const matches =
       Array.isArray(
@@ -1061,29 +931,19 @@ function getTopThreeWeakTopics() {
         ? window.scoreladderRecentMatches
         : [];
 
-    for (
-      const match of matches
-    ) {
+    for (const match of matches) {
       const questionResults =
-        extractQuestionResults(
-          match
-        );
+        extractQuestionResults(match);
 
-      for (
-        const result of questionResults
-      ) {
+      for (const result of questionResults) {
         const topic =
-          extractResultTopic(
-            result
-          );
+          extractResultTopic(result);
 
         if (!topic) {
           continue;
         }
 
-        if (
-          !topicStats[topic]
-        ) {
+        if (!topicStats[topic]) {
           topicStats[topic] = {
             correct: 0,
             total: 0
@@ -1103,44 +963,25 @@ function getTopThreeWeakTopics() {
     }
   }
 
-  return Object.entries(
-    topicStats
-  )
+  return Object.entries(topicStats)
     .filter(
       ([, stats]) =>
         stats.total > 0
     )
     .sort(
-      (
-        [topicA, a],
-        [topicB, b]
-      ) => {
+      ([topicA, a], [topicB, b]) => {
         const accuracyA =
-          a.correct /
-          a.total;
+          a.correct / a.total;
 
         const accuracyB =
-          b.correct /
-          b.total;
+          b.correct / b.total;
 
-        if (
-          accuracyA !==
-          accuracyB
-        ) {
-          return (
-            accuracyA -
-            accuracyB
-          );
+        if (accuracyA !== accuracyB) {
+          return accuracyA - accuracyB;
         }
 
-        if (
-          a.total !==
-          b.total
-        ) {
-          return (
-            b.total -
-            a.total
-          );
+        if (a.total !== b.total) {
+          return b.total - a.total;
         }
 
         return topicA.localeCompare(
@@ -1159,27 +1000,20 @@ export function appendTopicRow(
   struggling
 ) {
   const total =
-    Number(
-      stats.total
-    ) || 0;
+    Number(stats.total) || 0;
 
   const correct =
-    Number(
-      stats.correct
-    ) || 0;
+    Number(stats.correct) || 0;
 
   const accuracy =
     total > 0
       ? Math.round(
-          (correct / total) *
-            100
+          (correct / total) * 100
         )
       : 0;
 
   const row =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   row.className =
     "topic-performance-row";
@@ -1191,22 +1025,16 @@ export function appendTopicRow(
   }
 
   const name =
-    document.createElement(
-      "span"
-    );
+    document.createElement("span");
 
   name.className =
     "topic-performance-name";
 
   name.textContent =
-    getTopicDisplayName(
-      topic
-    );
+    getTopicDisplayName(topic);
 
   const score =
-    document.createElement(
-      "span"
-    );
+    document.createElement("span");
 
   score.className =
     "topic-performance-score";
@@ -1214,19 +1042,12 @@ export function appendTopicRow(
   score.textContent =
     `${correct}/${total} (${accuracy}%)`;
 
-  row.appendChild(
-    name
-  );
-
-  row.appendChild(
-    score
-  );
+  row.appendChild(name);
+  row.appendChild(score);
 
   if (struggling) {
     const label =
-      document.createElement(
-        "span"
-      );
+      document.createElement("span");
 
     label.className =
       "topic-struggling-label";
@@ -1234,14 +1055,10 @@ export function appendTopicRow(
     label.textContent =
       "Needs work";
 
-    row.appendChild(
-      label
-    );
+    row.appendChild(label);
   }
 
-  container.appendChild(
-    row
-  );
+  container.appendChild(row);
 }
 
 
@@ -1255,47 +1072,28 @@ export function renderTopicStatsIntoContainer(
     ([, a], [, b]) => {
       const accuracyA =
         a.total > 0
-          ? a.correct /
-            a.total
+          ? a.correct / a.total
           : 0;
 
       const accuracyB =
         b.total > 0
-          ? b.correct /
-            b.total
+          ? b.correct / b.total
           : 0;
 
-      if (
-        accuracyA !==
-        accuracyB
-      ) {
-        return (
-          accuracyA -
-          accuracyB
-        );
+      if (accuracyA !== accuracyB) {
+        return accuracyA - accuracyB;
       }
 
-      return (
-        b.total -
-        a.total
-      );
+      return b.total - a.total;
     }
   );
 
   const weakestTopics =
-    topics.slice(
-      0,
-      3
-    );
+    topics.slice(0, 3);
 
-  if (
-    weakestTopics.length >
-    0
-  ) {
+  if (weakestTopics.length > 0) {
     const weakHeading =
-      document.createElement(
-        "h4"
-      );
+      document.createElement("h4");
 
     weakHeading.textContent =
       "Top 3 Topics to Practice";
@@ -1318,9 +1116,11 @@ export function renderTopicStatsIntoContainer(
 }
 
 
-/* =========================================================
-   COOLDOWN PRACTICE MESSAGE
-   ========================================================= */
+/*
+ * =========================================================
+ * COOLDOWN PRACTICE MESSAGE
+ * =========================================================
+ */
 
 export function renderCooldownPracticeMessage() {
   if (!elements.resultDiv) {
@@ -1334,43 +1134,33 @@ export function renderCooldownPracticeMessage() {
     ".current-topic-performance"
   ];
 
-  selectors.forEach(
-    selector => {
-      const old =
-        elements.resultDiv.querySelector(
-          selector
-        );
+  selectors.forEach(selector => {
+    const old =
+      elements.resultDiv.querySelector(
+        selector
+      );
 
-      if (old) {
-        old.remove();
-      }
+    if (old) {
+      old.remove();
     }
-  );
+  });
 
   const container =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   container.className =
     "cooldown-practice";
 
   const heading =
-    document.createElement(
-      "h3"
-    );
+    document.createElement("h3");
 
   heading.textContent =
     "While You Wait";
 
-  container.appendChild(
-    heading
-  );
+  container.appendChild(heading);
 
   const description =
-    document.createElement(
-      "p"
-    );
+    document.createElement("p");
 
   description.textContent =
     "A new question set is loading. Use the cooldown to practice your weakest SAT topics.";
@@ -1380,9 +1170,7 @@ export function renderCooldownPracticeMessage() {
   );
 
   const weakHeading =
-    document.createElement(
-      "h4"
-    );
+    document.createElement("h4");
 
   weakHeading.textContent =
     "Topics You Should Practice";
@@ -1394,21 +1182,14 @@ export function renderCooldownPracticeMessage() {
   const weakTopics =
     getTopThreeWeakTopics();
 
-  if (
-    weakTopics.length ===
-    0
-  ) {
+  if (weakTopics.length === 0) {
     const empty =
-      document.createElement(
-        "p"
-      );
+      document.createElement("p");
 
     empty.textContent =
       "Your topic performance will appear here after you answer some questions.";
 
-    container.appendChild(
-      empty
-    );
+    container.appendChild(empty);
   } else {
     weakTopics.forEach(
       ([topic, stats]) => {
@@ -1423,9 +1204,7 @@ export function renderCooldownPracticeMessage() {
   }
 
   const link =
-    document.createElement(
-      "a"
-    );
+    document.createElement("a");
 
   link.href =
     KHAN_ACADEMY_SAT_URL;
@@ -1439,9 +1218,7 @@ export function renderCooldownPracticeMessage() {
   link.textContent =
     "Practice SAT on Khan Academy";
 
-  container.appendChild(
-    link
-  );
+  container.appendChild(link);
 
   elements.resultDiv.appendChild(
     container
@@ -1450,9 +1227,7 @@ export function renderCooldownPracticeMessage() {
 
 
 export function renderCooldownCompleteMessage() {
-  if (
-    !elements.resultDiv
-  ) {
+  if (!elements.resultDiv) {
     return;
   }
 
@@ -1467,9 +1242,11 @@ export function renderCooldownCompleteMessage() {
 }
 
 
-/* =========================================================
-   HISTORICAL TOPICS
-   ========================================================= */
+/*
+ * =========================================================
+ * HISTORICAL TOPICS
+ * =========================================================
+ */
 
 export function renderHistoricalTopicPerformance(
   matches
@@ -1489,29 +1266,19 @@ export function renderHistoricalTopicPerformance(
 
   const topicStats = {};
 
-  for (
-    const match of matches
-  ) {
+  for (const match of matches) {
     const questionResults =
-      extractQuestionResults(
-        match
-      );
+      extractQuestionResults(match);
 
-    for (
-      const result of questionResults
-    ) {
+    for (const result of questionResults) {
       const topic =
-        extractResultTopic(
-          result
-        );
+        extractResultTopic(result);
 
       if (!topic) {
         continue;
       }
 
-      if (
-        !topicStats[topic]
-      ) {
+      if (!topicStats[topic]) {
         topicStats[topic] = {
           correct: 0,
           total: 0
@@ -1531,34 +1298,24 @@ export function renderHistoricalTopicPerformance(
   }
 
   const topics =
-    Object.entries(
-      topicStats
-    );
+    Object.entries(topicStats);
 
   const container =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   container.className =
     "historical-topic-performance";
 
   const heading =
-    document.createElement(
-      "h3"
-    );
+    document.createElement("h3");
 
   heading.textContent =
     "Topics You Struggled With";
 
-  container.appendChild(
-    heading
-  );
+  container.appendChild(heading);
 
   const description =
-    document.createElement(
-      "p"
-    );
+    document.createElement("p");
 
   description.className =
     "topic-performance-description";
@@ -1570,21 +1327,14 @@ export function renderHistoricalTopicPerformance(
     description
   );
 
-  if (
-    topics.length ===
-    0
-  ) {
+  if (topics.length === 0) {
     const empty =
-      document.createElement(
-        "p"
-      );
+      document.createElement("p");
 
     empty.textContent =
       "No question-level topic data was found in match history.";
 
-    container.appendChild(
-      empty
-    );
+    container.appendChild(empty);
 
     elements.resultDiv.appendChild(
       container
@@ -1621,29 +1371,21 @@ export function renderHistoricalTopicStats(
   }
 
   const container =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   container.className =
     "historical-topic-performance";
 
   const heading =
-    document.createElement(
-      "h3"
-    );
+    document.createElement("h3");
 
   heading.textContent =
     "Topics You Struggled With";
 
-  container.appendChild(
-    heading
-  );
+  container.appendChild(heading);
 
   const description =
-    document.createElement(
-      "p"
-    );
+    document.createElement("p");
 
   description.className =
     "topic-performance-description";
@@ -1667,9 +1409,7 @@ export function renderHistoricalTopicStats(
     container
   );
 
-  if (
-    isCoolingDown()
-  ) {
+  if (isCoolingDown()) {
     renderCooldownPracticeMessage();
   }
 }
@@ -1693,29 +1433,21 @@ export function renderNoHistoricalTopicData(
   }
 
   const container =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   container.className =
     "historical-topic-performance";
 
   const heading =
-    document.createElement(
-      "h3"
-    );
+    document.createElement("h3");
 
   heading.textContent =
     "Topics You Struggled With";
 
-  container.appendChild(
-    heading
-  );
+  container.appendChild(heading);
 
   const description =
-    document.createElement(
-      "p"
-    );
+    document.createElement("p");
 
   description.textContent =
     "Based on your recent completed matches.";
@@ -1725,16 +1457,12 @@ export function renderNoHistoricalTopicData(
   );
 
   const empty =
-    document.createElement(
-      "p"
-    );
+    document.createElement("p");
 
   empty.textContent =
     reason;
 
-  container.appendChild(
-    empty
-  );
+  container.appendChild(empty);
 
   elements.resultDiv.appendChild(
     container
@@ -1742,9 +1470,11 @@ export function renderNoHistoricalTopicData(
 }
 
 
-/* =========================================================
-   RECENT MATCHES
-   ========================================================= */
+/*
+ * =========================================================
+ * RECENT MATCHES
+ * =========================================================
+ */
 
 export function renderRecentMatches(
   matches
@@ -1763,40 +1493,27 @@ export function renderRecentMatches(
   }
 
   const container =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   container.className =
     "recent-match-history";
 
   const heading =
-    document.createElement(
-      "h3"
-    );
+    document.createElement("h3");
 
   heading.textContent =
     "Recent Matches";
 
-  container.appendChild(
-    heading
-  );
+  container.appendChild(heading);
 
-  if (
-    matches.length ===
-    0
-  ) {
+  if (matches.length === 0) {
     const empty =
-      document.createElement(
-        "p"
-      );
+      document.createElement("p");
 
     empty.textContent =
       "No completed matches yet.";
 
-    container.appendChild(
-      empty
-    );
+    container.appendChild(empty);
 
     elements.resultDiv.appendChild(
       container
@@ -1806,14 +1523,9 @@ export function renderRecentMatches(
   }
 
   matches.forEach(
-    (
-      match,
-      index
-    ) => {
+    (match, index) => {
       const row =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       row.className =
         "recent-match-row";
@@ -1822,13 +1534,9 @@ export function renderRecentMatches(
         match.result;
 
       if (!result) {
-        if (
-          match.won === true
-        ) {
+        if (match.won === true) {
           result = "win";
-        } else if (
-          match.won === false
-        ) {
+        } else if (match.won === false) {
           result = "loss";
         } else {
           result = "unknown";
@@ -1867,18 +1575,12 @@ export function renderRecentMatches(
 
       const accuracy =
         Number.isFinite(
-          Number(
-            rawAccuracy
-          )
+          Number(rawAccuracy)
         )
-          ? Number(
-              rawAccuracy
-            )
+          ? Number(rawAccuracy)
           : total > 0
             ? Math.round(
-                (correct /
-                  total) *
-                  100
+                (correct / total) * 100
               )
             : 0;
 
@@ -1897,15 +1599,11 @@ export function renderRecentMatches(
         </div>
 
         <div class="recent-match-opponent">
-          ${escapeHtml(
-            opponentName
-          )}
+          ${escapeHtml(opponentName)}
         </div>
 
         <div class="recent-match-result">
-          ${escapeHtml(
-            resultText
-          )}
+          ${escapeHtml(resultText)}
         </div>
 
         <div class="recent-match-score">
@@ -1913,9 +1611,7 @@ export function renderRecentMatches(
         </div>
       `;
 
-      container.appendChild(
-        row
-      );
+      container.appendChild(row);
     }
   );
 
@@ -1925,9 +1621,11 @@ export function renderRecentMatches(
 }
 
 
-/* =========================================================
-   NETWORKED UI DATA
-   ========================================================= */
+/*
+ * =========================================================
+ * NETWORKED UI DATA
+ * =========================================================
+ */
 
 export async function refreshPlayerStats() {
   const sessionId =
@@ -1960,25 +1658,19 @@ export async function refreshPlayerStats() {
       return null;
     }
 
-    updatePlayer(
-      player
-    );
+    updatePlayer(player);
 
     if (
       player.id !== undefined &&
       player.id !== null
     ) {
       state.playerId =
-        String(
-          player.id
-        );
+        String(player.id);
     }
 
     if (
       state.matchId &&
-      isLogicalMatchId(
-        state.matchId
-      )
+      isLogicalMatchId(state.matchId)
     ) {
       saveActiveMatchState();
     }
@@ -2021,9 +1713,7 @@ export async function loadHistoricalTopicPerformance() {
     );
 
     const response =
-      await fetch(
-        url
-      );
+      await fetch(url);
 
     let data = {};
 
@@ -2043,31 +1733,23 @@ export async function loadHistoricalTopicPerformance() {
 
     let topics = null;
 
-    if (
-      Array.isArray(
-        data.topics
-      )
-    ) {
-      topics =
-        data.topics;
+    if (Array.isArray(data.topics)) {
+      topics = data.topics;
     } else if (
       data.topicPerformance &&
-      typeof data.topicPerformance ===
-        "object"
+      typeof data.topicPerformance === "object"
     ) {
       topics =
         data.topicPerformance;
     } else if (
       data.topic_performance &&
-      typeof data.topic_performance ===
-        "object"
+      typeof data.topic_performance === "object"
     ) {
       topics =
         data.topic_performance;
     } else if (
       data.performance &&
-      typeof data.performance ===
-        "object"
+      typeof data.performance === "object"
     ) {
       topics =
         data.performance;
@@ -2075,21 +1757,13 @@ export async function loadHistoricalTopicPerformance() {
 
     if (
       topics &&
-      !Array.isArray(
-        topics
-      )
+      !Array.isArray(topics)
     ) {
       topics =
-        Object.entries(
-          topics
-        );
+        Object.entries(topics);
     }
 
-    if (
-      !Array.isArray(
-        topics
-      )
-    ) {
+    if (!Array.isArray(topics)) {
       renderNoHistoricalTopicData(
         "No question-level topic data is available yet."
       );
@@ -2099,17 +1773,13 @@ export async function loadHistoricalTopicPerformance() {
 
     const normalizedTopics = [];
 
-    for (
-      const entry of topics
-    ) {
+    for (const entry of topics) {
       if (
         Array.isArray(entry) &&
         entry.length >= 2
       ) {
         const topic =
-          normalizeTopic(
-            entry[0]
-          );
+          normalizeTopic(entry[0]);
 
         if (!topic) {
           continue;
@@ -2120,8 +1790,7 @@ export async function loadHistoricalTopicPerformance() {
 
         if (
           !stats ||
-          typeof stats !==
-            "object"
+          typeof stats !== "object"
         ) {
           continue;
         }
@@ -2152,8 +1821,7 @@ export async function loadHistoricalTopicPerformance() {
 
       if (
         entry &&
-        typeof entry ===
-          "object"
+        typeof entry === "object"
       ) {
         const topic =
           normalizeTopic(
@@ -2191,8 +1859,7 @@ export async function loadHistoricalTopicPerformance() {
     }
 
     if (
-      normalizedTopics.length ===
-      0
+      normalizedTopics.length === 0
     ) {
       renderNoHistoricalTopicData(
         "No question-level topic data is available yet."
@@ -2251,9 +1918,7 @@ export async function loadRecentMatches() {
     );
 
     const response =
-      await fetch(
-        url
-      );
+      await fetch(url);
 
     let data = {};
 
@@ -2272,13 +1937,8 @@ export async function loadRecentMatches() {
     }
 
     const matches =
-      Array.isArray(
-        data.matches
-      )
-        ? data.matches.slice(
-            0,
-            5
-          )
+      Array.isArray(data.matches)
+        ? data.matches.slice(0, 5)
         : [];
 
     console.log(
@@ -2292,14 +1952,10 @@ export async function loadRecentMatches() {
     const hasQuestionData =
       matches.some(
         match =>
-          extractQuestionResults(
-            match
-          ).length > 0
+          extractQuestionResults(match).length > 0
       );
 
-    if (
-      hasQuestionData
-    ) {
+    if (hasQuestionData) {
       renderHistoricalTopicPerformance(
         matches
       );
@@ -2307,9 +1963,7 @@ export async function loadRecentMatches() {
 
     await loadHistoricalTopicPerformance();
 
-    if (
-      isCoolingDown()
-    ) {
+    if (isCoolingDown()) {
       renderCooldownPracticeMessage();
     }
   } catch (error) {
@@ -2321,17 +1975,18 @@ export async function loadRecentMatches() {
     window.scoreladderRecentMatches =
       [];
 
-    renderRecentMatches(
-      []
-    );
+    renderRecentMatches([]);
 
     await loadHistoricalTopicPerformance();
   }
 }
 
-/* =========================================================
-   COOLDOWN EVENT BRIDGE
-   ========================================================= */
+
+/*
+ * =========================================================
+ * COOLDOWN EVENT BRIDGE
+ * =========================================================
+ */
 
 window.addEventListener(
   "scoreladder:cooldown-tick",
@@ -2347,6 +2002,13 @@ window.addEventListener(
   "scoreladder:cooldown-started",
   updateCooldownUI
 );
+
+
+/*
+ * =========================================================
+ * RE-EXPORTS
+ * =========================================================
+ */
 
 export {
   normalizeTopic,

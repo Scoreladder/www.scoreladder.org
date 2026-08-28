@@ -10,39 +10,24 @@
  * - Initialization
  * - Coordination between modules
  *
- * Gameplay functions can remain here temporarily.
- * If game.js already exists, those functions should stay there.
+ * Gameplay functions belong in their respective modules.
  * =========================================================
  */
 
 import {
   state,
-
-  isResumeAvailable,
-
-  isLogicalMatchId,
-
-  clearActiveMatchState
+  isResumeAvailable
 } from "./match-state.js";
 
 import {
   elements,
-
   setStatus,
-
   enableResumeGame,
-
   enableQueueButton,
-
   initializeResumeGame,
-
   initializeCooldown,
-
   loadRecentMatches,
-
-  refreshPlayerStats,
-
-  updateOpponent
+  refreshPlayerStats
 } from "./match-ui.js";
 
 import {
@@ -73,25 +58,34 @@ window.scoreladderHistoricalTopics =
    RESUME BUTTON INTERCEPTION
    ========================================================= */
 
-function handleStartMatchButtonClick(
-  event
-) {
-  if (
-    !elements.startMatchButton
-  ) {
+/*
+ * The matchmaking module also listens for this button.
+ *
+ * This capture-phase listener runs first and intercepts
+ * the click only when the button genuinely represents a
+ * resumable match.
+ */
+function handleStartMatchButtonClick(event) {
+  if (!elements.startMatchButton) {
     return;
   }
 
-  /*
-   * Revalidate instead of trusting the button text.
-   */
+  const button =
+    elements.startMatchButton;
+
+  const isResumeButton =
+    button.textContent.trim() ===
+    "Resume Game";
+
   const resumable =
     isResumeAvailable();
 
+  /*
+   * Valid Resume Game.
+   */
   if (
     resumable &&
-    elements.startMatchButton.textContent.trim() ===
-      "Resume Game"
+    isResumeButton
   ) {
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -102,23 +96,23 @@ function handleStartMatchButtonClick(
   }
 
   /*
-   * If the button says Resume Game but the local match
-   * is no longer valid, force it back to Join Queue and
-   * allow the normal queue handler to receive the click.
+   * The UI says Resume Game, but the stored match is
+   * no longer resumable.
+   *
+   * Restore the normal queue state and allow the
+   * matchmaking click handler to process this click.
    */
   if (
     !resumable &&
-    elements.startMatchButton.textContent.trim() ===
-      "Resume Game"
+    isResumeButton
   ) {
-    elements.startMatchButton.disabled =
-      false;
+    button.disabled = false;
 
-    elements.startMatchButton.removeAttribute(
+    button.removeAttribute(
       "disabled"
     );
 
-    elements.startMatchButton.textContent =
+    button.textContent =
       "Join Queue";
 
     setStatus(
@@ -128,9 +122,7 @@ function handleStartMatchButtonClick(
 }
 
 
-if (
-  elements.startMatchButton
-) {
+if (elements.startMatchButton) {
   elements.startMatchButton.addEventListener(
     "click",
     handleStartMatchButtonClick,
@@ -143,35 +135,27 @@ if (
    INITIAL BUTTON STATE
    ========================================================= */
 
-if (
-  elements.startMatchButton
-) {
+if (elements.startMatchButton) {
+  const resumable =
+    isResumeAvailable();
+
   elements.startMatchButton.disabled =
     false;
 
-  if (
-    isResumeAvailable()
-  ) {
-    elements.startMatchButton.textContent =
-      "Resume Game";
+  elements.startMatchButton.textContent =
+    resumable
+      ? "Resume Game"
+      : "Join Queue";
 
-    setStatus(
-      "You were disconnected from your match. Resume the game to reconnect."
-    );
-  } else {
-    elements.startMatchButton.textContent =
-      "Join Queue";
-
-    setStatus(
-      "Ready to join queue."
-    );
-  }
+  setStatus(
+    resumable
+      ? "You were disconnected from your match. Resume the game to reconnect."
+      : "Ready to join queue."
+  );
 }
 
 
-if (
-  elements.submitButton
-) {
+if (elements.submitButton) {
   elements.submitButton.style.display =
     "none";
 
@@ -180,9 +164,7 @@ if (
 }
 
 
-if (
-  elements.timerDiv
-) {
+if (elements.timerDiv) {
   elements.timerDiv.textContent =
     "13:00";
 }
@@ -198,8 +180,8 @@ initializeCooldown();
 
 
 /*
- * Make Resume Game win over normal button setup ONLY
- * if it is still genuinely resumable.
+ * Resume state must take priority over normal queue
+ * presentation.
  */
 if (
   isResumeAvailable() &&
@@ -214,12 +196,6 @@ if (
   !state.gameStarted &&
   !state.inQueue
 ) {
-  /*
-   * Explicitly restore Join Queue when no valid resume
-   * state exists.
-   *
-   * Cooldown UI handles its own disabled state.
-   */
   enableQueueButton();
 }
 
@@ -237,18 +213,27 @@ refreshPlayerStats();
    ACTIVE MATCH LEAVE WARNING
    ========================================================= */
 
+/*
+ * A match is considered active only when:
+ *
+ * - There is a match ID.
+ * - The match has NOT finished.
+ *
+ * matchFinished is the single authoritative completion
+ * flag. Do not use gameFinished here.
+ */
 function isMatchInProgress() {
   return Boolean(
     state.matchId &&
-    !state.matchFinished &&
-    !state.gameFinished
+    !state.matchFinished
   );
 }
 
 
-/*
- * Browser refresh / tab close.
- */
+/* =========================================================
+   BROWSER REFRESH / TAB CLOSE
+   ========================================================= */
+
 function handleBeforeUnload(event) {
   if (!isMatchInProgress()) {
     return;
@@ -265,9 +250,10 @@ window.addEventListener(
 );
 
 
-/*
- * Normal page navigation.
- */
+/* =========================================================
+   NORMAL PAGE NAVIGATION
+   ========================================================= */
+
 document.addEventListener(
   "click",
   event => {
@@ -292,12 +278,12 @@ document.addEventListener(
     }
 
     /*
-     * Ignore:
+     * Do not interfere with:
      * - Same-page anchors
      * - javascript links
-     * - new-tab links
-     * - modifier-clicks
-     * - downloads
+     * - New-tab links
+     * - Modifier clicks
+     * - Downloads
      */
     if (
       href.startsWith("#") ||
@@ -306,9 +292,7 @@ document.addEventListener(
       event.shiftKey ||
       event.altKey ||
       event.metaKey ||
-      link.hasAttribute(
-        "download"
-      )
+      link.hasAttribute("download")
     ) {
       return;
     }
@@ -330,9 +314,10 @@ document.addEventListener(
 );
 
 
-/*
- * Browser back / forward.
- */
+/* =========================================================
+   BROWSER BACK / FORWARD
+   ========================================================= */
+
 window.addEventListener(
   "popstate",
   () => {

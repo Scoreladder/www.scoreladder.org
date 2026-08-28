@@ -20,6 +20,27 @@ export function createDisconnectManager({
   enableResumeGame,
   setStatus
 }) {
+
+  /* =======================================================
+     CONNECTION STATE
+     ======================================================= */
+
+  function clearConnectionState() {
+    state.matchConnectionConfirmed =
+      false;
+
+    state.resumeInProgress =
+      false;
+
+    state.reconnecting =
+      false;
+  }
+
+
+  /* =======================================================
+     WEBSOCKET ERROR
+     ======================================================= */
+
   function handleSocketError(
     error,
     isResume
@@ -29,14 +50,7 @@ export function createDisconnectManager({
       error
     );
 
-    state.matchConnectionConfirmed =
-      false;
-
-    state.resumeInProgress =
-      false;
-
-    state.reconnecting =
-      false;
+    clearConnectionState();
 
     if (isResume) {
       setStatus(
@@ -46,12 +60,19 @@ export function createDisconnectManager({
       enableResumeGame(
         state.matchId
       );
-    } else {
-      setStatus(
-        "Connection to match failed."
-      );
+
+      return;
     }
+
+    setStatus(
+      "Connection to match failed."
+    );
   }
+
+
+  /* =======================================================
+     WEBSOCKET CLOSE
+     ======================================================= */
 
   function handleSocketClose(
     event,
@@ -125,6 +146,11 @@ export function createDisconnectManager({
       false;
   }
 
+
+  /* =======================================================
+     PAGE LIFECYCLE PERSISTENCE
+     ======================================================= */
+
   function persistBeforePageHide() {
     if (
       state.matchId &&
@@ -133,6 +159,7 @@ export function createDisconnectManager({
       saveActiveMatchState();
     }
   }
+
 
   function installPageLifecycleHandlers() {
     window.addEventListener(
@@ -152,6 +179,11 @@ export function createDisconnectManager({
       }
     );
   }
+
+
+  /* =======================================================
+     PUBLIC API
+     ======================================================= */
 
   return {
     handleSocketError,

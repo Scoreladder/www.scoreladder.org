@@ -17,6 +17,11 @@
  * =========================================================
  */
 
+
+/* =========================================================
+   CONSTANTS
+   ========================================================= */
+
 export const API =
   "http://127.0.0.1:8787";
 
@@ -29,6 +34,9 @@ export const RESUME_MATCH_STORAGE_KEY =
 export const ACTIVE_MATCH_STATE_STORAGE_KEY =
   "scoreladder_multiplayer_active_match_state";
 
+export const COOLDOWN_STORAGE_KEY =
+  "scoreladder_multiplayer_cooldown_until";
+
 export const TOTAL_QUESTIONS =
   11;
 
@@ -38,14 +46,16 @@ export const MATCH_DURATION_MS =
 export const COOLDOWN_DURATION_MS =
   15 * 60 * 1000;
 
-export const COOLDOWN_STORAGE_KEY =
-  "scoreladder_multiplayer_cooldown_until";
-
 export const KHAN_ACADEMY_SAT_URL =
   "https://www.khanacademy.org/test-prep/sat";
 
 
+/* =========================================================
+   MATCH STATE
+   ========================================================= */
+
 export const state = {
+
   playerId: null,
 
   reconnecting: false,
@@ -92,21 +102,26 @@ export const state = {
 
   resumeInProgress: false,
 
-  gameFinished: false,
+  matchFinished: false,
 
   answerSelectionLocked: false,
+
   /*
    * Timestamp supplied/recorded when the current match began.
    *
-   * This is intentionally persisted so that an old local
-   * resume record cannot survive forever if the deadline is
-   * missing from the saved state.
+   * This is persisted so an old local resume record cannot
+   * survive indefinitely if challengeDeadline is unavailable.
    */
   matchStartedAt: 0
 };
 
 
+/* =========================================================
+   TOPIC NORMALIZATION
+   ========================================================= */
+
 export const TOPIC_ALIASES = {
+
   central_idea:
     "central_ideas",
 
@@ -176,6 +191,7 @@ export const TOPIC_ALIASES = {
 
 
 export const TOPIC_DISPLAY_NAMES = {
+
   central_ideas:
     "Central Ideas",
 
@@ -212,7 +228,10 @@ export const TOPIC_DISPLAY_NAMES = {
 
 
 export function normalizeTopic(topic) {
-  if (typeof topic !== "string") {
+
+  if (
+    typeof topic !== "string"
+  ) {
     return null;
   }
 
@@ -227,6 +246,7 @@ export function normalizeTopic(topic) {
 
 
 export function getTopicDisplayName(topic) {
+
   const normalized =
     normalizeTopic(topic);
 
@@ -238,12 +258,20 @@ export function getTopicDisplayName(topic) {
 }
 
 
+/* =========================================================
+   SESSION
+   ========================================================= */
+
 export function getSessionId() {
+
   try {
+
     return sessionStorage.getItem(
       "scoreladder_session"
     );
+
   } catch (error) {
+
     console.error(
       "Failed to get session:",
       error
@@ -255,6 +283,7 @@ export function getSessionId() {
 
 
 export function getAuthApiUrl(path) {
+
   const base =
     AUTH_API.replace(/\/+$/, "");
 
@@ -270,7 +299,9 @@ export function getAuthApiUrl(path) {
    ========================================================= */
 
 export function getStoredCooldownUntil() {
+
   try {
+
     const stored =
       localStorage.getItem(
         COOLDOWN_STORAGE_KEY
@@ -287,6 +318,7 @@ export function getStoredCooldownUntil() {
       !Number.isFinite(timestamp) ||
       timestamp <= 0
     ) {
+
       localStorage.removeItem(
         COOLDOWN_STORAGE_KEY
       );
@@ -295,7 +327,9 @@ export function getStoredCooldownUntil() {
     }
 
     return timestamp;
+
   } catch (error) {
+
     console.error(
       "Failed to read cooldown:",
       error
@@ -307,15 +341,19 @@ export function getStoredCooldownUntil() {
 
 
 export function saveCooldownUntil(timestamp) {
+
   state.cooldownUntil =
     timestamp;
 
   try {
+
     localStorage.setItem(
       COOLDOWN_STORAGE_KEY,
       String(timestamp)
     );
+
   } catch (error) {
+
     console.error(
       "Failed to save cooldown:",
       error
@@ -325,13 +363,18 @@ export function saveCooldownUntil(timestamp) {
 
 
 export function clearCooldown() {
-  state.cooldownUntil = 0;
+
+  state.cooldownUntil =
+    0;
 
   try {
+
     localStorage.removeItem(
       COOLDOWN_STORAGE_KEY
     );
+
   } catch (error) {
+
     console.error(
       "Failed to clear cooldown:",
       error
@@ -343,6 +386,7 @@ export function clearCooldown() {
 
 
 export function getCooldownRemainingMs() {
+
   if (!state.cooldownUntil) {
     return 0;
   }
@@ -355,6 +399,7 @@ export function getCooldownRemainingMs() {
 
 
 export function isCoolingDown() {
+
   return (
     getCooldownRemainingMs() > 0
   );
@@ -362,6 +407,7 @@ export function isCoolingDown() {
 
 
 export function formatCountdown(totalSeconds) {
+
   const safeSeconds =
     Math.max(
       0,
@@ -383,17 +429,18 @@ export function formatCountdown(totalSeconds) {
 
 
 export function startCooldownTimer() {
+
   stopCooldownTimer();
 
   state.cooldownInterval =
     setInterval(
       () => {
+
         /*
-         * UI module owns actual rendering.
+         * UI owns actual rendering.
          *
-         * Dispatch a custom event so match-ui.js can
-         * update the DOM without creating a circular
-         * dependency.
+         * Custom events avoid a circular dependency
+         * between state and UI modules.
          */
         window.dispatchEvent(
           new CustomEvent(
@@ -402,9 +449,9 @@ export function startCooldownTimer() {
         );
 
         if (
-          getCooldownRemainingMs() <=
-          0
+          getCooldownRemainingMs() <= 0
         ) {
+
           stopCooldownTimer();
 
           window.dispatchEvent(
@@ -420,9 +467,11 @@ export function startCooldownTimer() {
 
 
 export function stopCooldownTimer() {
+
   if (
     state.cooldownInterval
   ) {
+
     clearInterval(
       state.cooldownInterval
     );
@@ -436,6 +485,7 @@ export function stopCooldownTimer() {
 export function beginCooldown(
   cooldownUntil = null
 ) {
+
   const serverUntil =
     Number(cooldownUntil);
 
@@ -448,7 +498,8 @@ export function beginCooldown(
 
   saveCooldownUntil(until);
 
-  state.newGameMode = true;
+  state.newGameMode =
+    true;
 
   window.dispatchEvent(
     new CustomEvent(
@@ -465,7 +516,9 @@ export function beginCooldown(
    ========================================================= */
 
 export function getStoredActiveMatchState() {
+
   try {
+
     const raw =
       localStorage.getItem(
         ACTIVE_MATCH_STATE_STORAGE_KEY
@@ -482,6 +535,7 @@ export function getStoredActiveMatchState() {
       !parsed ||
       typeof parsed !== "object"
     ) {
+
       localStorage.removeItem(
         ACTIVE_MATCH_STATE_STORAGE_KEY
       );
@@ -490,9 +544,11 @@ export function getStoredActiveMatchState() {
     }
 
     if (
-      typeof parsed.matchId !== "string" ||
-      parsed.matchId.length === 0
+      !isLogicalMatchId(
+        parsed.matchId
+      )
     ) {
+
       localStorage.removeItem(
         ACTIVE_MATCH_STATE_STORAGE_KEY
       );
@@ -501,7 +557,9 @@ export function getStoredActiveMatchState() {
     }
 
     return parsed;
+
   } catch (error) {
+
     console.error(
       "Failed to read active match state:",
       error
@@ -513,7 +571,10 @@ export function getStoredActiveMatchState() {
 
 
 export function isLogicalMatchId(value) {
-  if (typeof value !== "string") {
+
+  if (
+    typeof value !== "string"
+  ) {
     return false;
   }
 
@@ -530,14 +591,19 @@ export function isLogicalMatchId(value) {
  *
  * 1. Explicit challengeDeadline.
  * 2. matchStartedAt + MATCH_DURATION_MS.
- * 3. savedAt + MATCH_DURATION_MS as a final legacy fallback.
+ * 3. savedAt + MATCH_DURATION_MS.
  */
 export function isPersistedMatchExpired(saved) {
-  if (!saved || typeof saved !== "object") {
+
+  if (
+    !saved ||
+    typeof saved !== "object"
+  ) {
     return true;
   }
 
-  const now = Date.now();
+  const now =
+    Date.now();
 
   const challengeDeadline =
     Number(
@@ -587,11 +653,13 @@ export function isPersistedMatchExpired(saved) {
 
 
 export function saveActiveMatchState() {
+
   if (
     !isLogicalMatchId(
       state.matchId
     )
   ) {
+
     console.warn(
       "Refusing to persist invalid logical matchId:",
       state.matchId
@@ -601,16 +669,18 @@ export function saveActiveMatchState() {
   }
 
   if (
-    !state.matchStartedAt ||
     !Number.isFinite(
       Number(state.matchStartedAt)
-    )
+    ) ||
+    Number(state.matchStartedAt) <= 0
   ) {
+
     state.matchStartedAt =
       Date.now();
   }
 
   const activeMatchState = {
+
     matchId:
       state.matchId,
 
@@ -656,8 +726,11 @@ export function saveActiveMatchState() {
     challengeSubmitted:
       state.challengeSubmitted === true,
 
-      answerSelectionLocked:
-  state.answerSelectionLocked === true,
+    answerSelectionLocked:
+      state.answerSelectionLocked === true,
+
+    matchFinished:
+      state.matchFinished === true,
 
     matchStartedAt:
       Number(
@@ -669,6 +742,7 @@ export function saveActiveMatchState() {
   };
 
   try {
+
     localStorage.setItem(
       ACTIVE_MATCH_STATE_STORAGE_KEY,
       JSON.stringify(
@@ -681,12 +755,16 @@ export function saveActiveMatchState() {
       state.matchId
     );
 
-    state.resumeAvailable = true;
+    state.resumeAvailable =
+      true;
+
     state.resumeMatchId =
       state.matchId;
 
     return true;
+
   } catch (error) {
+
     console.error(
       "Failed to save active match state:",
       error
@@ -698,11 +776,15 @@ export function saveActiveMatchState() {
 
 
 export function clearActiveMatchState() {
+
   try {
+
     localStorage.removeItem(
       ACTIVE_MATCH_STATE_STORAGE_KEY
     );
+
   } catch (error) {
+
     console.error(
       "Failed to clear active match state:",
       error
@@ -716,6 +798,7 @@ export function clearActiveMatchState() {
 export function updatePersistedSelectedAnswers(
   selectedAnswers
 ) {
+
   if (
     !Array.isArray(
       selectedAnswers
@@ -733,6 +816,7 @@ export function updatePersistedSelectedAnswers(
 
 
 export function persistCurrentMatchState() {
+
   return saveActiveMatchState();
 }
 
@@ -744,18 +828,23 @@ export function persistCurrentMatchState() {
 export function saveResumeMatch(
   matchId
 ) {
+
   if (
     typeof matchId !== "string" ||
-    matchId.length === 0
+    !matchId.trim()
   ) {
     return;
   }
 
+  const normalizedMatchId =
+    matchId.trim();
+
   if (
     !isLogicalMatchId(
-      matchId
+      normalizedMatchId
     )
   ) {
+
     console.warn(
       "Refusing to save invalid resume match ID:",
       matchId
@@ -768,14 +857,17 @@ export function saveResumeMatch(
     true;
 
   state.resumeMatchId =
-    matchId;
+    normalizedMatchId;
 
   try {
+
     localStorage.setItem(
       RESUME_MATCH_STORAGE_KEY,
-      matchId
+      normalizedMatchId
     );
+
   } catch (error) {
+
     console.error(
       "Failed to save resume match:",
       error
@@ -785,7 +877,9 @@ export function saveResumeMatch(
 
 
 export function getStoredResumeMatchId() {
+
   try {
+
     const matchId =
       localStorage.getItem(
         RESUME_MATCH_STORAGE_KEY
@@ -793,16 +887,20 @@ export function getStoredResumeMatchId() {
 
     if (
       typeof matchId !== "string" ||
-      matchId.length === 0
+      !matchId.trim()
     ) {
       return null;
     }
 
+    const normalizedMatchId =
+      matchId.trim();
+
     if (
       !isLogicalMatchId(
-        matchId
+        normalizedMatchId
       )
     ) {
+
       console.warn(
         "Stored resume ID is not a logical match UUID. Removing it:",
         matchId
@@ -815,8 +913,10 @@ export function getStoredResumeMatchId() {
       return null;
     }
 
-    return matchId;
+    return normalizedMatchId;
+
   } catch (error) {
+
     console.error(
       "Failed to read resume match:",
       error
@@ -828,6 +928,7 @@ export function getStoredResumeMatchId() {
 
 
 export function clearResumeMatch() {
+
   state.resumeAvailable =
     false;
 
@@ -841,10 +942,13 @@ export function clearResumeMatch() {
     false;
 
   try {
+
     localStorage.removeItem(
       RESUME_MATCH_STORAGE_KEY
     );
+
   } catch (error) {
+
     console.error(
       "Failed to clear resume match:",
       error
@@ -854,11 +958,12 @@ export function clearResumeMatch() {
 
 
 export function isResumeAvailable() {
+
   const activeState =
     getStoredActiveMatchState();
 
   /*
-   * Active-state record is authoritative.
+   * The full active-state record is authoritative.
    */
   if (
     activeState &&
@@ -866,11 +971,13 @@ export function isResumeAvailable() {
       activeState.matchId
     )
   ) {
+
     if (
       isPersistedMatchExpired(
         activeState
       )
     ) {
+
       console.log(
         "Saved match has expired. Clearing resume state:",
         {
@@ -893,19 +1000,13 @@ export function isResumeAvailable() {
 
       clearActiveMatchState();
 
-      state.resumeAvailable =
-        false;
-
-      state.resumeMatchId =
-        null;
-
       state.matchId =
         null;
 
       state.gameStarted =
         false;
 
-      state.gameFinished =
+      state.matchFinished =
         true;
 
       return false;
@@ -930,6 +1031,7 @@ export function isResumeAvailable() {
     storedMatchId &&
     !activeState
   ) {
+
     console.log(
       "Found orphaned resume key without active match state. Clearing it:",
       storedMatchId
@@ -949,24 +1051,24 @@ export function isResumeAvailable() {
 }
 
 
+/* =========================================================
+   RESTORE ACTIVE MATCH STATE
+   ========================================================= */
+
 export function restoreActiveMatchState() {
+
   const saved =
     getStoredActiveMatchState();
 
   const storedResumeMatchId =
     getStoredResumeMatchId();
 
-  const isUuid =
-    value =>
-      typeof value === "string" &&
-      isLogicalMatchId(value);
-
   const logicalMatchId =
-    isUuid(
+    isLogicalMatchId(
       storedResumeMatchId
     )
-      ? storedResumeMatchId.trim()
-      : isUuid(
+      ? storedResumeMatchId
+      : isLogicalMatchId(
           saved?.matchId
         )
         ? saved.matchId.trim()
@@ -976,10 +1078,15 @@ export function restoreActiveMatchState() {
     return false;
   }
 
+  /*
+   * Reject an already-expired persisted match before
+   * restoring it into live state.
+   */
   if (
     saved &&
     isPersistedMatchExpired(saved)
   ) {
+
     console.log(
       "Persisted match is expired. Clearing resume state:",
       {
@@ -1002,15 +1109,31 @@ export function restoreActiveMatchState() {
 
     clearActiveMatchState();
 
-    state.matchId = null;
-    state.resumeAvailable = false;
-    state.resumeMatchId = null;
-    state.gameStarted = false;
-    state.gameFinished = true;
-    state.matchStartedAt = 0;
+    state.matchId =
+      null;
+
+    state.resumeAvailable =
+      false;
+
+    state.resumeMatchId =
+      null;
+
+    state.gameStarted =
+      false;
+
+    state.matchFinished =
+      true;
+
+    state.matchStartedAt =
+      0;
 
     return false;
   }
+
+
+  /* -------------------------------------------------------
+     RESTORE MATCH DATA
+     ------------------------------------------------------- */
 
   state.matchId =
     logicalMatchId;
@@ -1035,7 +1158,9 @@ export function restoreActiveMatchState() {
     Array.isArray(
       saved?.selectedAnswers
     )
-      ? saved.selectedAnswers
+      ? [
+          ...saved.selectedAnswers
+        ]
       : [];
 
   state.challengeDeadline =
@@ -1053,46 +1178,13 @@ export function restoreActiveMatchState() {
       saved?.matchStartedAt
     ) || 0;
 
-  const matchExpired =
-    isPersistedMatchExpired({
-      ...saved,
-      matchId:
-        logicalMatchId
-    });
 
+  /*
+   * The expiry check above already guarantees the saved
+   * match is locally valid.
+   */
   state.gameStarted =
-    saved?.gameStarted === true &&
-    !matchExpired;
-
-  if (matchExpired) {
-    console.log(
-      "Restored match was already expired:",
-      {
-        matchId:
-          logicalMatchId,
-
-        challengeDeadline:
-          state.challengeDeadline,
-
-        matchStartedAt:
-          state.matchStartedAt,
-
-        now:
-          Date.now()
-      }
-    );
-
-    clearActiveMatchState();
-
-    state.matchId = null;
-    state.resumeAvailable = false;
-    state.resumeMatchId = null;
-    state.gameStarted = false;
-    state.gameFinished = true;
-    state.matchStartedAt = 0;
-
-    return false;
-  }
+    saved?.gameStarted === true;
 
   state.playerReady =
     saved?.playerReady === true;
@@ -1127,21 +1219,26 @@ export function restoreActiveMatchState() {
   state.reconnecting =
     false;
 
-  state.gameFinished =
-    false;
+  state.matchFinished =
+    saved?.matchFinished === true;
 
-  /*
-   * UI is responsible for displaying the restored
-   * opponent.
-   */
+  state.answerSelectionLocked =
+    saved?.answerSelectionLocked === true;
+
+
+  /* -------------------------------------------------------
+     REPAIR LOGICAL MATCH ID
+     ------------------------------------------------------- */
 
   if (
     saved &&
-    saved.matchId !==
-      logicalMatchId
+    saved.matchId !== logicalMatchId
   ) {
+
     try {
+
       const repairedState = {
+
         ...saved,
 
         matchId:
@@ -1174,6 +1271,12 @@ export function restoreActiveMatchState() {
         challengeSubmitted:
           state.challengeSubmitted,
 
+        answerSelectionLocked:
+          state.answerSelectionLocked,
+
+        matchFinished:
+          state.matchFinished,
+
         matchStartedAt:
           state.matchStartedAt,
 
@@ -1187,7 +1290,9 @@ export function restoreActiveMatchState() {
           repairedState
         )
       );
+
     } catch (error) {
+
       console.error(
         "Failed to repair active match state:",
         error
@@ -1195,17 +1300,26 @@ export function restoreActiveMatchState() {
     }
   }
 
+
+  /* -------------------------------------------------------
+     REPAIR RESUME KEY
+     ------------------------------------------------------- */
+
   try {
+
     localStorage.setItem(
       RESUME_MATCH_STORAGE_KEY,
       logicalMatchId
     );
+
   } catch (error) {
+
     console.error(
       "Failed to repair resume match key:",
       error
     );
   }
+
 
   console.log(
     "Restored logical match state:",
@@ -1223,7 +1337,16 @@ export function restoreActiveMatchState() {
         state.challengeDeadline,
 
       matchStartedAt:
-        state.matchStartedAt
+        state.matchStartedAt,
+
+      challengeSubmitted:
+        state.challengeSubmitted,
+
+      matchFinished:
+        state.matchFinished,
+
+      answerSelectionLocked:
+        state.answerSelectionLocked
     }
   );
 
@@ -1236,9 +1359,11 @@ export function restoreActiveMatchState() {
    ========================================================= */
 
 export function stopMatchTimer() {
+
   if (
     state.timerInterval
   ) {
+
     clearInterval(
       state.timerInterval
     );
@@ -1250,6 +1375,7 @@ export function stopMatchTimer() {
 
 
 export function clearMatchTimer() {
+
   stopMatchTimer();
 
   state.challengeDeadline =

@@ -25,20 +25,21 @@ import {
 import {
   handleGameStart,
   handleGameResult
-} from "./game.js";
+} from "./match-game.js";
+
 
 /* =========================================================
    PROFILE NORMALIZATION
    ========================================================= */
 
 /*
- * Always prefer display_name for anything shown to the user.
+ * Normalize player objects at the matchmaking boundary.
  *
- * Internal identifiers such as:
- *   bot_001
- *   discord_123456
- *
- * remain untouched in id/playerId.
+ * Rules:
+ * - display_name is preferred for visible names.
+ * - username remains the actual account username.
+ * - id/playerId are preserved as strings.
+ * - bot IDs are never modified.
  */
 function normalizePlayer(player) {
   if (!player) {
@@ -49,9 +50,6 @@ function normalizePlayer(player) {
     ...player
   };
 
-  /*
-   * Backend may use either display_name or displayName.
-   */
   const displayName =
     player.display_name ||
     player.displayName ||
@@ -62,25 +60,14 @@ function normalizePlayer(player) {
   normalized.display_name =
     displayName;
 
-  /*
-   * Keep displayName too in case another frontend
-   * component expects camelCase.
-   */
   normalized.displayName =
     displayName;
 
-  /*
-   * Username remains the actual account username.
-   * Do NOT replace it with the display name.
-   */
   if (!normalized.username) {
     normalized.username =
       displayName;
   }
 
-  /*
-   * Preserve bot IDs exactly.
-   */
   if (normalized.id != null) {
     normalized.id =
       String(normalized.id);
@@ -91,10 +78,6 @@ function normalizePlayer(player) {
       String(normalized.playerId);
   }
 
-  /*
-   * Useful flag for frontend logic.
-   * bot_ prefix is your bot identifier convention.
-   */
   normalized.isBot =
     String(
       normalized.id ||
@@ -105,6 +88,7 @@ function normalizePlayer(player) {
   return normalized;
 }
 
+
 /* =========================================================
    MATCHMAKING
    ========================================================= */
@@ -112,11 +96,6 @@ function normalizePlayer(player) {
 async function startMatchmaking() {
   if (isCoolingDown()) {
     updateCooldownUI();
-
-    setStatus(
-      "You are still on cooldown."
-    );
-
     return;
   }
 
@@ -135,6 +114,9 @@ async function startMatchmaking() {
     return;
   }
 
+  /*
+   * Reset only match-specific state.
+   */
   state.matchId = null;
   state.opponent = null;
   state.playerReady = false;
@@ -175,6 +157,9 @@ async function startMatchmaking() {
       data
     );
 
+    /*
+     * Handle HTTP-level errors first.
+     */
     if (!response.ok) {
       if (data.cooldownUntil) {
         const serverCooldown =
@@ -201,6 +186,11 @@ async function startMatchmaking() {
       );
     }
 
+    /*
+     * The matchmaking worker can also return a
+     * successful response indicating that cooldown
+     * is active.
+     */
     if (data.status === "cooldown") {
       state.inQueue = false;
 
@@ -219,7 +209,6 @@ async function startMatchmaking() {
           state.newGameMode = true;
 
           beginCooldown();
-          renderCooldownPracticeMessage();
 
           return;
         }
@@ -230,38 +219,36 @@ async function startMatchmaking() {
       );
     }
 
-    state.playerId =
-      String(data.playerId);
+    /*
+     * Matchmaking succeeded. Store our player ID
+     * before handling either matched or queued state.
+     */
+    if (data.playerId != null) {
+      state.playerId =
+        String(data.playerId);
+    }
 
     /*
-     * IMPORTANT:
      * Normalize the player before sending it to
-     * the UI so display_name is used instead of username.
+     * the player UI.
      */
     if (data.player) {
-      const player =
-        normalizePlayer(
-          data.player
-        );
-
       updatePlayer(
-        player
+        normalizePlayer(data.player)
       );
     }
 
+    /*
+     * Match was immediately found.
+     */
     if (data.status === "matched") {
       state.matchId =
         data.matchId;
 
       state.inQueue = false;
 
-      const opponent =
-        normalizePlayer(
-          data.opponent
-        );
-
       updateOpponent(
-        opponent
+        normalizePlayer(data.opponent)
       );
 
       setStatus(
@@ -278,6 +265,9 @@ async function startMatchmaking() {
       return;
     }
 
+    /*
+     * Still waiting in the queue.
+     */
     if (elements.startMatchButton) {
       elements.startMatchButton.textContent =
         "In Queue";
@@ -295,12 +285,12 @@ async function startMatchmaking() {
       error
     );
 
+    state.inQueue = false;
+
     setStatus(
       error.message ||
       "Unable to connect to matchmaking."
     );
-
-    state.inQueue = false;
 
     if (isCoolingDown()) {
       updateCooldownUI();
@@ -321,6 +311,7 @@ async function startMatchmaking() {
     }
   }
 }
+
 
 /* =========================================================
    CHECK FOR MATCH
@@ -353,6 +344,9 @@ async function checkForMatch() {
       data
     );
 
+    /*
+     * Server-side cooldown.
+     */
     if (
       response.ok &&
       data.status === "cooldown"
@@ -379,8 +373,13 @@ async function checkForMatch() {
           return;
         }
       }
+
+      return;
     }
 
+    /*
+     * Match found while polling.
+     */
     if (
       response.ok &&
       data.status === "matched"
@@ -390,20 +389,8 @@ async function checkForMatch() {
 
       state.inQueue = false;
 
-      /*
-       * Normalize opponent here too.
-       *
-       * This is especially important for bots because
-       * the queue may return a bot object from the
-       * matchmaking Durable Object.
-       */
-      const opponent =
-        normalizePlayer(
-          data.opponent
-        );
-
       updateOpponent(
-        opponent
+        normalizePlayer(data.opponent)
       );
 
       setStatus(
@@ -425,10 +412,15 @@ async function checkForMatch() {
       "Match check error:",
       error
     );
+
   } finally {
     state.checkingMatch = false;
   }
 
+  /*
+   * Continue polling only while the player is
+   * genuinely still waiting for a match.
+   */
   if (
     !state.matchId &&
     state.inQueue &&
@@ -440,6 +432,7 @@ async function checkForMatch() {
     );
   }
 }
+
 
 /* =========================================================
    MATCH FOUND
@@ -460,10 +453,8 @@ function onMatchFound() {
     false;
 
   /*
-   * All room connections are owned by
-   * match-connection.js.
-   *
-   * Do not create another WebSocket here.
+   * match-connection.js owns the WebSocket.
+   * This function only begins the connection process.
    */
   connectToRoom(false);
 }
@@ -477,15 +468,17 @@ if (elements.startMatchButton) {
   elements.startMatchButton.addEventListener(
     "click",
     () => {
-
+      /*
+       * Cooldown always takes priority.
+       */
       if (isCoolingDown()) {
         updateCooldownUI();
-
         return;
       }
 
       /*
-       * No match yet = join queue.
+       * No match ID means the player is joining
+       * matchmaking.
        */
       if (!state.matchId) {
         if (!state.inQueue) {
@@ -496,21 +489,23 @@ if (elements.startMatchButton) {
       }
 
       /*
-       * Game is already running.
+       * Do not allow starting a match that has
+       * already started.
        */
       if (state.gameStarted) {
         return;
       }
 
       /*
-       * Already sent ready.
+       * Do not send start_ready more than once.
        */
       if (state.playerReady) {
         return;
       }
 
       /*
-       * Both players must be connected.
+       * The room must confirm the connection before
+       * the player can send start_ready.
        */
       if (!state.matchConnectionConfirmed) {
         setStatus(
@@ -520,6 +515,9 @@ if (elements.startMatchButton) {
         return;
       }
 
+      /*
+       * Make sure the actual WebSocket is open.
+       */
       if (
         !state.matchSocket ||
         state.matchSocket.readyState !==
@@ -536,8 +534,11 @@ if (elements.startMatchButton) {
         return;
       }
 
-      state.playerReady =
-        true;
+      /*
+       * Mark ready before sending so a rapid second
+       * click cannot send another start_ready message.
+       */
+      state.playerReady = true;
 
       elements.startMatchButton.disabled =
         true;
@@ -551,13 +552,15 @@ if (elements.startMatchButton) {
 
       const sent =
         sendRoomMessage({
-          type:
-            "start_ready"
+          type: "start_ready"
         });
 
+      /*
+       * If the message could not be sent, roll back
+       * playerReady so the user can try again.
+       */
       if (!sent) {
-        state.playerReady =
-          false;
+        state.playerReady = false;
 
         elements.startMatchButton.disabled =
           false;
@@ -572,6 +575,7 @@ if (elements.startMatchButton) {
     }
   );
 }
+
 
 /* =========================================================
    EXPORTS
