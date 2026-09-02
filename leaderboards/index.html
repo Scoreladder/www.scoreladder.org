@@ -1,272 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Ladder</title>
-<link rel="stylesheet" href="/style.css">
-
-<style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--base-color);
-    color: var(--text-color);
-    line-height: 1.5;
-}
-
-.page {
-    max-width: 1250px;
-    margin: 0 auto;
-    padding: 50px 24px 80px;
-}
-
-.page-title {
-    margin: 0;
-    text-align: center;
-    font-size: 2.7rem;
-    font-weight: 800;
-    letter-spacing: -1px;
-}
-
-.subtitle {
-    margin: 8px 0 45px;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 1rem;
-}
-
-/* =========================
-   LADDER GRID
-========================= */
-
-.ladders {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 28px;
-    align-items: start;
-}
-
-.ladder {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    overflow: hidden;
-}
-
-.ladder-header {
-    padding: 22px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.ladder-header h2 {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 750;
-    color: var(--text-color);
-}
-
-.ladder-header span {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
-
-/* =========================
-   LEADERBOARD
-========================= */
-
-.leaderboard {
-    max-height: 520px;
-    overflow-y: auto;
-}
-
-.player {
-    display: grid;
-    grid-template-columns: 55px 1fr auto;
-    align-items: center;
-    gap: 12px;
-
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
-
-    transition: background 0.15s ease;
-}
-
-.player:last-child {
-    border-bottom: none;
-}
-
-.player:hover {
-    background: var(--base-color);
-}
-
-.rank {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-align: center;
-}
-
-.player-info {
-    min-width: 0;
-}
-
-.username {
-    margin: 0;
-    font-weight: 650;
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.rating {
-    margin: 2px 0 0;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-}
-
-.score {
-    font-weight: 750;
-    font-size: 0.95rem;
-}
-
-/* Top 3 */
-
-.player:nth-child(1) .rank {
-    color: var(--accent);
-    font-size: 1.15rem;
-}
-
-.player:nth-child(2) .rank,
-.player:nth-child(3) .rank {
-    font-size: 1.05rem;
-}
-
-/* =========================
-   EMPTY STATE
-========================= */
-
-.empty {
-    padding: 55px 20px;
-    text-align: center;
-    color: var(--text-muted);
-}
-
-.empty p {
-    margin: 0;
-}
-
-/* =========================
-   SCROLLBAR
-========================= */
-
-.leaderboard::-webkit-scrollbar {
-    width: 7px;
-}
-
-.leaderboard::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.leaderboard::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 10px;
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 800px) {
-    .page {
-        padding: 35px 16px 60px;
-    }
-
-    .page-title {
-        font-size: 2.1rem;
-    }
-
-    .subtitle {
-        margin-bottom: 30px;
-    }
-
-    .ladders {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .ladder-header {
-        padding: 18px 20px;
-    }
-
-    .player {
-        padding: 15px 20px;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ladder</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
+
 
 <body>
 
+
 <div class="page">
+
 
     <h1 class="page-title">The Ladder</h1>
     <p class="subtitle">See who's at the top.</p>
 
+
     <div class="ladders">
+
 
         <!-- RW LADDER -->
         <section class="ladder">
 
+
             <div class="ladder-header">
                 <h2>RW Ladder</h2>
-                <span>Reading & Writing</span>
+                <span>Elo</span>
             </div>
 
-            <div class="leaderboard">
 
-                <div class="player">
-                    <div class="rank">1</div>
+            <div class="leaderboard" id="rw-leaderboard"></div>
 
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1200</p>
-                    </div>
-
-                    <div class="score">1200</div>
-                </div>
-
-                <div class="player">
-                    <div class="rank">2</div>
-
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1150</p>
-                    </div>
-
-                    <div class="score">1150</div>
-                </div>
-
-                <div class="player">
-                    <div class="rank">3</div>
-
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1100</p>
-                    </div>
-
-                    <div class="score">1100</div>
-                </div>
-
-            </div>
 
         </section>
 
@@ -274,58 +41,32 @@ body {
         <!-- MATH LADDER -->
         <section class="ladder">
 
+
             <div class="ladder-header">
                 <h2>Math Ladder</h2>
-                <span>Math</span>
+                <span>Elo</span>
             </div>
 
-            <div class="leaderboard">
 
-                <div class="player">
-                    <div class="rank">1</div>
+            <div class="leaderboard" id="math-leaderboard"></div>
 
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1200</p>
-                    </div>
-
-                    <div class="score">1200</div>
-                </div>
-
-                <div class="player">
-                    <div class="rank">2</div>
-
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1150</p>
-                    </div>
-
-                    <div class="score">1150</div>
-                </div>
-
-                <div class="player">
-                    <div class="rank">3</div>
-
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1100</p>
-                    </div>
-
-                    <div class="score">1100</div>
-                </div>
-
-            </div>
 
         </section>
 
+
     </div>
 
+
 </div>
+
 
 <div id="header"></div>
 <div id="footer"></div>
 
+
+<script type="module" src="script.js"></script>
 <script src="/components/layout.js" defer></script>
+
 
 </body>
 </html>

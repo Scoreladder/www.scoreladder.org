@@ -2,33 +2,52 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 60px;
+  padding-bottom: 80px;
 }
 
+/* ============================================================
+   BANNER
+   ============================================================ */
 .banner {
   width: 100%;
-  max-width: 520px;
-  height: 160px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  max-width: 560px;
+  height: 168px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  margin-bottom: -64px;
+  margin-bottom: -72px;
   flex-shrink: 0;
   background-size: cover;
   background-position: center;
+  position: relative;
 }
 
+/* Subtle inner shadow on banner bottom edge */
+.banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,.18) 100%);
+}
+
+/* ============================================================
+   PROFILE CARD
+   ============================================================ */
 .profile-card {
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  padding: 0 32px 32px;
+  padding: 0 36px 36px;
   box-shadow: var(--shadow-lg);
   text-align: center;
   position: relative;
 }
 
+/* ============================================================
+   AVATAR
+   ============================================================ */
 .avatar {
   width: 100px;
   height: 100px;
@@ -37,20 +56,25 @@ body {
   outline: 3px solid var(--accent);
   object-fit: cover;
   margin-top: -50px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   display: block;
   margin-left: auto;
   margin-right: auto;
   background: var(--secondary-color);
   box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 1;
 }
 
+/* ============================================================
+   NAME & BIO
+   ============================================================ */
 .profile-card h2 {
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 800;
   color: var(--text-color);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 #id {
@@ -63,18 +87,21 @@ body {
 .bio {
   font-size: 14px;
   color: var(--text-muted);
-  line-height: 1.6;
-  margin: 0 0 24px;
-  max-width: 380px;
+  line-height: 1.65;
+  margin: 0 0 28px;
+  max-width: 400px;
   margin-left: auto;
   margin-right: auto;
 }
 
+/* ============================================================
+   STAT GRID
+   ============================================================ */
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin: 0 0 20px;
+  margin: 0 0 22px;
   text-align: left;
 }
 
@@ -82,33 +109,38 @@ body {
   background: var(--primary-color);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 14px 16px;
   font-size: 12px;
   color: var(--text-muted);
   font-weight: 500;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 
 .stat:hover {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .stat b {
   display: block;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 800;
   color: var(--accent);
-  margin-top: 4px;
+  margin-top: 5px;
   font-family: var(--font-display);
+  line-height: 1.1;
 }
 
+/* ============================================================
+   QUESTION-TYPE BREAKDOWN
+   ============================================================ */
 .question-type-stats {
   background: var(--primary-color);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 18px 20px;
-  margin: 0 0 20px;
+  margin: 0 0 22px;
   text-align: left;
 }
 
@@ -167,12 +199,15 @@ body {
   margin: 0;
 }
 
+/* ============================================================
+   SOCIALS
+   ============================================================ */
 .socials {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: 26px;
 }
 
 .socials a {
@@ -183,17 +218,21 @@ body {
   background: var(--accent-soft);
   color: var(--accent);
   text-decoration: none;
-  border: 1px solid transparent;
-  transition: border-color 0.15s, transform 0.12s;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  transition: border-color 0.15s, transform 0.12s, background 0.15s;
 }
 
 .socials a:hover {
   border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   transform: translateY(-2px);
   text-decoration: none;
   color: var(--accent);
 }
 
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
 .profile-actions {
   display: flex;
   flex-direction: column;
@@ -202,7 +241,7 @@ body {
 
 .settings {
   width: 100%;
-  padding: 11px 20px;
+  padding: 12px 20px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
   background: var(--primary-color);
@@ -222,7 +261,7 @@ body {
 
 .logout {
   width: 100%;
-  padding: 11px 20px;
+  padding: 12px 20px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
   background: transparent;
@@ -235,12 +274,15 @@ body {
 }
 
 .logout:hover {
-  background: rgba(239, 68, 68, .08);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
   border-color: var(--danger);
   transform: translateY(-1px);
 }
 
-@media (max-width: 560px) {
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 580px) {
   .banner,
   .profile-card {
     max-width: 100%;

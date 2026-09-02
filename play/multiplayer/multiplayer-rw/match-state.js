@@ -481,19 +481,20 @@ export function stopCooldownTimer() {
   }
 }
 
-
 export function beginCooldown(
   cooldownUntil = null
 ) {
-
   const serverUntil =
     Number(cooldownUntil);
 
+  const now =
+    Date.now();
+
   const until =
     Number.isFinite(serverUntil) &&
-    serverUntil > Date.now()
+    serverUntil > now
       ? serverUntil
-      : Date.now() +
+      : now +
         COOLDOWN_DURATION_MS;
 
   saveCooldownUntil(until);
@@ -1063,16 +1064,10 @@ export function restoreActiveMatchState() {
   const storedResumeMatchId =
     getStoredResumeMatchId();
 
-  const logicalMatchId =
-    isLogicalMatchId(
-      storedResumeMatchId
-    )
-      ? storedResumeMatchId
-      : isLogicalMatchId(
-          saved?.matchId
-        )
-        ? saved.matchId.trim()
-        : null;
+const logicalMatchId =
+  isLogicalMatchId(saved?.matchId)
+    ? saved.matchId.trim()
+    : null;
 
   if (!logicalMatchId) {
     return false;
@@ -1383,4 +1378,28 @@ export function clearMatchTimer() {
 
   state.timeRemaining =
     0;
+}
+
+export function restoreCooldownState() {
+  const stored =
+    getStoredCooldownUntil();
+
+  if (
+    !Number.isFinite(stored) ||
+    stored <= Date.now()
+  ) {
+    clearCooldown();
+
+    return false;
+  }
+
+  state.cooldownUntil =
+    stored;
+
+  state.newGameMode =
+    true;
+
+  startCooldownTimer();
+
+  return true;
 }

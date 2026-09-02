@@ -124,6 +124,10 @@ async function startMatchmaking() {
   state.challengeSubmitted = false;
   state.submissionInProgress = false;
   state.matchConnectionConfirmed = false;
+  state.matchFinished = false;
+  state.resumeAvailable = false;
+  state.resumeMatchId = null;
+  state.newGameMode = false;
   state.inQueue = true;
 
   if (elements.startMatchButton) {
@@ -191,33 +195,37 @@ async function startMatchmaking() {
      * successful response indicating that cooldown
      * is active.
      */
-    if (data.status === "cooldown") {
-      state.inQueue = false;
+if (data.status === "cooldown") {
+  state.inQueue = false;
 
-      if (data.nextGameAt) {
-        const nextGameAt =
-          Number(data.nextGameAt);
+  if (data.nextGameAt) {
+    const nextGameAt =
+      Number(data.nextGameAt);
 
-        if (
-          Number.isFinite(nextGameAt) &&
-          nextGameAt > Date.now()
-        ) {
-          saveCooldownUntil(
-            nextGameAt
-          );
-
-          state.newGameMode = true;
-
-          beginCooldown();
-
-          return;
-        }
-      }
-
-      throw new Error(
-        "Game cooldown is active."
+    if (
+      Number.isFinite(nextGameAt) &&
+      nextGameAt > Date.now()
+    ) {
+      saveCooldownUntil(
+        nextGameAt
       );
+
+      state.newGameMode = true;
+
+      startCooldownTimer();
+
+      updateCooldownUI();
+
+      renderCooldownPracticeMessage();
+
+      return;
     }
+  }
+
+  updateCooldownUI();
+
+  return;
+}
 
     /*
      * Matchmaking succeeded. Store our player ID

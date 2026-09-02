@@ -651,6 +651,7 @@ async function logout() {
   }
 }
 
+window.logout = logout;
 
 // ============================================================
 // START

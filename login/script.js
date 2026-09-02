@@ -64,6 +64,10 @@ async function loadUser() {
         .getElementById("userSection")
         ?.classList.add("hidden");
 
+      document
+        .getElementById("usernameSection")
+        ?.style.setProperty("display", "none");
+
       return null;
     }
 
@@ -74,7 +78,34 @@ async function loadUser() {
       user
     );
 
-    // Show logged-in state
+    // Make the complete user object available to the page.
+    window.currentUser = user;
+
+    // Only new Google users without a username
+    // should see the username selection section.
+    if (
+      (window.location.pathname === "/login" ||
+        window.location.pathname === "/login/") &&
+      user.id?.startsWith("google_") &&
+      !user.username &&
+      !user.display_name
+    ) {
+      document
+        .getElementById("loginSection")
+        ?.classList.add("hidden");
+
+      document
+        .getElementById("userSection")
+        ?.classList.add("hidden");
+
+      document
+        .getElementById("usernameSection")
+        ?.style.setProperty("display", "block");
+
+      return user;
+    }
+
+    // Show logged-in state.
     document
       .getElementById("loginSection")
       ?.classList.add("hidden");
@@ -83,7 +114,11 @@ async function loadUser() {
       .getElementById("userSection")
       ?.classList.remove("hidden");
 
-    // Basic account information
+    document
+      .getElementById("usernameSection")
+      ?.style.setProperty("display", "none");
+
+    // Basic account information.
     const username =
       document.getElementById("username");
 
@@ -102,28 +137,44 @@ async function loadUser() {
         user.email || "";
     }
 
-    // Discord avatar
+    // Profile avatar.
     const avatar =
       document.getElementById("avatar");
 
     if (avatar) {
-      if (user.avatar) {
+      if (user.id?.startsWith("discord_")) {
+        // Discord avatar.
         const discordId =
-          user.id.replace(
-            "discord_",
-            ""
-          );
+          user.id.replace("discord_", "");
 
-        avatar.src =
-          `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`;
+        if (user.avatar) {
+          avatar.src =
+            `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`;
+        } else {
+          avatar.src =
+            "https://cdn.discordapp.com/embed/avatars/0.png";
+        }
+
+      } else if (user.id?.startsWith("google_")) {
+        // Google profile picture.
+        if (user.avatar) {
+          avatar.src = user.avatar;
+        } else {
+          avatar.src =
+            "/assets/default-avatar.png";
+        }
+
       } else {
+        // Unknown provider / fallback.
         avatar.src =
-          "https://cdn.discordapp.com/embed/avatars/0.png";
+          "/assets/default-avatar.png";
       }
-    }
 
-    // Make the complete user object available to the page
-    window.currentUser = user;
+      avatar.onerror = () => {
+        avatar.src =
+          "/assets/default-avatar.png";
+      };
+    }
 
     // If already logged in and on the login page,
     // send the user to their profile.
@@ -176,6 +227,10 @@ async function loadUser() {
       .getElementById("userSection")
       ?.classList.add("hidden");
 
+    document
+      .getElementById("usernameSection")
+      ?.style.setProperty("display", "none");
+
     return null;
   }
 }
@@ -201,6 +256,93 @@ async function logout() {
     }
 
     window.location.reload();
+  }
+}
+
+async function setUsername() {
+  const session =
+    sessionStorage.getItem(
+      LOCAL_SESSION_KEY
+    );
+
+  const input =
+    document.getElementById("usernameInput");
+
+  const error =
+    document.getElementById("usernameError");
+
+  const button =
+    document.getElementById("usernameButton");
+
+  const username =
+    input?.value.trim();
+
+  if (!username) {
+    error.textContent =
+      "Please enter a username.";
+    return;
+  }
+
+  if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
+    error.textContent =
+      "Username must be 3–20 characters and can only contain letters, numbers, and underscores.";
+    return;
+  }
+
+  button.disabled = true;
+  error.textContent = "";
+
+  try {
+    const res = await fetch(
+      `${API}/onboarding/username?session=${encodeURIComponent(session)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      error.textContent =
+        data.error ||
+        "Could not set username.";
+
+      button.disabled = false;
+      return;
+    }
+
+    const profileUrl =
+      new URL(
+        `${window.location.origin}/profile/`
+      );
+
+    if (session) {
+      profileUrl.searchParams.set(
+        "session",
+        session
+      );
+    }
+
+    window.location.href =
+      profileUrl.toString();
+
+  } catch (e) {
+    console.error(
+      "Failed to set username:",
+      e
+    );
+
+    error.textContent =
+      "Something went wrong. Please try again.";
+
+    button.disabled = false;
   }
 }
 

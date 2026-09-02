@@ -127,7 +127,7 @@ export function createDisconnectManager({
      */
     if (
       state.matchId &&
-      !state.challengeSubmitted &&
+      !state.matchFinished &&
       !state.newGameMode
     ) {
       saveActiveMatchState();

@@ -7,7 +7,14 @@ import {
   saveActiveMatchState,
   clearActiveMatchState,
   stopMatchTimer,
-  clearMatchTimer
+  clearMatchTimer,
+  getCooldownRemainingMs,
+  formatCountdown,
+  isCoolingDown,
+  startCooldownTimer,
+  beginCooldown,
+  clearCooldown,
+  COOLDOWN_DURATION_MS
 } from "./match-state.js";
 
 import {
@@ -19,7 +26,8 @@ import {
   appendTopicRow,
   updateOpponent,
   refreshPlayerStats,
-  loadRecentMatches
+  loadRecentMatches,
+  updateCooldownUI
 } from "./match-ui.js";
 
 import {
@@ -44,19 +52,30 @@ export function handleGameStart(
   );
 
   /*
-   * Normalize both supported payload formats:
+   * A match that has already received its final result
+   * must never be started again.
    *
-   * 1. game_start:
-   *    {
-   *      questions: [...],
-   *      startTime: ...
-   *    }
-   *
-   * 2. Direct question array:
-   *    [...]
+   * This protects against a stale game_start message
+   * arriving after handleGameResult() has already
+   * finished the match and stopped its timer.
    */
+  if (
+    state.matchFinished
+  ) {
+    console.warn(
+      "Ignoring game_start for a match that is already finished.",
+      {
+        matchId: state.matchId,
+        isResume,
+        data
+      }
+    );
+
+    return;
+  }
+
   const questions =
-    Array.isArray(data)
+      Array.isArray(data)
       ? data
       : data &&
         Array.isArray(data.questions)
@@ -77,18 +96,34 @@ export function handleGameStart(
   }
 
   /*
-   * Preserve the authoritative server start time.
+   * The server's startTime is authoritative.
+   *
+   * For a direct question-array payload, use the
+   * already-restored matchStartedAt.
    */
-  const startTime =
+  const rawStartTime =
     Array.isArray(data)
-      ? (
-          Number.isFinite(
-            Number(state.matchStartedAt)
-          )
-            ? Number(state.matchStartedAt)
-            : null
-        )
-      : Number(data.startTime);
+      ? state.matchStartedAt
+      : data?.startTime;
+
+  const startTime =
+    Number(rawStartTime);
+
+  if (
+    !Number.isFinite(startTime) ||
+    startTime <= 0
+  ) {
+    console.error(
+      "Invalid match start time:",
+      rawStartTime
+    );
+
+    setStatus(
+      "Unable to start match timer."
+    );
+
+    return;
+  }
 
   if (
     questions.length !==
@@ -163,27 +198,11 @@ export function handleGameStart(
   state.inQueue = false;
   state.playerReady = false;
   state.gameStarted = true;
-
-  /*
-   * matchFinished is the authoritative finished-state flag.
-   *
-   * A new/resumed game is active, so it must not remain
-   * marked as finished from a previous match.
-   */
   state.matchFinished = false;
-
   state.newGameMode = false;
   state.reconnecting = false;
   state.matchConnectionConfirmed = true;
 
-  /*
-   * Do NOT reset challengeSubmitted during a resume.
-   *
-   * A reconnect can receive game_start after the player
-   * has already submitted.
-   *
-   * submission_received is what confirms a submission.
-   */
   if (!isResume) {
     state.challengeSubmitted = false;
     state.submissionInProgress = false;
@@ -191,18 +210,33 @@ export function handleGameStart(
 
   /*
    * ---------------------------------------------------------
-   * MATCH START TIME
+   * AUTHORITATIVE MATCH START
    * ---------------------------------------------------------
    */
 
-  if (
-    Number.isFinite(
-      Number(startTime)
-    )
-  ) {
-    state.matchStartedAt =
-      Number(startTime);
-  }
+  state.matchStartedAt =
+    startTime;
+
+  state.challengeDeadline =
+    startTime +
+    MATCH_DURATION_MS;
+
+  /*
+   * Calculate immediately from the deadline.
+   *
+   * This prevents the displayed timer from starting at
+   * a locally assumed 13:00.
+   */
+  state.timeRemaining =
+    Math.max(
+      0,
+      Math.ceil(
+        (
+          state.challengeDeadline -
+          Date.now()
+        ) / 1000
+      )
+    );
 
   /*
    * ---------------------------------------------------------
@@ -245,32 +279,9 @@ export function handleGameStart(
    * ---------------------------------------------------------
    */
 
-  if (
-    Number.isFinite(
-      Number(startTime)
-    )
-  ) {
-    startMatchTimer(
-      Number(startTime)
-    );
-  } else {
-    console.error(
-      "Missing valid match start time:",
-      startTime
-    );
-
-    setStatus(
-      "Unable to start match timer."
-    );
-
-    return;
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * STATUS
-   * ---------------------------------------------------------
-   */
+  startMatchTimer(
+    startTime
+  );
 
   setStatus(
     state.challengeSubmitted
@@ -289,16 +300,13 @@ export function handleGameStart(
       : "NEW GAME STARTED:",
     {
       matchId: state.matchId,
+      matchStartedAt: state.matchStartedAt,
+      challengeDeadline: state.challengeDeadline,
+      timeRemaining: state.timeRemaining,
       questionCount: state.questions.length,
       selectedAnswers: state.selectedAnswers,
       challengeSubmitted:
         state.challengeSubmitted,
-      submissionInProgress:
-        state.submissionInProgress,
-      challengeDeadline:
-        state.challengeDeadline,
-      timeRemaining:
-        state.timeRemaining,
       matchFinished:
         state.matchFinished
     }
@@ -348,13 +356,41 @@ export function startResumedGame(
 export function startMatchTimer(
   serverStartTime
 ) {
+  /*
+   * Never start a timer for a match that has already
+   * been definitively finished.
+   *
+   * This is intentionally checked here as well as in
+   * handleGameStart(), because other connection/reconnect
+   * code can call startMatchTimer() directly.
+   */
+  if (
+    state.matchFinished ||
+    !state.gameStarted
+  ) {
+    console.warn(
+      "Ignoring timer start because match is not active.",
+      {
+        matchId: state.matchId,
+        gameStarted: state.gameStarted,
+        matchFinished: state.matchFinished,
+        serverStartTime
+      }
+    );
+
+    stopMatchTimer();
+
+    return;
+  }
+
   stopMatchTimer();
 
   const startTime =
     Number(serverStartTime);
 
   if (
-    !Number.isFinite(startTime)
+    !Number.isFinite(startTime) ||
+    startTime <= 0
   ) {
     console.error(
       "Invalid server start time:",
@@ -368,13 +404,98 @@ export function startMatchTimer(
     return;
   }
 
+  state.matchStartedAt =
+    startTime;
+
   state.challengeDeadline =
     startTime +
     MATCH_DURATION_MS;
+  
+  state.matchStartedAt =
+    startTime;
 
-  state.gameStarted = true;
+  const update = () => {
+    /*
+     * The match may have finished while this interval
+     * was running.
+     *
+     * Immediately kill the timer instead of allowing
+     * another tick or automatic submission.
+     */
+    if (
+      state.matchFinished ||
+      !state.gameStarted
+    ) {
+      stopMatchTimer();
+      return;
+    }
 
-  state.timeRemaining =
+    const remainingMs =
+      state.challengeDeadline -
+      Date.now();
+
+    const remainingSeconds =
+      Math.max(
+        0,
+        Math.ceil(
+          remainingMs / 1000
+        )
+      );
+
+    state.timeRemaining =
+      remainingSeconds;
+
+    updateMatchTimer();
+
+    if (
+      remainingMs <= 0
+    ) {
+      stopMatchTimer();
+
+      if (
+        state.gameStarted &&
+        !state.challengeSubmitted &&
+        !state.submissionInProgress &&
+        !state.matchFinished
+      ) {
+        submitMatch(true);
+      }
+    }
+  };
+
+  /*
+   * Update immediately rather than waiting for the first
+   * interval tick.
+   */
+  update();
+
+  /*
+   * update() can stop the timer immediately if the match
+   * became inactive between the checks above.
+   */
+  if (
+    state.matchFinished ||
+    !state.gameStarted
+  ) {
+    return;
+  }
+
+  state.timerInterval =
+    setInterval(
+      update,
+      250
+    );
+}
+
+function updateMatchTimer() {
+  if (
+    !elements.timerDiv ||
+    !state.gameStarted
+  ) {
+    return;
+  }
+
+  const remainingSeconds =
     Math.max(
       0,
       Math.ceil(
@@ -385,75 +506,13 @@ export function startMatchTimer(
       )
     );
 
-  updateMatchTimer();
-
-  state.timerInterval =
-    setInterval(
-      () => {
-        const remaining =
-          Math.max(
-            0,
-            Math.ceil(
-              (
-                state.challengeDeadline -
-                Date.now()
-              ) / 1000
-            )
-          );
-
-        state.timeRemaining =
-          remaining;
-
-        updateMatchTimer();
-
-        if (
-          remaining <= 0
-        ) {
-          stopMatchTimer();
-
-          if (
-            state.gameStarted &&
-            !state.challengeSubmitted &&
-            !state.submissionInProgress &&
-            !state.matchFinished
-          ) {
-            submitMatch(true);
-          }
-        }
-      },
-      250
-    );
-}
-
-
-function updateMatchTimer() {
-  if (
-    !elements.timerDiv ||
-    !state.gameStarted
-  ) {
-    return;
-  }
-
-  const safeSeconds =
-    Math.max(
-      0,
-      Math.ceil(
-        state.timeRemaining
-      )
-    );
-
-  const minutes =
-    Math.floor(
-      safeSeconds / 60
-    );
-
-  const seconds =
-    safeSeconds % 60;
+  state.timeRemaining =
+    remainingSeconds;
 
   elements.timerDiv.textContent =
-    `${minutes}:${String(
-      seconds
-    ).padStart(2, "0")}`;
+    formatCountdown(
+      remainingSeconds
+    );
 }
 
 
@@ -462,6 +521,7 @@ function updateMatchTimer() {
    ========================================================= */
 
 export function renderQuestions() {
+  console.log("RENDER QUESTIONS CALLED");
   if (
     !elements.questionsDiv
   ) {
@@ -711,6 +771,26 @@ export function selectAnswer(
   questionIndex,
   choiceIndex
 ) {
+  console.log("SELECT ANSWER CLICKED", {
+    questionIndex,
+    choiceIndex,
+    gameStarted: state.gameStarted,
+    challengeSubmitted: state.challengeSubmitted,
+    submissionInProgress: state.submissionInProgress,
+    matchFinished: state.matchFinished,
+    answerSelectionLocked: state.answerSelectionLocked,
+    selectedAnswers: state.selectedAnswers
+  });
+
+  if (
+    !state.gameStarted ||
+    state.challengeSubmitted ||
+    state.submissionInProgress ||
+    state.matchFinished
+  ) {
+    console.warn("ANSWER BLOCKED");
+    return;
+  }
   /*
    * HARD CLIENT-SIDE LOCK.
    *
@@ -737,6 +817,7 @@ export function selectAnswer(
   state.selectedAnswers[
     questionIndex
   ] = choiceIndex;
+  console.log("ANSWER STATE:", [...state.selectedAnswers]);
 
   const card =
     elements.questionsDiv?.children[
@@ -768,6 +849,10 @@ export function selectAnswer(
     ].classList.add(
       "selected"
     );
+    console.log(
+  "SELECTED CLASS:",
+  buttons[choiceIndex].className
+);
   }
 
   saveActiveMatchState();
@@ -975,11 +1060,9 @@ export async function handleGameResult(
     data
   );
 
-  /*
-   * =========================================================
-   * MATCH IS DEFINITIVELY FINISHED
-   * =========================================================
-   */
+  /* =========================================================
+     MATCH IS DEFINITIVELY FINISHED
+     ========================================================= */
 
   state.gameStarted = false;
   state.matchFinished = true;
@@ -994,18 +1077,25 @@ export async function handleGameResult(
   state.reconnecting = false;
   state.resumeInProgress = false;
 
-  /*
-   * Stop the local match timer.
-   */
+  /* =========================================================
+     STOP MATCH TIMER
+     ========================================================= */
+
   clearMatchTimer();
 
-  /*
-   * Delete persisted resume state.
-   */
+  /* =========================================================
+     DELETE RESUME STATE
+     ========================================================= */
+
   clearActiveMatchState();
 
   state.resumeAvailable = false;
   state.resumeMatchId = null;
+
+
+  /* =========================================================
+     CALCULATE RESULT
+     ========================================================= */
 
   const yourCorrect =
     Number(
@@ -1044,31 +1134,52 @@ export async function handleGameResult(
       `Match complete: ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
   }
 
+  /* =========================================================
+     HIDE SUBMIT BUTTON
+     ========================================================= */
+
   if (elements.submitButton) {
     elements.submitButton.disabled = true;
+
     elements.submitButton.style.display =
       "none";
   }
+
+  /* =========================================================
+     COOLDOWN BUTTON STATE
+     ========================================================= */
 
   if (elements.startMatchButton) {
     elements.startMatchButton.style.display =
       "";
 
     elements.startMatchButton.disabled =
-      false;
-
-    elements.startMatchButton.removeAttribute(
-      "disabled"
-    );
-
-    elements.startMatchButton.textContent =
-      "Join Queue";
+      true;
   }
+
+    /* =========================================================
+     START COOLDOWN
+     ========================================================= */
+
+  beginCooldown(
+    data.cooldownUntil ||
+    data.nextGameAt ||
+    null
+  );
+
+  /* =========================================================
+     RENDER RESULTS
+     ========================================================= */
 
   showResult(message);
 
   renderTopicPerformance(data);
+
   renderResults(data);
+
+  /* =========================================================
+     STATUS
+     ========================================================= */
 
   if (
     data.statsRecorded &&
@@ -1084,16 +1195,30 @@ export async function handleGameResult(
     );
   } else {
     setStatus(
-      "Match complete. Refreshing stats..."
+    `Match complete. Cooldown: ${countdown} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+
     );
   }
 
+  /* =========================================================
+     RENDER COOLDOWN
+     ========================================================= */
+
+  updateCooldownDisplay();
+
+  /* =========================================================
+     REFRESH USER DATA
+     ========================================================= */
+
   await refreshPlayerStats();
+
   await loadRecentMatches();
 
-  setStatus(
-    "Match complete. Ready to join another match."
-  );
+  /*
+   * Refresh the cooldown display after async work so
+   * the button remains controlled by the cooldown state.
+   */
+  updateCooldownDisplay();
 }
 
 
@@ -1421,6 +1546,83 @@ function renderResults(
   );
 }
 
+/* =========================================================
+   COOLDOWN DISPLAY
+   ========================================================= */
+
+function getCooldownDisplay() {
+  let element =
+    document.getElementById("cooldown-display");
+
+  if (!element) {
+    element =
+      document.createElement("div");
+
+    element.id =
+      "cooldown-display";
+
+    element.style.marginTop =
+      "10px";
+
+    element.style.fontWeight =
+      "600";
+
+    elements.startMatchButton
+      ?.parentElement
+      ?.appendChild(element);
+  }
+
+  return element;
+}
+
+
+export function updateCooldownDisplay() {
+  const element =
+    getCooldownDisplay();
+
+  if (!element) {
+    return;
+  }
+
+  const remainingMs =
+    getCooldownRemainingMs();
+
+  if (remainingMs > 0) {
+    element.textContent =
+      `Next match available in ${formatCountdown(
+        remainingMs / 1000
+      )}`;
+
+    element.style.display =
+      "block";
+
+if (elements.startMatchButton) {
+  elements.startMatchButton.disabled =
+    true;
+
+  elements.startMatchButton.textContent =
+    `Cooldown: ${formatCountdown(
+      remainingMs / 1000
+    )}`;
+}
+
+    return;
+  }
+
+  element.textContent =
+    "You can join another match.";
+
+  element.style.display =
+    "block";
+
+  if (elements.startMatchButton) {
+    elements.startMatchButton.disabled =
+      false;
+
+    elements.startMatchButton.textContent =
+      "Join Queue";
+  }
+}
 
 /* =========================================================
    NEW GAME BUTTON
@@ -1437,12 +1639,25 @@ if (
         return;
       }
 
-      if (
-        state.cooldownUntil >
-        Date.now()
-      ) {
-        return;
-      }
+if (
+  state.cooldownUntil &&
+  state.cooldownUntil > Date.now()
+) {
+  const countdown =
+    formatCountdown(
+      Math.ceil(
+        getCooldownRemainingMs() / 1000
+      )
+    );
+
+  setStatus(
+    `You can play again in ${countdown}. Go practice your weakest topics on Khan Academy in the meantime.`
+  );
+
+  updateCooldownUI();
+
+  return;
+}
 
       state.newGameMode = false;
 
@@ -1475,12 +1690,49 @@ if (
       }
 
       setStatus(
-        "Cooldown complete. You can join the queue."
+        "You can join the queue."
       );
     }
   );
 }
 
+window.addEventListener(
+  "scoreladder:cooldown-started",
+  () => {
+    updateCooldownDisplay();
+  }
+);
+
+
+window.addEventListener(
+  "scoreladder:cooldown-tick",
+  () => {
+    updateCooldownUI();
+
+    if (
+      !state.gameStarted &&
+      state.cooldownUntil > Date.now()
+    ) {
+      const countdown =
+        formatCountdown(
+          Math.ceil(
+            getCooldownRemainingMs() / 1000
+          )
+        );
+
+      setStatus(
+        `Match complete. Cooldown: ${countdown} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+      );
+    }
+  }
+);
+
+window.addEventListener(
+  "scoreladder:cooldown-complete",
+  () => {
+    updateCooldownUI();
+  }
+);
 
 /* =========================================================
    EXPORTS

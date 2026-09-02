@@ -115,273 +115,280 @@ export function createReconnectManager({
      ROOM STATE
      ======================================================= */
 
-  function handleRoomState(data) {
-    console.log(
-      "Room state:",
-      {
-        logicalMatchId:
-          state.matchId,
+function handleRoomState(data) {
+  console.log(
+    "Room state:",
+    {
+      logicalMatchId:
+        state.matchId,
 
-        durableObjectId:
-          data.matchId,
+      durableObjectId:
+        data.matchId,
 
-        gameStarted:
-          data.gameStarted,
+      gameStarted:
+        data.gameStarted,
 
-        connectedCount:
-          data.connectedCount,
+      connectedCount:
+        data.connectedCount,
 
-        roomStatus:
-          data.roomStatus
-      }
+      roomStatus:
+        data.roomStatus
+    }
+  );
+
+  /*
+   * NEVER replace state.matchId with data.matchId.
+   *
+   * data.matchId is the Durable Object's internal ID.
+   */
+  if (
+    Array.isArray(data.registeredPlayers) &&
+    state.playerId &&
+    !data.registeredPlayers
+      .map(String)
+      .includes(
+        String(state.playerId)
+      )
+  ) {
+    console.error(
+      "Current player is not registered in room."
     );
 
+    clearActiveMatchState();
+
+    state.matchId =
+      null;
+
+    state.gameStarted =
+      false;
+
+    clearReconnectState();
+
+    enableQueueButton();
+
+    return;
+  }
+
+
+  /* =======================================================
+     FINISHED
+     ======================================================= */
+
+  if (
+    data.matchFinished ||
+    data.roomStatus === "finished"
+  ) {
+    clearActiveMatchState();
+
     /*
-     * NEVER replace state.matchId with data.matchId.
+     * The match is permanently finished.
+     * Remove the logical match ID from live state so
+     * it cannot be accidentally resumed or reused.
+     */
+    state.matchId =
+      null;
+
+    state.gameStarted =
+      false;
+
+    state.matchFinished =
+      true;
+
+    state.reconnecting =
+      false;
+
+    state.resumeInProgress =
+      false;
+
+    state.resumeAvailable =
+      false;
+
+    state.resumeMatchId =
+      null;
+
+    enableQueueButton();
+
+    return;
+  }
+
+
+  /* =======================================================
+     ACTIVE GAME
+     ======================================================= */
+
+  if (data.gameStarted) {
+    state.gameStarted =
+      true;
+
+    state.matchFinished =
+      false;
+
+    state.inQueue =
+      false;
+
+    state.playerReady =
+      false;
+
+    state.newGameMode =
+      false;
+
+    state.matchConnectionConfirmed =
+      true;
+
+    /*
+     * Do NOT clear resumeInProgress/reconnecting here
+     * until the game has actually been restored.
      *
-     * data.matchId is the Durable Object's internal ID.
+     * The game_start and answer_state messages complete
+     * the restoration process.
+     */
+
+    /*
+     * Only restore the authoritative server start time.
      */
     if (
-      Array.isArray(data.registeredPlayers) &&
-      state.playerId &&
-      !data.registeredPlayers
-        .map(String)
-        .includes(
-          String(state.playerId)
-        )
+      Number.isFinite(
+        Number(data.startTime)
+      ) &&
+      Number(data.startTime) > 0
     ) {
-      console.error(
-        "Current player is not registered in room."
-      );
-
-      clearActiveMatchState();
-
-      state.matchId =
-        null;
-
-      state.gameStarted =
-        false;
-
-      clearReconnectState();
-
-      enableQueueButton();
-
-      return;
+      state.matchStartedAt =
+        Number(data.startTime);
     }
 
-
-    /* =====================================================
-       FINISHED
-       ===================================================== */
+    /*
+     * IMPORTANT:
+     *
+     * Do NOT reset challengeSubmitted.
+     *
+     * The locally persisted value must survive the initial
+     * room_state message. The server's answer_state and
+     * submission_received messages will correct it when
+     * authoritative information arrives.
+     */
 
     if (
-      data.matchFinished ||
-      data.roomStatus === "finished"
+      typeof startGame ===
+      "function"
     ) {
-      clearActiveMatchState();
+      startGame(
+        Array.isArray(data.questions)
+          ? data.questions
+          : state.questions,
 
-      state.gameStarted =
-        false;
+        data.startTime,
 
-      state.matchFinished =
-        true;
-
-      state.reconnecting =
-        false;
-
-      state.resumeInProgress =
-        false;
-
-      state.resumeAvailable =
-        false;
-
-      state.resumeMatchId =
-        null;
-
-      return;
-    }
-
-
-    /* =====================================================
-       ACTIVE GAME
-       ===================================================== */
-
-    if (data.gameStarted) {
-      state.gameStarted =
-        true;
-
-      state.matchFinished =
-        false;
-
-      state.inQueue =
-        false;
-
-      state.playerReady =
-        false;
-
-      state.newGameMode =
-        false;
-
-      state.matchConnectionConfirmed =
-        true;
-
-      state.reconnecting =
-        false;
-
+        true
+      );
+    } else {
       /*
-       * Restore the authoritative server start time.
+       * Fallback only.
        */
+      if (
+        elements.startMatchButton
+      ) {
+        elements.startMatchButton.disabled =
+          true;
+
+        elements.startMatchButton.style.display =
+          "none";
+      }
+
+      if (
+        elements.submitButton
+      ) {
+        elements.submitButton.style.display =
+          "block";
+
+        elements.submitButton.textContent =
+          state.challengeSubmitted
+            ? "Answers Submitted"
+            : "Submit Answers";
+
+        elements.submitButton.disabled =
+          state.challengeSubmitted;
+      }
+
       if (
         Number.isFinite(
           Number(data.startTime)
-        )
+        ) &&
+        typeof startMatchTimer ===
+          "function"
       ) {
-        state.matchStartedAt =
-          Number(data.startTime);
-
-        state.challengeDeadline =
-          Number(data.startTime) +
-          MATCH_DURATION_MS;
-
-        state.timeRemaining =
-          Math.max(
-            0,
-            Math.ceil(
-              (
-                state.challengeDeadline -
-                Date.now()
-              ) / 1000
-            )
-          );
-      }
-
-      /*
-       * game.js owns rebuilding the actual game UI.
-       *
-       * IMPORTANT:
-       * Do not reset challengeSubmitted here.
-       *
-       * game.js preserves the locally-known submission
-       * state during resume, while answer_state /
-       * submission_received provides authoritative state.
-       */
-      if (
-        typeof startGame ===
-        "function"
-      ) {
-        startGame(
-          Array.isArray(data.questions)
-            ? data.questions
-            : state.questions,
-
-          data.startTime,
-
-          true
-        );
-      } else {
-        /*
-         * Fallback only.
-         */
-        if (
-          elements.startMatchButton
-        ) {
-          elements.startMatchButton.disabled =
-            true;
-
-          elements.startMatchButton.style.display =
-            "none";
-        }
-
-        if (
-          elements.submitButton
-        ) {
-          elements.submitButton.style.display =
-            "block";
-
-          elements.submitButton.textContent =
-            state.challengeSubmitted
-              ? "Answers Submitted"
-              : "Submit Answers";
-
-          elements.submitButton.disabled =
-            state.challengeSubmitted;
-        }
-
-        if (
-          Number.isFinite(
-            Number(data.startTime)
-          ) &&
-          typeof startMatchTimer ===
-            "function"
-        ) {
-          startMatchTimer(
-            Number(data.startTime)
-          );
-        }
-
-        setStatus(
-          state.challengeSubmitted
-            ? "Answers submitted. Waiting for opponent..."
-            : "Match resumed. Continue where you left off."
-        );
-
-        saveActiveMatchState();
-      }
-
-      return;
-    }
-
-
-    /* =====================================================
-       BOTH PLAYERS CONNECTED, GAME NOT STARTED
-       ===================================================== */
-
-    if (
-      data.opponentConnected ||
-      data.connectedCount === 2 ||
-      data.roomStatus === "both_connected"
-    ) {
-      if (!state.gameStarted) {
-        clearReconnectState();
-
-        if (
-          elements.startMatchButton
-        ) {
-          elements.startMatchButton.disabled =
-            false;
-
-          elements.startMatchButton.style.display =
-            "block";
-
-          elements.startMatchButton.textContent =
-            "Start Match";
-        }
-
-        setStatus(
-          "Both players connected. Ready to start."
+        startMatchTimer(
+          Number(data.startTime)
         );
       }
-
-      return;
-    }
-
-
-    /* =====================================================
-       ONLY ONE PLAYER CONNECTED
-       ===================================================== */
-
-    if (
-      data.roomStatus ===
-      "waiting_for_opponent"
-    ) {
-      clearReconnectState();
 
       setStatus(
-        "Waiting for opponent to connect..."
+        state.challengeSubmitted
+          ? "Answers submitted. Waiting for opponent..."
+          : "Match resumed. Continue where you left off."
       );
+
+      saveActiveMatchState();
     }
+
+    return;
   }
 
+
+  /* =======================================================
+     BOTH PLAYERS CONNECTED, GAME NOT STARTED
+     ======================================================= */
+
+  if (
+    data.opponentConnected ||
+    data.connectedCount === 2 ||
+    data.roomStatus === "both_connected"
+  ) {
+    if (!state.gameStarted) {
+      clearReconnectState();
+
+      if (
+        elements.startMatchButton
+      ) {
+        elements.startMatchButton.disabled =
+          false;
+
+        elements.startMatchButton.style.display =
+          "block";
+
+        elements.startMatchButton.textContent =
+          "Start Match";
+      }
+
+      setStatus(
+        "Both players connected. Ready to start."
+      );
+    }
+
+    return;
+  }
+
+
+  /* =======================================================
+     ONLY ONE PLAYER CONNECTED
+     ======================================================= */
+
+  if (
+    data.roomStatus ===
+    "waiting_for_opponent"
+  ) {
+    /*
+     * The room itself is still valid.
+     *
+     * Do not clear the persisted match merely because
+     * the opponent has not connected yet.
+     */
+    clearReconnectState();
+
+    setStatus(
+      "Waiting for opponent to connect..."
+    );
+  }
+}
 
   /* =======================================================
      CONNECT TO ROOM
@@ -484,21 +491,22 @@ export function createReconnectManager({
         state.matchConnectionConfirmed =
           true;
 
-        if (isResume) {
-          state.reconnecting =
-            true;
+if (isResume) {
+  setStatus(
+    "Reconnected. Restoring your match..."
+  );
 
-          setStatus(
-            "Reconnected. Restoring your match..."
-          );
-
-          /*
-           * Ask the Durable Object for authoritative state.
-           */
-          sendRoomMessage({
-            type:
-              "request_room_state"
-          });
+  /*
+   * The WebSocket is now successfully connected.
+   * Keep resumeInProgress/reconnecting active until
+   * room_state or game_start confirms the match state.
+   *
+   * Do not start another reconnect from here.
+   */
+  sendRoomMessage({
+    type:
+      "request_room_state"
+  });
         } else {
           state.reconnecting =
             false;
@@ -766,84 +774,218 @@ export function createReconnectManager({
              ANSWER STATE
              =============================================== */
 
-          case "answer_state": {
-            /*
-             * Ignore answer state belonging to another player.
-             */
-            if (
-              data.playerId !== undefined &&
-              data.playerId !== null &&
-              String(data.playerId) !==
-                String(state.playerId)
-            ) {
-              return;
-            }
+/* ===============================================
+   ANSWER STATE
+   =============================================== */
 
-            /*
-             * Restore the server's current answer state.
-             */
-            if (
-              Array.isArray(data.answers)
-            ) {
-              state.selectedAnswers =
-                [
-                  ...data.answers
-                ];
-            }
+case "answer_state": {
+  /*
+   * Ignore answer state belonging to another player.
+   */
+  if (
+    data.playerId !== undefined &&
+    data.playerId !== null &&
+    String(data.playerId) !==
+      String(state.playerId)
+  ) {
+    return;
+  }
 
-            /*
-             * The server is authoritative about submission.
-             */
-            if (
-              data.submitted === true
-            ) {
-              state.challengeSubmitted =
-                true;
 
-              state.submissionInProgress =
-                false;
+  /* -------------------------------------------------
+     RESTORE ANSWERS
+     -------------------------------------------------
 
-              if (
-                typeof setAnswerSelectionLocked ===
-                "function"
-              ) {
-                setAnswerSelectionLocked(
-                  true
-                );
-              }
+     The server may send either:
 
-              setStatus(
-                "Answers submitted. Waiting for the match to finish..."
-              );
-            } else {
-              /*
-               * Only clear submission state if the server
-               * explicitly says the player has NOT submitted.
-               *
-               * This prevents unrelated reconnect messages
-               * from accidentally unlocking an already-submitted
-               * match.
-               */
-              state.challengeSubmitted =
-                false;
+     1. A complete answers array:
+        answers: ["A", "C", null, ...]
 
-              state.submissionInProgress =
-                false;
+     2. A single question update:
+        questionIndex: 1
+        answer: "C"
 
-              if (
-                typeof setAnswerSelectionLocked ===
-                "function"
-              ) {
-                setAnswerSelectionLocked(
-                  false
-                );
-              }
-            }
+     Never replace the entire local answer array with
+     a partial update.
+  */
 
-            saveActiveMatchState();
+  if (
+    Array.isArray(data.answers)
+  ) {
+    /*
+     * If the server supplied a complete answer array,
+     * use it as the authoritative state.
+     *
+     * Preserve the existing array length so question
+     * selections do not disappear because of a shorter
+     * server payload.
+     */
+    const currentAnswers =
+      Array.isArray(state.selectedAnswers)
+        ? [...state.selectedAnswers]
+        : [];
 
-            return;
-          }
+    const incomingAnswers =
+      data.answers;
+
+    const answerCount =
+      Math.max(
+        currentAnswers.length,
+        incomingAnswers.length,
+        Array.isArray(state.questions)
+          ? state.questions.length
+          : 0
+      );
+
+    const mergedAnswers =
+      new Array(answerCount).fill(null);
+
+    for (
+      let i = 0;
+      i < answerCount;
+      i++
+    ) {
+      /*
+       * An explicitly supplied server value is
+       * authoritative, including null when the server
+       * explicitly cleared that question.
+       */
+      if (
+        i < incomingAnswers.length
+      ) {
+        mergedAnswers[i] =
+          incomingAnswers[i];
+      } else {
+        /*
+         * Do not erase an existing local selection merely
+         * because this payload did not contain that index.
+         */
+        mergedAnswers[i] =
+          currentAnswers[i] ?? null;
+      }
+    }
+
+    state.selectedAnswers =
+      mergedAnswers;
+  }
+
+
+  /* -------------------------------------------------
+     SINGLE ANSWER UPDATE
+     ------------------------------------------------- */
+
+  if (
+    Number.isInteger(
+      data.questionIndex
+    )
+  ) {
+    const index =
+      data.questionIndex;
+
+    if (
+      !Array.isArray(
+        state.selectedAnswers
+      )
+    ) {
+      state.selectedAnswers = [];
+    }
+
+    /*
+     * Ensure the array is large enough.
+     */
+    while (
+      state.selectedAnswers.length <=
+      index
+    ) {
+      state.selectedAnswers.push(
+        null
+      );
+    }
+
+    /*
+     * Support both:
+     *
+     * answer
+     * selectedAnswer
+     */
+    if (
+      Object.prototype.hasOwnProperty.call(
+        data,
+        "answer"
+      )
+    ) {
+      state.selectedAnswers[index] =
+        data.answer;
+    } else if (
+      Object.prototype.hasOwnProperty.call(
+        data,
+        "selectedAnswer"
+      )
+    ) {
+      state.selectedAnswers[index] =
+        data.selectedAnswer;
+    }
+  }
+
+
+  /* -------------------------------------------------
+     SUBMISSION STATE
+     ------------------------------------------------- */
+
+  if (
+    data.submitted === true
+  ) {
+    state.challengeSubmitted =
+      true;
+
+    state.submissionInProgress =
+      false;
+
+    if (
+      typeof setAnswerSelectionLocked ===
+      "function"
+    ) {
+      setAnswerSelectionLocked(
+        true
+      );
+    }
+
+    setStatus(
+      "Answers submitted. Waiting for the match to finish..."
+    );
+  } else {
+    /*
+     * Only unlock when the server explicitly tells us
+     * that the player has not submitted.
+     */
+    if (
+      data.submitted === false
+    ) {
+      state.challengeSubmitted =
+        false;
+
+      state.submissionInProgress =
+        false;
+
+      if (
+        typeof setAnswerSelectionLocked ===
+        "function"
+      ) {
+        setAnswerSelectionLocked(
+          false
+        );
+      }
+    }
+  }
+
+
+  /*
+   * Persist the complete accumulated answer state.
+   */
+  saveActiveMatchState();
+
+  return;
+}
 
 
           /* ===============================================
@@ -929,18 +1071,45 @@ export function createReconnectManager({
              GAME RESULT
              =============================================== */
 
-          case "game_result": {
-            if (
-              typeof handleGameResult ===
-              "function"
-            ) {
-              handleGameResult(
-                data
-              );
-            }
+case "game_result": {
+  /*
+   * A game_result is authoritative evidence that
+   * this match has completed.
+   *
+   * Clear the persisted resume state immediately so
+   * refreshing the page cannot resurrect this match.
+   */
+  clearActiveMatchState();
 
-            return;
-          }
+  state.matchFinished =
+    true;
+
+  state.gameStarted =
+    false;
+
+  state.resumeAvailable =
+    false;
+
+  state.resumeMatchId =
+    null;
+
+  state.resumeInProgress =
+    false;
+
+  state.reconnecting =
+    false;
+
+  if (
+    typeof handleGameResult ===
+    "function"
+  ) {
+    handleGameResult(
+      data
+    );
+  }
+
+  return;
+}
 
 
           /* ===============================================

@@ -7,6 +7,47 @@
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/style.css">
   <style>
+    .username-section {
+  display: none;
+}
+
+.username-section input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--primary-color);
+  color: var(--text-color);
+  font-family: var(--font-body);
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.username-section input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.username-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 8px 0 12px;
+  min-height: 18px;
+}
+
+.btn-username {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
     /* ── Page shell ───────────────────────────────────────────── */
     .login-page {
       min-height: calc(100vh - var(--topbar-height));
@@ -237,21 +278,86 @@
         <h1>Welcome to Scoreladder</h1>
         <p class="subtitle">Sign in to track your scores and climb the ladder.</p>
 
-        <a class="btn-discord"
-           href="https://discord.com/oauth2/authorize?client_id=1511967100485238955&response_type=code&redirect_uri=https%3A%2F%2Fauth.scoreladder.org%2Fauth%2Fdiscord%2Fcallback&scope=identify%20email"
-           aria-label="Continue with Discord">
-          <!-- Discord logo mark -->
-          <svg width="22" height="16" viewBox="0 0 71 55" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-            <path d="M60.1 4.9A58.5 58.5 0 0 0 45.6.7a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54 54 0 0 0-16.2 0A37.7 37.7 0 0 0 25.6.8a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.9 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.6a.2.2 0 0 0 .1.2 58.8 58.8 0 0 0 17.7 9 .2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.7 38.7 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.9a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.9a.2.2 0 0 1 0 .4 36 36 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.1 47.1 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-9 .2.2 0 0 0 .1-.2C72.9 29 69.4 16.2 60.2 5a.2.2 0 0 0-.1-.1ZM23.7 36a6.7 6.7 0 0 1-6.3-7 6.7 6.7 0 0 1 6.3-7 6.7 6.7 0 0 1 6.3 7 6.7 6.7 0 0 1-6.3 7Zm23.6 0a6.7 6.7 0 0 1-6.3-7 6.7 6.7 0 0 1 6.3-7 6.7 6.7 0 0 1 6.3 7 6.7 6.7 0 0 1-6.3 7Z" fill="currentColor"/>
-          </svg>
-          Continue with Discord
-        </a>
+<div class="login-providers">
 
+  <!-- GOOGLE -->
+  <a
+    class="btn-google"
+    href="https://auth.scoreladder.org/auth/google"
+    aria-label="Continue with Google"
+  >
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        fill="#4285F4"
+        d="M21.35 12.27c0-.68-.06-1.34-.17-1.97H12v3.73h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.15z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 21.75c2.63 0 4.84-.87 6.45-2.33l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.75 9.75 0 0 0 12 21.75z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M6.54 13.87A5.86 5.86 0 0 1 6.23 12c0-.65.11-1.28.31-1.87V7.6H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.4l3.24-2.53z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 6.1c1.43 0 2.71.49 3.72 1.46l2.79-2.79C16.84 3.22 14.63 2.25 12 2.25A9.75 9.75 0 0 0 3.3 7.6l3.24 2.53C7.31 7.82 9.46 6.1 12 6.1z"
+      />
+    </svg>
+
+    Continue with Google
+  </a>
+
+  <div class="login-divider">
+    <span>or</span>
+  </div>
+
+  <!-- DISCORD -->
+  <a
+    class="btn-discord"
+    href="https://auth.scoreladder.org/auth/discord"
+    aria-label="Continue with Discord"
+  >
+    <!-- keep your existing Discord SVG here -->
+
+    Continue with Discord
+  </a>
+
+</div>
         <p class="login-note">
           By signing in you agree to our
           <a href="/privacy/">Privacy Policy</a>.
         </p>
       </div>
+<!-- CHOOSE USERNAME -->
+<div id="usernameSection" class="username-section">
+  <h1>Choose your username</h1>
+  <p class="subtitle">This is how you'll appear on Scoreladder.</p>
+
+  <input
+    id="usernameInput"
+    type="text"
+    maxlength="20"
+    autocomplete="username"
+    placeholder="Enter a username"
+  />
+
+  <div id="usernameError" class="username-error"></div>
+
+  <button
+    id="usernameButton"
+    class="btn-username"
+    type="button"
+    onclick="setUsername()"
+  >
+    Continue
+  </button>
+</div>
 
       <!-- LOGGED IN -->
       <div id="userSection" class="hidden">

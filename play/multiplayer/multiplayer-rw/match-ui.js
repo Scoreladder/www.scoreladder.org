@@ -75,11 +75,17 @@ export const elements = {
   playerNameDiv:
     document.getElementById("playerName"),
 
+  playerUsernameDiv:
+    document.getElementById("playerUsername"),
+
   playerEloDiv:
     document.getElementById("playerElo"),
 
   opponentNameDiv:
     document.getElementById("opponentName"),
+
+  opponentUsernameDiv:
+    document.getElementById("opponentUsername"),
 
   opponentEloDiv:
     document.getElementById("opponentElo"),
@@ -90,6 +96,66 @@ export const elements = {
   opponentRankDiv:
     document.getElementById("opponentRank")
 };
+
+
+/*
+ * =========================================================
+ * ELO HELPERS
+ * =========================================================
+ *
+ * Elo can arrive in several shapes depending on whether
+ * the object is:
+ *
+ * - the original matchmaking player object
+ * - a refreshed player object
+ * - a match-result player object
+ * - a historical match object
+ *
+ * Keep all extraction here so UI code does not accidentally
+ * display the old Elo when a newer value exists.
+ * =========================================================
+ */
+
+function getPlayerElo(player) {
+    if (!player || typeof player !== "object") {
+        return null;
+    }
+
+    const candidates = [
+        player.newRwElo,
+        player.new_rw_elo,
+        player.rwEloAfter,
+        player.rw_elo_after,
+        player.eloAfter,
+        player.elo_after,
+        player.updatedRwElo,
+        player.updated_rw_elo,
+        player.currentRwElo,
+        player.current_rw_elo,
+
+        player.stats?.rw_elo,
+        player.stats?.rwElo,
+
+        player.rw_elo,
+        player.rwElo,
+
+        player.stats?.elo,
+        player.elo
+    ];
+
+    for (const value of candidates) {
+        const number = Number(value);
+
+        if (
+            Number.isFinite(number) &&
+            number >= 0
+        ) {
+            return number;
+        }
+    }
+
+    return null;
+}
 
 
 /*
@@ -135,11 +201,6 @@ export function setAnswerSelectionLocked(locked) {
     }
   });
 
-  /*
-   * game.js answer-selection handlers should
-   * check this flag before changing
-   * state.selectedAnswers.
-   */
   elements.questionsDiv.dataset.answersLocked =
     isLocked ? "true" : "false";
 }
@@ -200,82 +261,199 @@ export function formatPassage(text) {
  */
 
 export function updatePlayer(player) {
-  if (!player) {
-    return;
-  }
-
-  const elo =
-    player.stats?.rw_elo ??
-    player.rw_elo ??
-    player.stats?.elo ??
-    player.elo ??
-    1200;
-
-  const rank =
-    getMineralRank(elo);
-
-  if (elements.playerNameDiv) {
-    const name =
-      player.display_name ||
-      player.username ||
-      "You";
-
-    elements.playerNameDiv.textContent =
-      rank?.name
-        ? `${name} (${rank.name})`
-        : name;
-
-    elements.playerNameDiv.classList.remove(
-      ...Array.from(
-        elements.playerNameDiv.classList
-      ).filter(
-        className =>
-          className.startsWith("rank-")
-      )
-    );
-
-    if (rank?.className) {
-      elements.playerNameDiv.classList.add(
-        rank.className
-      );
+    if (!player) {
+        return;
     }
-  }
 
-  if (elements.playerEloDiv) {
-    elements.playerEloDiv.textContent = elo;
-  }
+    const elo = getPlayerElo(player);
 
-  if (elements.playerRankDiv) {
-    elements.playerRankDiv.textContent =
-      rank?.name || "—";
+    const rank =
+        elo !== null
+            ? getMineralRank(elo)
+            : null;
 
-    elements.playerRankDiv.className =
-      rank?.className || "";
-  }
+    if (elements.playerNameDiv) {
+        const name =
+            player.display_name ||
+            player.displayName ||
+            player.username ||
+            "You";
+
+        elements.playerNameDiv.textContent =
+            rank?.name
+                ? `${name} (${rank.name})`
+                : name;
+
+        elements.playerNameDiv.classList.remove(
+            ...Array.from(
+                elements.playerNameDiv.classList
+            ).filter(
+                className =>
+                    className.startsWith("rank-")
+            )
+        );
+
+        if (rank?.className) {
+            elements.playerNameDiv.classList.add(
+                rank.className
+            );
+        }
+    }
+
+    if (elements.playerEloDiv) {
+        elements.playerEloDiv.textContent =
+            elo !== null
+                ? elo
+                : "—";
+    }
+
+    if (elements.playerRankDiv) {
+        elements.playerRankDiv.textContent =
+            rank?.name || "—";
+
+        elements.playerRankDiv.className =
+            rank?.className || "";
+    }
 }
 
 
+/*
+ * =========================================================
+ * OPPONENT UI
+ * =========================================================
+ */
+
 export function updateOpponent(player) {
-  if (!player) {
-    return;
+    if (!player) {
+        return;
+    }
+
+    state.opponent = {
+        ...(state.opponent || {}),
+        ...player
+    };
+
+    const opponent = state.opponent;
+
+    const elo = getPlayerElo(opponent);
+
+    const rank =
+        elo !== null
+            ? getMineralRank(elo)
+            : null;
+
+    if (elements.opponentNameDiv) {
+        const name =
+            opponent.display_name ||
+            opponent.displayName ||
+            opponent.username ||
+            "Opponent";
+
+        elements.opponentNameDiv.textContent =
+            rank?.name
+                ? `${name} (${rank.name})`
+                : name;
+
+        elements.opponentNameDiv.classList.remove(
+            ...Array.from(
+                elements.opponentNameDiv.classList
+            ).filter(
+                className =>
+                    className.startsWith("rank-")
+            )
+        );
+
+        if (rank?.className) {
+            elements.opponentNameDiv.classList.add(
+                rank.className
+            );
+        }
+    }
+
+    if (elements.opponentEloDiv) {
+        elements.opponentEloDiv.textContent =
+            elo !== null
+                ? elo
+                : "—";
+    }
+
+    if (elements.opponentRankDiv) {
+        elements.opponentRankDiv.textContent =
+            rank?.name || "—";
+
+        elements.opponentRankDiv.className =
+            rank?.className || "";
+    }
+
+    if (
+        state.matchId &&
+        isLogicalMatchId(state.matchId)
+    ) {
+        saveActiveMatchState();
+    }
+}
+
+
+/*
+ * Update ONLY the opponent's Elo.
+ *
+ * This is useful after calculateMatchResult() when the
+ * backend sends the bot's new Elo but does not send a
+ * completely new opponent object.
+ */
+export function updateOpponentElo(elo) {
+  const numericElo =
+    Number(elo);
+
+  if (
+    !Number.isFinite(numericElo) ||
+    numericElo < 0
+  ) {
+    return false;
   }
 
-  state.opponent = player;
+  if (!state.opponent) {
+    state.opponent = {};
+  }
 
-  const elo =
-    player.stats?.rw_elo ??
-    player.rw_elo ??
-    player.stats?.elo ??
-    player.elo ??
-    1200;
+  /*
+   * Store the new value in all commonly used forms so
+   * subsequent UI/state persistence cannot accidentally
+   * fall back to the old matchmaking Elo.
+   */
+  state.opponent.rw_elo =
+    numericElo;
+
+  if (!state.opponent.stats) {
+    state.opponent.stats = {};
+  }
+
+  state.opponent.stats.rw_elo =
+    numericElo;
 
   const rank =
-    getMineralRank(elo);
+    getMineralRank(
+      numericElo
+    );
+
+  if (elements.opponentEloDiv) {
+    elements.opponentEloDiv.textContent =
+      numericElo;
+  }
+
+  if (elements.opponentRankDiv) {
+    elements.opponentRankDiv.textContent =
+      rank?.name || "—";
+
+    elements.opponentRankDiv.className =
+      rank?.className || "";
+  }
 
   if (elements.opponentNameDiv) {
     const name =
-      player.display_name ||
-      player.username ||
+      state.opponent.display_name ||
+      state.opponent.displayName ||
+      state.opponent.username ||
       "Opponent";
 
     elements.opponentNameDiv.textContent =
@@ -299,24 +477,14 @@ export function updateOpponent(player) {
     }
   }
 
-  if (elements.opponentEloDiv) {
-    elements.opponentEloDiv.textContent = elo;
-  }
-
-  if (elements.opponentRankDiv) {
-    elements.opponentRankDiv.textContent =
-      rank?.name || "—";
-
-    elements.opponentRankDiv.className =
-      rank?.className || "";
-  }
-
   if (
     state.matchId &&
     isLogicalMatchId(state.matchId)
   ) {
     saveActiveMatchState();
   }
+
+  return true;
 }
 
 
@@ -338,15 +506,13 @@ export function enableQueueButton() {
     return;
   }
 
-  /*
-   * Re-check resume state every time.
-   */
   if (isResumeAvailable()) {
     enableResumeGame();
     return;
   }
 
-  elements.startMatchButton.disabled = false;
+  elements.startMatchButton.disabled =
+    false;
 
   elements.startMatchButton.removeAttribute(
     "disabled"
@@ -369,9 +535,22 @@ export function enableQueueButton() {
       true;
   }
 
-  setStatus(
-    "Cooldown complete. You can join the queue."
-  );
+if (isCoolingDown()) {
+    const remainingSeconds =
+        Math.ceil(
+            getCooldownRemainingMs() / 1000
+        );
+
+    setStatus(
+        `Match complete. Cooldown: ${formatCountdown(
+            remainingSeconds
+        )} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+    );
+} else {
+    setStatus(
+        "Cooldown complete. You can join the queue."
+    );
+}
 
   renderCooldownCompleteMessage();
 }
@@ -420,7 +599,8 @@ export function enableResumeGame(
     state.matchFinished = true;
 
     if (elements.startMatchButton) {
-      elements.startMatchButton.disabled = false;
+      elements.startMatchButton.disabled =
+        false;
 
       elements.startMatchButton.removeAttribute(
         "disabled"
@@ -440,17 +620,27 @@ export function enableResumeGame(
     return false;
   }
 
-  state.resumeAvailable = true;
-  state.resumeMatchId = String(matchId);
-  state.matchId = String(matchId);
-  state.reconnecting = false;
-  state.matchFinished = false;
+  state.resumeAvailable =
+    true;
+
+  state.resumeMatchId =
+    String(matchId);
+
+  state.matchId =
+    String(matchId);
+
+  state.reconnecting =
+    false;
+
+  state.matchFinished =
+    false;
 
   if (!elements.startMatchButton) {
     return true;
   }
 
-  elements.startMatchButton.disabled = false;
+  elements.startMatchButton.disabled =
+    false;
 
   elements.startMatchButton.removeAttribute(
     "disabled"
@@ -485,7 +675,8 @@ export function disableResumeGame() {
     return;
   }
 
-  elements.startMatchButton.disabled = false;
+  elements.startMatchButton.disabled =
+    false;
 
   elements.startMatchButton.textContent =
     "Join Queue";
@@ -532,16 +723,10 @@ export function initializeResumeGame() {
       );
     }
 
-    /*
-     * A submitted match stays submitted across
-     * refresh/reconnect.
-     *
-     * This is deliberately restored before the
-     * resume UI is presented so the player cannot
-     * interact with answer controls during resume.
-     */
     if (state.challengeSubmitted) {
-      setAnswerSelectionLocked(true);
+      setAnswerSelectionLocked(
+        true
+      );
     }
   }
 
@@ -549,13 +734,21 @@ export function initializeResumeGame() {
     isResumeAvailable();
 
   if (!resumable) {
-    state.resumeAvailable = false;
-    state.resumeMatchId = null;
-    state.inQueue = false;
-    state.reconnecting = false;
+    state.resumeAvailable =
+      false;
+
+    state.resumeMatchId =
+      null;
+
+    state.inQueue =
+      false;
+
+    state.reconnecting =
+      false;
 
     if (!state.gameStarted) {
-      state.matchId = null;
+      state.matchId =
+        null;
     }
 
     return false;
@@ -566,28 +759,43 @@ export function initializeResumeGame() {
     state.matchId;
 
   if (!isLogicalMatchId(matchId)) {
-    state.resumeAvailable = false;
-    state.resumeMatchId = null;
-    state.matchId = null;
+    state.resumeAvailable =
+      false;
+
+    state.resumeMatchId =
+      null;
+
+    state.matchId =
+      null;
 
     return false;
   }
 
-  state.resumeAvailable = true;
-  state.resumeMatchId = String(matchId);
-  state.matchId = String(matchId);
-  state.matchConnectionConfirmed = false;
-  state.inQueue = false;
-  state.reconnecting = false;
-  state.matchFinished = false;
+  state.resumeAvailable =
+    true;
 
-  /*
-   * Never unlock answers while restoring a match.
-   * If the restored state says the submission already
-   * happened, the submitted state wins.
-   */
+  state.resumeMatchId =
+    String(matchId);
+
+  state.matchId =
+    String(matchId);
+
+  state.matchConnectionConfirmed =
+    false;
+
+  state.inQueue =
+    false;
+
+  state.reconnecting =
+    false;
+
+  state.matchFinished =
+    false;
+
   if (state.challengeSubmitted) {
-    setAnswerSelectionLocked(true);
+    setAnswerSelectionLocked(
+      true
+    );
   }
 
   if (
@@ -605,206 +813,231 @@ export function initializeResumeGame() {
 }
 
 
-/*
- * =========================================================
+/* =========================================================
  * COOLDOWN UI
  * =========================================================
  */
 
-export function updateCooldownUI() {
-  const remainingMs =
-    getCooldownRemainingMs();
+function ensureCooldownElement() {
+    if (elements.cooldownDiv) {
+        return elements.cooldownDiv;
+    }
 
-  if (remainingMs <= 0) {
+    const cooldown = document.createElement("div");
+
+    cooldown.id = "cooldown";
+    cooldown.className = "match-cooldown";
+    cooldown.style.display = "none";
+
+    if (elements.startMatchButton?.parentElement) {
+        elements.startMatchButton.parentElement.appendChild(
+            cooldown
+        );
+    } else {
+        document.body.appendChild(cooldown);
+    }
+
+    elements.cooldownDiv = cooldown;
+
+    return cooldown;
+}
+
+export function updateCooldownUI() {
+    const cooldown =
+        ensureCooldownElement();
+
+    const remainingMs =
+        getCooldownRemainingMs();
+
+    /*
+     * COOLDOWN ACTIVE
+     */
+    if (remainingMs > 0) {
+        const remainingSeconds =
+            Math.ceil(
+                remainingMs / 1000
+            );
+
+        const countdown =
+            formatCountdown(
+                remainingSeconds
+            );
+
+        cooldown.style.display =
+            "block";
+
+        cooldown.textContent =
+            `Next match available in ${countdown}. Go practice your weakest topics on Khan Academy in the meantime.`;
+
+        if (elements.startMatchButton) {
+            elements.startMatchButton.disabled =
+                true;
+
+            elements.startMatchButton.removeAttribute(
+                "aria-disabled"
+            );
+
+            elements.startMatchButton.style.display =
+                "block";
+
+            elements.startMatchButton.textContent =
+                `Cooldown: ${countdown}`;
+        }
+
+        if (
+            elements.submitButton &&
+            !state.gameStarted
+        ) {
+            elements.submitButton.disabled =
+                true;
+        }
+
+        if (
+            !state.gameStarted &&
+            !state.inQueue
+        ) {
+            setStatus(
+                `Match complete. Cooldown: ${countdown} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+            );
+        }
+
+        return;
+    }
+
+    /*
+     * COOLDOWN IS ACTUALLY COMPLETE
+     */
+    cooldown.style.display =
+        "none";
+
+    cooldown.textContent =
+        "";
+
     clearCooldown();
 
     if (
-      !state.gameStarted &&
-      !state.inQueue
+        !state.gameStarted &&
+        !state.inQueue
     ) {
-      if (isResumeAvailable()) {
-        enableResumeGame();
-      } else {
-        enableQueueButton();
-      }
+        if (isResumeAvailable()) {
+            enableResumeGame(
+                state.resumeMatchId ||
+                state.matchId
+            );
+        } else {
+            enableQueueButton();
+
+            setStatus(
+                "Cooldown complete. You can join the queue."
+            );
+        }
     }
-
-    return;
-  }
-
-  const remainingSeconds =
-    Math.ceil(
-      remainingMs / 1000
-    );
-
-  if (elements.startMatchButton) {
-    elements.startMatchButton.disabled = true;
-
-    elements.startMatchButton.textContent =
-      `Cooldown: ${formatCountdown(
-        remainingSeconds
-      )}`;
-  }
-
-  if (
-    elements.submitButton &&
-    state.newGameMode
-  ) {
-    elements.submitButton.style.display =
-      "block";
-
-    elements.submitButton.disabled =
-      true;
-
-    elements.submitButton.textContent =
-      `New Game (${formatCountdown(
-        remainingSeconds
-      )})`;
-  }
-
-  if (
-    !state.gameStarted &&
-    !state.inQueue
-  ) {
-    setStatus(
-      `You can play again in ${formatCountdown(
-        remainingSeconds
-      )}.`
-    );
-  }
 }
 
 
 export function beginCooldown(
-  cooldownUntil = null
+    cooldownUntil = null
 ) {
-  beginCooldownState(
-    cooldownUntil
-  );
-
-  if (
-    elements.submitButton &&
-    !state.gameStarted &&
-    !state.inQueue
-  ) {
-    elements.submitButton.style.display =
-      "block";
-
-    elements.submitButton.disabled =
-      true;
-
-    elements.submitButton.textContent =
-      `New Game (${formatCountdown(
-        Math.ceil(
-          getCooldownRemainingMs() / 1000
-        )
-      )})`;
-  }
-
-  if (
-    elements.startMatchButton &&
-    !state.gameStarted &&
-    !state.inQueue
-  ) {
-    elements.startMatchButton.disabled =
-      true;
-
-    elements.startMatchButton.textContent =
-      `Cooldown: ${formatCountdown(
-        Math.ceil(
-          getCooldownRemainingMs() / 1000
-        )
-      )}`;
-  }
-
-  if (
-    !state.gameStarted &&
-    !state.inQueue
-  ) {
-    if (elements.timerDiv) {
-      elements.timerDiv.textContent =
-        "0:00";
-    }
-
-    setStatus(
-      "Matchmaking cooldown started. You can play again when it expires."
+    beginCooldownState(
+        cooldownUntil
     );
 
-    renderCooldownPracticeMessage();
-  }
+    /*
+     * Make sure the cooldown UI exists before
+     * starting the timer.
+     */
+    ensureCooldownElement();
+
+    startCooldownTimer();
+
+    /*
+     * Render immediately.
+     */
+    updateCooldownUI();
+
+    if (
+        !state.gameStarted &&
+        !state.inQueue
+    ) {
+        renderCooldownPracticeMessage();
+    }
 }
 
 
 export function initializeCooldown() {
-  state.cooldownUntil =
-    getStoredCooldownUntil();
+    state.cooldownUntil =
+        getStoredCooldownUntil();
 
-  if (isResumeAvailable()) {
-    state.newGameMode = false;
+    ensureCooldownElement();
 
-    stopCooldownTimer();
+    /*
+     * An active cooldown takes priority over any stale
+     * resume state left from the completed match.
+     */
+    if (isCoolingDown()) {
+        state.newGameMode = true;
 
-    if (elements.submitButton) {
-      elements.submitButton.style.display =
-        "none";
+        state.resumeAvailable = false;
+        state.resumeMatchId = null;
 
-      elements.submitButton.disabled =
-        true;
+        startCooldownTimer();
+
+        updateCooldownUI();
+
+        renderCooldownPracticeMessage();
+
+        return;
     }
 
-    enableResumeGame(
-      state.resumeMatchId ||
-      state.matchId
-    );
+    /*
+     * Only allow a resumable match when there is no
+     * active cooldown.
+     */
+    if (isResumeAvailable()) {
+        state.newGameMode = false;
 
-    return;
-  }
+        stopCooldownTimer();
 
-  if (isCoolingDown()) {
-    state.newGameMode = true;
+        if (elements.cooldownDiv) {
+            elements.cooldownDiv.style.display =
+                'none';
+        }
 
-    if (elements.submitButton) {
-      elements.submitButton.style.display =
-        "block";
+        if (elements.submitButton) {
+            elements.submitButton.style.display =
+                'none';
 
-      elements.submitButton.disabled =
-        true;
+            elements.submitButton.disabled =
+                true;
+        }
 
-      elements.submitButton.textContent =
-        `New Game (${formatCountdown(
-          Math.ceil(
-            getCooldownRemainingMs() / 1000
-          )
-        )})`;
+        enableResumeGame(
+            state.resumeMatchId ||
+            state.matchId
+        );
+
+        return;
     }
 
-    if (elements.startMatchButton) {
-      elements.startMatchButton.disabled =
-        true;
+    /*
+     * No cooldown and no resumable match.
+     */
+    clearCooldown();
 
-      elements.startMatchButton.textContent =
-        `Cooldown: ${formatCountdown(
-          Math.ceil(
-            getCooldownRemainingMs() / 1000
-          )
-        )}`;
+    if (elements.cooldownDiv) {
+        elements.cooldownDiv.style.display =
+            'none';
+
+        elements.cooldownDiv.textContent =
+            '';
     }
 
-    startCooldownTimer();
-
-    renderCooldownPracticeMessage();
-
-    return;
-  }
-
-  clearCooldown();
-
-  if (
-    !state.gameStarted &&
-    !state.inQueue
-  ) {
-    enableQueueButton();
-  }
+    if (
+        !state.gameStarted &&
+        !state.inQueue
+    ) {
+        enableQueueButton();
+    }
 }
 
 
@@ -1893,92 +2126,107 @@ export async function loadHistoricalTopicPerformance() {
 
 
 export async function loadRecentMatches() {
-  const sessionId =
-    getSessionId();
+    const sessionId = getSessionId();
 
-  if (!sessionId) {
-    console.warn(
-      "Cannot load recent matches: no session ID."
-    );
-
-    return;
-  }
-
-  try {
-    const url =
-      `${getAuthApiUrl(
-        "match-history"
-      )}?session=${encodeURIComponent(
-        sessionId
-      )}&limit=5`;
-
-    console.log(
-      "Loading recent matches:",
-      url
-    );
-
-    const response =
-      await fetch(url);
-
-    let data = {};
+    if (!sessionId) {
+        console.warn(
+            "Cannot load recent matches: no session ID."
+        );
+        return;
+    }
 
     try {
-      data =
-        await response.json();
-    } catch {
-      data = {};
+        const url =
+            `${getAuthApiUrl(
+                "match-history"
+            )}?session=${encodeURIComponent(
+                sessionId
+            )}&limit=5`;
+
+        console.log(
+            "Loading recent matches:",
+            url
+        );
+
+        const response = await fetch(url);
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                `Match history request failed (${response.status})`
+            );
+        }
+
+        const matches =
+            Array.isArray(data.matches)
+                ? data.matches.slice(0, 5)
+                : [];
+
+        console.log(
+            "Loaded recent matches:",
+            matches
+        );
+
+        window.scoreladderRecentMatches =
+            matches;
+
+        /*
+         * IMPORTANT:
+         *
+         * Match history is historical data only.
+         *
+         * DO NOT call:
+         *
+         *   updateOpponent()
+         *   updateOpponentElo()
+         *
+         * from here.
+         *
+         * Doing so can overwrite the current opponent after
+         * the player finishes a match and clicks Join Queue.
+         *
+         * The current opponent must come exclusively from the
+         * active matchmaking/game state.
+         */
+
+        const hasQuestionData =
+            matches.some(
+                match =>
+                    extractQuestionResults(match).length > 0
+            );
+
+        if (hasQuestionData) {
+            renderHistoricalTopicPerformance(
+                matches
+            );
+        }
+
+        await loadHistoricalTopicPerformance();
+
+        if (isCoolingDown()) {
+            renderCooldownPracticeMessage();
+        }
+
+    } catch (error) {
+        console.error(
+            "Failed to load recent matches:",
+            error
+        );
+
+        window.scoreladderRecentMatches = [];
+
+        renderRecentMatches([]);
+
+        await loadHistoricalTopicPerformance();
     }
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        `Match history request failed (${response.status})`
-      );
-    }
-
-    const matches =
-      Array.isArray(data.matches)
-        ? data.matches.slice(0, 5)
-        : [];
-
-    console.log(
-      "Loaded recent matches:",
-      matches
-    );
-
-    window.scoreladderRecentMatches =
-      matches;
-
-    const hasQuestionData =
-      matches.some(
-        match =>
-          extractQuestionResults(match).length > 0
-      );
-
-    if (hasQuestionData) {
-      renderHistoricalTopicPerformance(
-        matches
-      );
-    }
-
-    await loadHistoricalTopicPerformance();
-
-    if (isCoolingDown()) {
-      renderCooldownPracticeMessage();
-    }
-  } catch (error) {
-    console.error(
-      "Failed to load recent matches:",
-      error
-    );
-
-    window.scoreladderRecentMatches =
-      [];
-
-    renderRecentMatches([]);
-
-    await loadHistoricalTopicPerformance();
-  }
 }
 
 
@@ -2014,3 +2262,6 @@ export {
   normalizeTopic,
   getTopicDisplayName
 };
+
+
+

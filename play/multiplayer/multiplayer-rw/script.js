@@ -16,14 +16,14 @@
 
 import {
   state,
-  isResumeAvailable
+  isResumeAvailable,
+  isCoolingDown,
+  restoreCooldownState
 } from "./match-state.js";
 
 import {
   elements,
   setStatus,
-  enableResumeGame,
-  enableQueueButton,
   initializeResumeGame,
   initializeCooldown,
   loadRecentMatches,
@@ -80,9 +80,11 @@ function handleStartMatchButtonClick(event) {
   const resumable =
     isResumeAvailable();
 
-  /*
-   * Valid Resume Game.
-   */
+
+  /* -------------------------------------------------------
+     VALID RESUME BUTTON
+     ------------------------------------------------------- */
+
   if (
     resumable &&
     isResumeButton
@@ -95,17 +97,32 @@ function handleStartMatchButtonClick(event) {
     return;
   }
 
+
+  /* -------------------------------------------------------
+     STALE RESUME BUTTON
+     ------------------------------------------------------- */
+
   /*
-   * The UI says Resume Game, but the stored match is
-   * no longer resumable.
+   * The UI says "Resume Game", but the stored match is
+   * no longer locally resumable.
    *
-   * Restore the normal queue state and allow the
+   * Restore normal queue presentation and allow the
    * matchmaking click handler to process this click.
    */
-  if (
-    !resumable &&
-    isResumeButton
-  ) {
+if (
+  !resumable &&
+  isResumeButton
+) {
+  if (isCoolingDown()) {
+    button.disabled = true;
+
+    button.textContent =
+      "Cooldown Active";
+
+    setStatus(
+      "Your previous match has finished. Go practice your weakest topics on Khan Academy in the meantime."
+    );
+  } else {
     button.disabled = false;
 
     button.removeAttribute(
@@ -119,6 +136,7 @@ function handleStartMatchButtonClick(event) {
       "Your previous match has finished. You can join the queue."
     );
   }
+}
 }
 
 
@@ -135,25 +153,13 @@ if (elements.startMatchButton) {
    INITIAL BUTTON STATE
    ========================================================= */
 
-if (elements.startMatchButton) {
-  const resumable =
-    isResumeAvailable();
-
-  elements.startMatchButton.disabled =
-    false;
-
-  elements.startMatchButton.textContent =
-    resumable
-      ? "Resume Game"
-      : "Join Queue";
-
-  setStatus(
-    resumable
-      ? "You were disconnected from your match. Resume the game to reconnect."
-      : "Ready to join queue."
-  );
-}
-
+/*
+ * Do NOT decide between "Resume Game" and "Join Queue"
+ * here.
+ *
+ * initializeResumeGame() owns restoration and initial
+ * resume-state presentation.
+ */
 
 if (elements.submitButton) {
   elements.submitButton.style.display =
@@ -174,30 +180,30 @@ if (elements.timerDiv) {
    RESTORE PERSISTED STATE
    ========================================================= */
 
-initializeResumeGame();
-
-initializeCooldown();
+/*
+ * Restore the actual cooldown timestamp before the UI
+ * decides whether normal queue interaction is available.
+ */
+restoreCooldownState();
 
 
 /*
- * Resume state must take priority over normal queue
- * presentation.
+ * initializeCooldown() handles the UI side of cooldown
+ * initialization.
+ *
+ * It must not replace the persisted cooldown timestamp.
  */
-if (
-  isResumeAvailable() &&
-  !state.gameStarted &&
-  !state.inQueue
-) {
-  enableResumeGame(
-    state.resumeMatchId ||
-    state.matchId
-  );
-} else if (
-  !state.gameStarted &&
-  !state.inQueue
-) {
-  enableQueueButton();
-}
+initializeCooldown();
+
+/*
+ * Restore the persisted match/resume state.
+ *
+ * initializeResumeGame() is responsible for synchronizing
+ * the persisted resume state with the UI.
+ */
+initializeResumeGame();
+
+
 
 
 /* =========================================================
@@ -277,8 +283,10 @@ document.addEventListener(
       return;
     }
 
+
     /*
      * Do not interfere with:
+     *
      * - Same-page anchors
      * - javascript links
      * - New-tab links
@@ -297,6 +305,7 @@ document.addEventListener(
       return;
     }
 
+
     const confirmed =
       window.confirm(
         "WARNING: Do not leave or refresh while a match is in progress.\n\n" +
@@ -304,6 +313,7 @@ document.addEventListener(
         "or entering a new match. Reconnection is currently unreliable.\n\n" +
         "Are you sure you want to leave?"
       );
+
 
     if (!confirmed) {
       event.preventDefault();
@@ -332,6 +342,7 @@ window.addEventListener(
         "or entering a new match. Reconnection is currently unreliable.\n\n" +
         "Are you sure you want to leave?"
       );
+
 
     if (!confirmed) {
       history.pushState(
