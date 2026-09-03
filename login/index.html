@@ -7,6 +7,65 @@
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/style.css">
   <style>
+    .score-section {
+  display: none;
+}
+
+.score-section h1 {
+  margin-bottom: 8px;
+}
+
+.score-section .subtitle {
+  margin-bottom: 24px;
+}
+
+.score-field {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.score-field label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.score-field select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: white;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.no-score-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.no-score-option input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.no-score-note {
+  display: none;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  font-size: 13px;
+  line-height: 1.4;
+}
     .username-section {
   display: none;
 }
@@ -339,6 +398,10 @@
   <h1>Choose your username</h1>
   <p class="subtitle">This is how you'll appear on Scoreladder.</p>
 
+  <p class="username-warning">
+  Your username is permanent and cannot be changed.
+</p>
+
   <input
     id="usernameInput"
     type="text"
@@ -357,7 +420,6 @@
   >
     Continue
   </button>
-</div>
 
       <!-- LOGGED IN -->
       <div id="userSection" class="hidden">
@@ -377,6 +439,50 @@
       </div>
 
     </div>
+    <div id="scoreSection" class="score-section">
+
+  <h1>Set your starting rating</h1>
+
+  <p class="subtitle">
+    Enter your most recent practice test, SAT, or PSAT score.
+    If you haven't taken any of these yet, select <strong>500</strong>
+    for both sections.
+  </p>
+
+  <div class="score-field">
+    <label for="rwScoreInput">
+      Reading &amp; Writing
+    </label>
+
+    <select id="rwScoreInput">
+      <option value="" disabled selected>
+        Select your score
+      </option>
+    </select>
+  </div>
+
+  <div class="score-field">
+    <label for="mathScoreInput">
+      Math
+    </label>
+
+    <select id="mathScoreInput">
+      <option value="" disabled selected>
+        Select your score
+      </option>
+    </select>
+  </div>
+
+  <div id="scoreError" class="error"></div>
+
+  <button
+    id="scoreButton"
+    type="button"
+    onclick="submitInitialScores()"
+  >
+    Continue
+  </button>
+</div>
   </main>
 
   <div id="footer"></div>

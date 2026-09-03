@@ -106,11 +106,20 @@ function renderLeaderboard(container, players) {
 
     const discordId = String(player.id || "").replace(/^discord_/, "");
 
-    if (player.avatar && discordId) {
-      avatar.src = `https://cdn.discordapp.com/avatars/${discordId}/${player.avatar}.png?size=64`;
-    } else {
-      avatar.style.display = "none";
-    }
+if (player.avatar) {
+  avatar.src =
+    /^https?:\/\//i.test(player.avatar)
+      ? player.avatar
+      : discordId
+        ? `https://cdn.discordapp.com/avatars/${discordId}/${player.avatar}.png?size=64`
+        : "";
+  
+  if (!avatar.src) {
+    avatar.style.display = "none";
+  }
+} else {
+  avatar.style.display = "none";
+}
 
     avatar.alt = "";
 

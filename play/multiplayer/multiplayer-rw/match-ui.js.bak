@@ -117,6 +117,10 @@ export const elements = {
  */
 
 function getPlayerElo(player) {
+    if (!player || typeof player !== "object") {
+        return null;
+    }
+
     const candidates = [
         player.newRwElo,
         player.new_rw_elo,
@@ -128,23 +132,18 @@ function getPlayerElo(player) {
         player.updated_rw_elo,
         player.currentRwElo,
         player.current_rw_elo,
+
         player.stats?.rw_elo,
         player.stats?.rwElo,
+
         player.rw_elo,
         player.rwElo,
+
         player.stats?.elo,
         player.elo
     ];
 
     for (const value of candidates) {
-        if (
-            value === null ||
-            value === undefined ||
-            value === ""
-        ) {
-            continue;
-        }
-
         const number = Number(value);
 
         if (
@@ -305,12 +304,12 @@ export function updatePlayer(player) {
         elements.playerEloDiv.textContent =
             elo !== null
                 ? elo
-                : "???";
+                : "—";
     }
 
     if (elements.playerRankDiv) {
         elements.playerRankDiv.textContent =
-            rank?.name || "???";
+            rank?.name || "—";
 
         elements.playerRankDiv.className =
             rank?.className || "";
@@ -375,12 +374,12 @@ export function updateOpponent(player) {
         elements.opponentEloDiv.textContent =
             elo !== null
                 ? elo
-                : "???";
+                : "—";
     }
 
     if (elements.opponentRankDiv) {
         elements.opponentRankDiv.textContent =
-            rank?.name || "???";
+            rank?.name || "—";
 
         elements.opponentRankDiv.className =
             rank?.className || "";
@@ -444,7 +443,7 @@ export function updateOpponentElo(elo) {
 
   if (elements.opponentRankDiv) {
     elements.opponentRankDiv.textContent =
-      rank?.name || "???";
+      rank?.name || "—";
 
     elements.opponentRankDiv.className =
       rank?.className || "";
@@ -2263,4 +2262,3 @@ export {
   normalizeTopic,
   getTopicDisplayName
 };
-

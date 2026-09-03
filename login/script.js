@@ -3,11 +3,80 @@ console.log("Scoreladder login.js loaded");
 const API = "https://auth.scoreladder.org";
 const LOCAL_SESSION_KEY = "scoreladder_session";
 
+
+function showSection(sectionId) {
+  const sections = [
+    "loginSection",
+    "usernameSection",
+    "scoreSection",
+    "userSection"
+  ];
+
+  for (const id of sections) {
+    const element =
+      document.getElementById(id);
+
+    if (!element) continue;
+
+    if (id === sectionId) {
+      element.classList.remove("hidden");
+      element.style.display = "block";
+    } else {
+      element.classList.add("hidden");
+      element.style.display = "none";
+    }
+  }
+}
+
+function populateScoreDropdown(id) {
+  const select =
+    document.getElementById(id);
+
+  if (!select) return;
+
+  select.innerHTML = `
+    <option value="" disabled selected>
+      Select your score
+    </option>
+  `;
+
+  for (let score = 200; score <= 800; score += 10) {
+    const option =
+      document.createElement("option");
+
+    option.value = score;
+    option.textContent = score;
+
+    select.appendChild(option);
+  }
+}
+
+
+function initializeScoreInputs() {
+  populateScoreDropdown(
+    "rwScoreInput"
+  );
+
+  populateScoreDropdown(
+    "mathScoreInput"
+  );
+}
+
+
+function showScoreSetup() {
+  initializeScoreInputs();
+  showSection("scoreSection");
+}
+
+
 async function loadUser() {
   try {
-    // Get session from the URL first, then fall back to stored session.
+    // Get session from the URL first,
+    // then fall back to stored session.
     const urlSession =
-      new URLSearchParams(window.location.search).get("session");
+      new URLSearchParams(
+        window.location.search
+      ).get("session");
 
     let session = urlSession;
 
@@ -34,8 +103,10 @@ async function loadUser() {
       }
     }
 
-    // Build /me URL without logging the session token.
-    const meUrl = new URL(`${API}/me`);
+    // Build /me URL without logging
+    // the session token.
+    const meUrl =
+      new URL(`${API}/me`);
 
     if (session) {
       meUrl.searchParams.set(
@@ -51,76 +122,87 @@ async function loadUser() {
         : "no session"
     );
 
-    const res = await fetch(meUrl, {
-      credentials: "include"
-    });
+    const res =
+      await fetch(meUrl, {
+        credentials: "include"
+      });
 
     if (!res.ok) {
-      document
-        .getElementById("loginSection")
-        ?.classList.remove("hidden");
-
-      document
-        .getElementById("userSection")
-        ?.classList.add("hidden");
-
-      document
-        .getElementById("usernameSection")
-        ?.style.setProperty("display", "none");
-
+      showSection("loginSection");
       return null;
     }
 
-    const user = await res.json();
+    const user =
+      await res.json();
 
     console.log(
       "Scoreladder user:",
       user
     );
 
-    // Make the complete user object available to the page.
+    // Make the complete user object
+    // available to the page.
     window.currentUser = user;
 
-    // Only new Google users without a username
-    // should see the username selection section.
+    const isLoginPage =
+      window.location.pathname === "/login" ||
+      window.location.pathname === "/login/";
+
+    /*
+      NEW GOOGLE USER
+
+      Only Google accounts that still have
+      no username/display name go through
+      username selection.
+
+      Discord users never go through this.
+    */
     if (
-      (window.location.pathname === "/login" ||
-        window.location.pathname === "/login/") &&
+      isLoginPage &&
       user.id?.startsWith("google_") &&
       !user.username &&
       !user.display_name
     ) {
-      document
-        .getElementById("loginSection")
-        ?.classList.add("hidden");
+      showSection(
+        "usernameSection"
+      );
 
-      document
-        .getElementById("userSection")
-        ?.classList.add("hidden");
+      return user;
+    }
 
-      document
-        .getElementById("usernameSection")
-        ?.style.setProperty("display", "block");
+    /*
+      INITIAL SCORE SETUP
+
+      A null Elo means the user has not
+      completed initial score setup yet.
+
+      The actual test scores are never
+      retrieved from /me after submission.
+    */
+    const rwElo =
+      user.stats?.rw_elo;
+
+    const mathElo =
+      user.stats?.math_elo;
+
+    if (
+      isLoginPage &&
+      (rwElo == null ||
+        mathElo == null)
+    ) {
+      showScoreSetup();
 
       return user;
     }
 
     // Show logged-in state.
-    document
-      .getElementById("loginSection")
-      ?.classList.add("hidden");
-
-    document
-      .getElementById("userSection")
-      ?.classList.remove("hidden");
-
-    document
-      .getElementById("usernameSection")
-      ?.style.setProperty("display", "none");
+    showSection("userSection");
 
     // Basic account information.
     const username =
-      document.getElementById("username");
+      document.getElementById(
+        "username"
+      );
 
     if (username) {
       username.innerText =
@@ -130,7 +212,9 @@ async function loadUser() {
     }
 
     const email =
-      document.getElementById("email");
+      document.getElementById(
+        "email"
+      );
 
     if (email) {
       email.innerText =
@@ -139,33 +223,46 @@ async function loadUser() {
 
     // Profile avatar.
     const avatar =
-      document.getElementById("avatar");
+      document.getElementById(
+        "avatar"
+      );
 
     if (avatar) {
-      if (user.id?.startsWith("discord_")) {
-        // Discord avatar.
+      if (
+        user.id?.startsWith(
+          "discord_"
+        )
+      ) {
         const discordId =
-          user.id.replace("discord_", "");
+          user.id.replace(
+            "discord_",
+            ""
+          );
 
+if (user.avatar) {
+  avatar.src =
+    /^https?:\/\//i.test(user.avatar)
+      ? user.avatar
+      : `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`;
+} else {
+  avatar.src =
+    "https://cdn.discordapp.com/embed/avatars/0.png";
+}
+
+      } else if (
+        user.id?.startsWith(
+          "google_"
+        )
+      ) {
         if (user.avatar) {
           avatar.src =
-            `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`;
-        } else {
-          avatar.src =
-            "https://cdn.discordapp.com/embed/avatars/0.png";
-        }
-
-      } else if (user.id?.startsWith("google_")) {
-        // Google profile picture.
-        if (user.avatar) {
-          avatar.src = user.avatar;
+            user.avatar;
         } else {
           avatar.src =
             "/assets/default-avatar.png";
         }
 
       } else {
-        // Unknown provider / fallback.
         avatar.src =
           "/assets/default-avatar.png";
       }
@@ -176,12 +273,9 @@ async function loadUser() {
       };
     }
 
-    // If already logged in and on the login page,
-    // send the user to their profile.
-    if (
-      window.location.pathname === "/login" ||
-      window.location.pathname === "/login/"
-    ) {
+    // If already logged in and on the
+    // login page, send the user to profile.
+    if (isLoginPage) {
       const profileUrl =
         new URL(
           `${window.location.origin}/profile/`
@@ -219,21 +313,12 @@ async function loadUser() {
       e
     );
 
-    document
-      .getElementById("loginSection")
-      ?.classList.remove("hidden");
-
-    document
-      .getElementById("userSection")
-      ?.classList.add("hidden");
-
-    document
-      .getElementById("usernameSection")
-      ?.style.setProperty("display", "none");
+    showSection("loginSection");
 
     return null;
   }
 }
+
 
 async function logout() {
   try {
@@ -259,20 +344,36 @@ async function logout() {
   }
 }
 
+
 async function setUsername() {
-  const session =
-    sessionStorage.getItem(
-      LOCAL_SESSION_KEY
+  let session = null;
+
+  try {
+    session =
+      sessionStorage.getItem(
+        LOCAL_SESSION_KEY
+      );
+  } catch (error) {
+    console.error(
+      "Could not read local session:",
+      error
     );
+  }
 
   const input =
-    document.getElementById("usernameInput");
+    document.getElementById(
+      "usernameInput"
+    );
 
   const error =
-    document.getElementById("usernameError");
+    document.getElementById(
+      "usernameError"
+    );
 
   const button =
-    document.getElementById("usernameButton");
+    document.getElementById(
+      "usernameButton"
+    );
 
   const username =
     input?.value.trim();
@@ -283,9 +384,14 @@ async function setUsername() {
     return;
   }
 
-  if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
+  if (
+    !/^[A-Za-z0-9_]{3,20}$/.test(
+      username
+    )
+  ) {
     error.textContent =
       "Username must be 3–20 characters and can only contain letters, numbers, and underscores.";
+
     return;
   }
 
@@ -293,21 +399,24 @@ async function setUsername() {
   error.textContent = "";
 
   try {
-    const res = await fetch(
-      `${API}/onboarding/username?session=${encodeURIComponent(session)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          username
-        })
-      }
-    );
+    const res =
+      await fetch(
+        `${API}/onboarding/username?session=${encodeURIComponent(session)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            username
+          })
+        }
+      );
 
-    const data = await res.json();
+    const data =
+      await res.json();
 
     if (!res.ok) {
       error.textContent =
@@ -318,6 +427,132 @@ async function setUsername() {
       return;
     }
 
+    /*
+      Do NOT redirect to profile yet.
+
+      The Google user still needs to complete
+      initial score setup.
+    */
+
+      initializeScoreInputs();
+      showSection("scoreSection");
+
+  } catch (e) {
+    console.error(
+      "Failed to set username:",
+      e
+    );
+
+    error.textContent =
+      "Something went wrong. Please try again.";
+
+    button.disabled = false;
+  }
+}
+
+
+async function submitInitialScores() {
+  let session = null;
+
+  try {
+    session =
+      sessionStorage.getItem(
+        LOCAL_SESSION_KEY
+      );
+  } catch (error) {
+    console.error(
+      "Could not read local session:",
+      error
+    );
+  }
+
+  const rwInput =
+    document.getElementById(
+      "rwScoreInput"
+    );
+
+  const mathInput =
+    document.getElementById(
+      "mathScoreInput"
+    );
+
+  const error =
+    document.getElementById(
+      "scoreError"
+    );
+
+  const button =
+    document.getElementById(
+      "scoreButton"
+    );
+
+  const rwScore =
+    Number(rwInput?.value);
+
+  const mathScore =
+    Number(mathInput?.value);
+
+  if (
+    !Number.isInteger(rwScore) ||
+    rwScore < 200 ||
+    rwScore > 800
+  ) {
+    error.textContent =
+      "Please select your Reading & Writing score.";
+
+    return;
+  }
+
+  if (
+    !Number.isInteger(mathScore) ||
+    mathScore < 200 ||
+    mathScore > 800
+  ) {
+    error.textContent =
+      "Please select your Math score.";
+
+    return;
+  }
+
+  button.disabled = true;
+  error.textContent = "";
+
+  try {
+    const res =
+      await fetch(
+        `${API}/onboarding/initial-score?session=${encodeURIComponent(session)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            rw_score: rwScore,
+            math_score: mathScore
+          })
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+      error.textContent =
+        data.error ||
+        "Could not save your starting rating.";
+
+      button.disabled = false;
+      return;
+    }
+
+    /*
+      Initial score setup is complete.
+      The backend has converted the scores
+      to Elo and does not need to store the
+      original scores.
+    */
     const profileUrl =
       new URL(
         `${window.location.origin}/profile/`
@@ -335,7 +570,7 @@ async function setUsername() {
 
   } catch (e) {
     console.error(
-      "Failed to set username:",
+      "Failed to submit initial scores:",
       e
     );
 
@@ -345,5 +580,6 @@ async function setUsername() {
     button.disabled = false;
   }
 }
+
 
 loadUser();

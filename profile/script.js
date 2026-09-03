@@ -150,27 +150,35 @@ function renderProfile(
   // ELO
   // ==========================================================
 
-  const rwElo =
-    Number(stats.rw_elo ?? 1200);
+const rwEloHidden =
+  Boolean(stats.rw_elo_hidden);
 
-  const mathElo =
-    Number(stats.math_elo ?? 1200);
+const mathEloHidden =
+  Boolean(stats.math_elo_hidden);
 
+const rwElo =
+  rwEloHidden
+    ? null
+    : Number(stats.rw_elo);
+
+const mathElo =
+  mathEloHidden
+    ? null
+    : Number(stats.math_elo);
 
   // ==========================================================
   // MINERAL RANKS
   // ==========================================================
 
-  const rwRank =
-    getMineralRank
-      ? getMineralRank(rwElo)
-      : null;
+const rwRank =
+  !rwEloHidden && getMineralRank
+    ? getMineralRank(rwElo)
+    : null;
 
-  const mathRank =
-    getMineralRank
-      ? getMineralRank(mathElo)
-      : null;
-
+const mathRank =
+  !mathEloHidden && getMineralRank
+    ? getMineralRank(mathElo)
+    : null;
 
   // -------------------------
   // BASIC PROFILE
@@ -217,10 +225,12 @@ function renderProfile(
       ""
     );
 
-  avatar.src =
-    user.avatar
-      ? `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`
-      : "https://cdn.discordapp.com/embed/avatars/0.png";
+avatar.src =
+  user.avatar
+    ? /^https?:\/\//i.test(user.avatar)
+      ? user.avatar
+      : `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png`
+    : "https://cdn.discordapp.com/embed/avatars/0.png";
 
 
   // ==========================================================
@@ -271,26 +281,26 @@ document.getElementById(
 ).innerHTML = `
   <div class="stat">
     <span>RW Elo</span>
-    <b>${rwElo}</b>
+    <b>${rwElo == null ? "???" : rwElo}</b>
   </div>
 
   <div class="stat">
     <span>RW Rank</span>
-<b class="${rwRank?.className || ""}">
-  ${rwRank?.name || "Unranked"}
-</b>
+    <b class="${rwRank?.className || ""}">
+      ${rwRank ? rwRank.name : "???"}
+    </b>
   </div>
 
   <div class="stat">
     <span>Math Elo</span>
-    <b>${mathElo}</b>
+    <b>${mathElo == null ? "???" : mathElo}</b>
   </div>
 
   <div class="stat">
     <span>Math Rank</span>
-<b class="${mathRank?.className || ""}">
-  ${mathRank?.name || "Unranked"}
-</b>
+    <b class="${mathRank?.className || ""}">
+      ${mathRank ? mathRank.name : "???"}
+    </b>
   </div>
 
   <div class="stat">
@@ -318,7 +328,6 @@ document.getElementById(
     <b>${stats.daily_streak ?? 0}</b>
   </div>
 `;
-
 
   // ==========================================================
   // QUESTION TYPE STATS
@@ -606,11 +615,6 @@ function escapeAttribute(value) {
 // ============================================================
 // SETTINGS
 // ============================================================
-
-function goSettings() {
-  location.href =
-    "/settings/";
-}
 
 
 // ============================================================

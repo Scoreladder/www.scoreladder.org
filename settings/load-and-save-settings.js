@@ -1,6 +1,20 @@
 
 async function load() {
-  const res = await fetch("https://auth.scoreladder.org/me", { credentials: "include" });
+  const sessionId =
+    sessionStorage.getItem("scoreladder_session");
+
+  let meUrl =
+    "https://auth.scoreladder.org/me";
+
+  if (sessionId) {
+    meUrl =
+      `https://auth.scoreladder.org/me?session=${encodeURIComponent(sessionId)}`;
+  }
+
+  const res = await fetch(meUrl, {
+    credentials: "include",
+    cache: "no-store"
+  });
 
   if (!res.ok) {
     location.href = "/";
@@ -8,7 +22,9 @@ async function load() {
   }
 
   const user = await res.json();
-  document.getElementById("displayName").value = user.display_name || "";
+
+  document.getElementById("displayName").value =
+    user.display_name || "";
 }
 
 async function save() {

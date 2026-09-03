@@ -330,13 +330,15 @@
           ""
         );
 
-      if (user.avatar) {
-        profileBtn.src =
-          `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png?size=128`;
-      } else {
-        profileBtn.src =
-          "https://cdn.discordapp.com/embed/avatars/0.png";
-      }
+if (user.avatar) {
+  profileBtn.src =
+    /^https?:\/\//i.test(user.avatar)
+      ? user.avatar
+      : `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png?size=128`;
+} else {
+  profileBtn.src =
+    "https://cdn.discordapp.com/embed/avatars/0.png";
+}
 
       profileBtn.alt =
         `${
