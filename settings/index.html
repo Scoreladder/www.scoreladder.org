@@ -1,72 +1,191 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SYPC6SHK23');
+</script>
+  <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443" type="text/javascript" async></script>
+
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/style.css">
-  <title>Settings</title>
+  <title>Settings — Scoreladder</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: var(--font-body);
       background: var(--base-color);
       color: var(--text-color);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 24px 16px;
     }
 
     .box {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 20px;
-      border-radius: 12px;
-      width: 320px;
+      border-radius: var(--radius-lg);
+      padding: 36px 32px 32px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
     }
 
-    input, textarea {
+    /* Accent bar on top */
+    .box::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .box h2 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-color);
+      margin-bottom: 24px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+
+    .field-label:first-of-type {
+      margin-top: 0;
+    }
+
+    input,
+    textarea {
       width: 100%;
-      padding: 8px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
       background: var(--primary-color);
       color: var(--text-color);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+      outline: none;
+      resize: vertical;
     }
 
-    button {
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+
+    textarea {
+      min-height: 72px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .btn-save {
       width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
       border: none;
-      cursor: pointer;
       background: var(--accent);
-      color: white;
+      color: #ffffff;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+      box-shadow: 0 4px 16px rgba(79,70,229,.35);
+    }
+
+    .btn-save:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(79,70,229,.45);
+    }
+
+    .btn-back {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--primary-color);
+      color: var(--text-color);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.12s;
+    }
+
+    .btn-back:hover {
+      background: var(--secondary-color);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
     }
   </style>
 </head>
 <body>
 
-<div class="box">
-  <h2>Settings</h2>
+  <div class="box">
+    <h2>Settings (NONE OF THIS WILL SAVE! THIS PAGE IS STILL IN DEVELOPMENT)</h2>
 
-  <textarea id="displayName" placeholder="Display Name"></textarea>
+    <label class="field-label" for="displayName">Display Name</label>
+    <textarea id="displayName" placeholder="Your display name"></textarea>
 
-  <textarea id="bio" placeholder="Bio"></textarea>
-  <input id="banner" placeholder="Banner image URL">
-  <input id="twitter" placeholder="Twitter URL">
-  <input id="instagram" placeholder="Instagram URL">
-  <input id="youtube" placeholder="YouTube URL">
-  <input id="website" placeholder="Website URL">
-  
-  <button onclick="save()">Save</button>
-  <button onclick="back()">View Profile</button>
-</div>
+    <label class="field-label" for="bio">Bio</label>
+    <textarea id="bio" placeholder="Tell people about yourself"></textarea>
 
-<script src="load-and-save-settings.js"></script>
-<script src="/components/layout.js" defer></script>
+    <label class="field-label" for="banner">Banner Image URL</label>
+    <input id="banner" type="url" placeholder="https://...">
 
-<div id="header"></div>
-<div id="footer"></div>
+    <label class="field-label" for="twitter">Twitter / X URL</label>
+    <input id="twitter" type="url" placeholder="https://twitter.com/...">
+
+    <label class="field-label" for="instagram">Instagram URL</label>
+    <input id="instagram" type="url" placeholder="https://instagram.com/...">
+
+    <label class="field-label" for="youtube">YouTube URL</label>
+    <input id="youtube" type="url" placeholder="https://youtube.com/...">
+
+    <label class="field-label" for="website">Website URL</label>
+    <input id="website" type="url" placeholder="https://...">
+
+    <div class="actions">
+      <button class="btn-save" onclick="save()">Save Changes</button>
+      <button class="btn-back" onclick="back()">View Profile</button>
+    </div>
+  </div>
+
+  <div id="header"></div>
+  <div id="footer"></div>
+
+  <script src="load-and-save-settings.js"></script>
+  <script src="/components/layout.js" defer></script>
+
 </body>
 </html>

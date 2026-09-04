@@ -1,80 +1,113 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@700;800;900&display=swap');
 
+/* ============================================================
+   LIGHT MODE TOKENS
+   ============================================================ */
 :root {
-  --base-color: #f4f6fb;
-  --primary-color: #eef1f8;
-  --secondary-color: #e2e7f3;
-  --surface: #ffffff;
-  --text-color: #1a1d2e;
-  --text-muted: #5a6280;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-soft: #ede9fe;
-  --accent2: #06b6d4;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --border: #d4d9ec;
-  --shadow-sm: 0 1px 3px rgba(79, 70, 229, .08), 0 1px 2px rgba(0, 0, 0, .06);
-  --shadow-md: 0 4px 16px rgba(79, 70, 229, .10), 0 2px 8px rgba(0, 0, 0, .06);
-  --shadow-lg: 0 10px 40px rgba(79, 70, 229, .14), 0 4px 16px rgba(0, 0, 0, .08);
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  /* Backgrounds */
+  --base-color:       #eef0f8;
+  --primary-color:    #e4e8f4;
+  --secondary-color:  #d6dcee;
+  --surface:          #ffffff;
+
+  /* Text */
+  --text-color:       #0e1120;
+  --text-muted:       #4a5270;
+
+  /* Accent — indigo/violet */
+  --accent:           #4f46e5;
+  --accent-hover:     #3d35c8;
+  --accent-soft:      #e8e6fd;
+  --accent2:          #0ea5e9;
+
+  /* Semantic */
+  --success:          #059669;
+  --warning:          #d97706;
+  --danger:           #dc2626;
+
+  /* Chrome */
+  --border:           #c8ceE2;
+  --border-strong:    #a8b0cc;
+
+  /* Shadows — tinted indigo */
+  --shadow-sm:  0 1px 3px rgba(79,70,229,.10), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 18px rgba(79,70,229,.13), 0 2px 8px rgba(0,0,0,.07);
+  --shadow-lg:  0 10px 44px rgba(79,70,229,.16), 0 4px 16px rgba(0,0,0,.09);
+
+  /* Shape */
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+
+  /* Layout */
   --topbar-height: 64px;
-  --font-body: 'Inter', system-ui, sans-serif;
+
+  /* Fonts */
+  --font-body:    'Inter', system-ui, sans-serif;
   --font-display: 'Poppins', 'Inter', sans-serif;
+
   color-scheme: light;
 }
 
-html.lightmode {
-  color-scheme: light;
-}
-
+/* ============================================================
+   DARK MODE TOKENS
+   ============================================================ */
 html.darkmode {
-  --base-color: #0f1117;
-  --primary-color: #161b27;
-  --secondary-color: #1e2535;
-  --surface: #1a2035;
-  --text-color: #e8eaf6;
-  --text-muted: #a8b1c9;
-  --accent: #7c73ff;
-  --accent-hover: #9a93ff;
-  --accent-soft: #2d2b6e;
-  --accent2: #22d3ee;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --border: #2a3350;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, .4);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, .5);
+  --base-color:      #0b0e18;
+  --primary-color:   #111525;
+  --secondary-color: #192030;
+  --surface:         #151c2e;
+
+  --text-color:      #eceef8;
+  --text-muted:      #8892b8;
+
+  --accent:          #7c6fff;
+  --accent-hover:    #9a90ff;
+  --accent-soft:     #26245a;
+  --accent2:         #22d3ee;
+
+  --success:         #34d399;
+  --warning:         #fbbf24;
+  --danger:          #f87171;
+
+  --border:          #252f4a;
+  --border-strong:   #38456a;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.40);
+  --shadow-md:  0 4px 18px rgba(0,0,0,.55);
+  --shadow-lg:  0 10px 44px rgba(0,0,0,.65);
+
   color-scheme: dark;
 }
 
+/* System preference fallback */
 @media (prefers-color-scheme: dark) {
   html:not(.lightmode):not(.darkmode) {
-    --base-color: #0f1117;
-    --primary-color: #161b27;
-    --secondary-color: #1e2535;
-    --surface: #1a2035;
-    --text-color: #e8eaf6;
-    --text-muted: #a8b1c9;
-    --accent: #7c73ff;
-    --accent-hover: #9a93ff;
-    --accent-soft: #2d2b6e;
-    --accent2: #22d3ee;
-    --success: #34d399;
-    --warning: #fbbf24;
-    --danger: #f87171;
-    --border: #2a3350;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, .3);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, .4);
-    --shadow-lg: 0 10px 40px rgba(0, 0, 0, .5);
+    --base-color:      #0b0e18;
+    --primary-color:   #111525;
+    --secondary-color: #192030;
+    --surface:         #151c2e;
+    --text-color:      #eceef8;
+    --text-muted:      #8892b8;
+    --accent:          #7c6fff;
+    --accent-hover:    #9a90ff;
+    --accent-soft:     #26245a;
+    --accent2:         #22d3ee;
+    --success:         #34d399;
+    --warning:         #fbbf24;
+    --danger:          #f87171;
+    --border:          #252f4a;
+    --border-strong:   #38456a;
+    --shadow-sm:  0 1px 3px rgba(0,0,0,.40);
+    --shadow-md:  0 4px 18px rgba(0,0,0,.55);
+    --shadow-lg:  0 10px 44px rgba(0,0,0,.65);
     color-scheme: dark;
   }
 }
 
+/* ============================================================
+   RESET
+   ============================================================ */
 *,
 *::before,
 *::after {
@@ -99,12 +132,7 @@ body {
   min-height: 100vh;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.25;
@@ -126,6 +154,9 @@ a:hover {
   text-decoration: underline;
 }
 
+/* ============================================================
+   LAYOUT UTILITIES
+   ============================================================ */
 .container {
   max-width: 1040px;
   margin: 0 auto;
@@ -138,13 +169,9 @@ a:hover {
   color: var(--text-color);
 }
 
-.bold {
-  font-weight: 700;
-}
+.bold { font-weight: 700; }
 
-.regular-text {
-  color: var(--text-color);
-}
+.regular-text { color: var(--text-color); }
 
 .grid {
   display: grid;
@@ -152,25 +179,32 @@ a:hover {
   gap: 16px;
 }
 
+/* ============================================================
+   CARDS
+   ============================================================ */
 a.card,
 .card {
   display: block;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 20px 22px;
+  padding: 22px 24px;
   text-decoration: none;
   color: var(--text-color);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s, box-shadow 0.2s, background 0.3s, border-color 0.3s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
 a.card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-5px);
   box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
   text-decoration: none;
 }
 
+/* ============================================================
+   BUTTONS
+   ============================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -185,6 +219,7 @@ a.card:hover {
   cursor: pointer;
   transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .btn:hover {
@@ -195,14 +230,14 @@ a.card:hover {
   background: var(--accent);
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, .35);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, .40);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  box-shadow: 0 6px 20px rgba(79, 70, 229, .45);
+  box-shadow: 0 6px 22px rgba(79, 70, 229, .50);
   text-decoration: none;
 }
 
@@ -210,10 +245,12 @@ a.card:hover {
   background: var(--secondary-color);
   color: var(--text-color) !important;
   -webkit-text-fill-color: var(--text-color) !important;
+  border: 1px solid var(--border);
 }
 
 .btn-secondary:hover {
   background: var(--border);
+  border-color: var(--border-strong);
   color: var(--text-color) !important;
   -webkit-text-fill-color: var(--text-color) !important;
   text-decoration: none;
@@ -233,6 +270,9 @@ a.card:hover {
   text-decoration: none;
 }
 
+/* ============================================================
+   TOPBAR
+   ============================================================ */
 #topbar {
   position: fixed;
   top: 0;
@@ -244,7 +284,7 @@ a.card:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 28px;
   z-index: 999;
   box-shadow: var(--shadow-sm);
 }
@@ -262,18 +302,25 @@ a.card:hover {
   text-decoration: none;
 }
 
+/* ============================================================
+   FOOTER
+   ============================================================ */
 #footer {
   background: var(--primary-color);
   border-top: 1px solid var(--border);
-  padding: 20px 24px;
+  padding: 24px 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   color: var(--text-muted);
   margin-top: 60px;
+  font-family: var(--font-body);
 }
 
+/* ============================================================
+   BADGES
+   ============================================================ */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -288,6 +335,7 @@ a.card:hover {
 .badge-accent {
   background: var(--accent-soft);
   color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .badge-success {
@@ -295,22 +343,26 @@ a.card:hover {
   color: #065f46;
 }
 
-.darkmode .badge-success {
+html.darkmode .badge-success {
   background: #064e3b;
   color: #6ee7b7;
 }
 
+/* ============================================================
+   HERO
+   ============================================================ */
 #title {
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
   font-weight: 900;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1.1;
-  margin: 16px;
-  margin-top: 128px;
+  margin: 16px auto;
+  margin-top: 80px;
+  max-width: 760px;
 }
 
 #title-description {
@@ -320,7 +372,7 @@ a.card:hover {
   max-width: 560px;
   margin-left: auto;
   margin-right: auto;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 #directory-title {
@@ -330,23 +382,30 @@ a.card:hover {
   font-weight: 700;
 }
 
+/* ============================================================
+   SECTIONS
+   ============================================================ */
 .section {
   margin-top: 56px;
 }
 
 .section h2 {
-  font-size: 13px;
+  font-size: 11px;
   margin-bottom: 20px;
   color: var(--text-muted);
-  font-weight: 600;
-  letter-spacing: .03em;
+  font-weight: 700;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
+/* ============================================================
+   ABOUT US STRIP
+   ============================================================ */
 #about-us {
   background: var(--primary-color);
   border-top: 1px solid var(--border);
-  padding: 64px 24px;
+  border-bottom: 1px solid var(--border);
+  padding: 72px 24px;
   text-align: center;
   margin-top: 40px;
   color: var(--text-color);
@@ -360,8 +419,12 @@ a.card:hover {
 #about-us h2 {
   font-size: 18px;
   color: var(--accent);
-  margin-top: 24px;
-  margin-bottom: 8px;
+  margin-top: 28px;
+  margin-bottom: 10px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 #about-us p {
@@ -369,15 +432,19 @@ a.card:hover {
   margin: 0 auto 20px;
   color: var(--text-muted);
   font-size: 15px;
+  line-height: 1.75;
 }
 
 #about-us h4 {
   color: var(--text-muted);
   font-weight: 600;
   font-size: 15px;
-  margin: 4px 0;
+  margin: 6px 0;
 }
 
+/* ============================================================
+   HERO CTA
+   ============================================================ */
 .hero-cta {
   display: flex;
   gap: 14px;
@@ -386,17 +453,25 @@ a.card:hover {
   margin-bottom: 16px;
 }
 
+/* ============================================================
+   DIRECTORY CARDS
+   ============================================================ */
 #directory-names {
   font-weight: 700;
   font-size: 15px;
   margin-bottom: 4px;
+  color: var(--text-color);
 }
 
 #directory-descriptions {
   font-size: 13px;
   color: var(--text-muted);
+  line-height: 1.5;
 }
 
+/* ============================================================
+   STAT CHIPS
+   ============================================================ */
 .stats-row {
   display: flex;
   gap: 16px;
@@ -409,18 +484,27 @@ a.card:hover {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 18px 28px;
+  padding: 20px 30px;
   text-align: center;
   min-width: 130px;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+}
+
+.stat-chip:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 
 .stat-chip .stat-value {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--accent);
   display: block;
+  line-height: 1.1;
+  margin-bottom: 4px;
 }
 
 .stat-chip .stat-label {
@@ -429,6 +513,9 @@ a.card:hover {
   font-weight: 500;
 }
 
+/* ============================================================
+   DARK MODE TOGGLE
+   ============================================================ */
 #darkmode-toggle {
   cursor: pointer;
   pointer-events: auto;
@@ -436,13 +523,15 @@ a.card:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
-  font-size: 18px;
+  font-size: 17px;
+  line-height: 1;
   color: var(--text-color);
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  transition: background 0.18s, border-color 0.18s;
 }
 
 #darkmode-toggle:hover {
   background: var(--border);
+  border-color: var(--border-strong);
 }
 
 #darkmode-toggle svg,
@@ -450,6 +539,9 @@ a.card:hover {
   pointer-events: none;
 }
 
+/* ============================================================
+   FOCUS & ACCESSIBILITY
+   ============================================================ */
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
@@ -468,6 +560,7 @@ a.card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-200%);
   transition: transform 0.15s;
+  font-weight: 600;
 }
 
 .skip-link:focus {
@@ -476,6 +569,9 @@ a.card:hover {
   text-decoration: none;
 }
 
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 640px) {
   .container {
     padding: 24px 16px;
@@ -486,14 +582,12 @@ a.card:hover {
   }
 
   #topbar {
-    padding: 0 14px;
+    padding: 0 16px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
+  html { scroll-behavior: auto; }
 
   *,
   *::before,
@@ -505,7 +599,98 @@ a.card:hover {
   }
 
   a.card:hover,
-  .btn:hover {
+  .btn:hover,
+  .stat-chip:hover {
     transform: none;
   }
+}
+
+/* ============================================================
+   MINERAL RANK COLORS — global
+   ============================================================ */
+.rank-bronze   { color: #e07010; }
+.rank-iron     { color: #b04840; }
+.rank-silver   { color: #707070; }
+.rank-gold     { color: #c8a800; }
+.rank-platinum { color: #1580c8; }
+.rank-sapphire { color: #2244ee; }
+.rank-emerald  { color: #00b856; }
+.rank-amethyst { color: #b060f0; }
+.rank-diamond  { color: #00c8e8; }
+.rank-painite  { color: #e81010; }
+
+.rank-bronze,
+.rank-iron,
+.rank-silver,
+.rank-gold,
+.rank-platinum,
+.rank-sapphire,
+.rank-emerald,
+.rank-amethyst,
+.rank-diamond,
+.rank-painite {
+  font-weight: 800;
+}
+
+/* Stat block rank values */
+.stat b.rank-bronze   { color: #e07010; }
+.stat b.rank-iron     { color: #b04840; }
+.stat b.rank-silver   { color: #707070; }
+.stat b.rank-gold     { color: #c8a800; }
+.stat b.rank-platinum { color: #1580c8; }
+.stat b.rank-sapphire { color: #2244ee; }
+.stat b.rank-emerald  { color: #00b856; }
+.stat b.rank-amethyst { color: #b060f0; }
+.stat b.rank-diamond  { color: #00c8e8; }
+.stat b.rank-painite  { color: #e81010; }
+
+/* Leaderboard mineral rank overrides */
+.ladder .leaderboard .player-info .rank.rank-bronze   { color: #b05000 !important; -webkit-text-fill-color: #b05000 !important; }
+.ladder .leaderboard .player-info .rank.rank-iron     { color: #7a2820 !important; -webkit-text-fill-color: #7a2820 !important; }
+.ladder .leaderboard .player-info .rank.rank-silver   { color: #505050 !important; -webkit-text-fill-color: #505050 !important; }
+.ladder .leaderboard .player-info .rank.rank-gold     { color: #9a7800 !important; -webkit-text-fill-color: #9a7800 !important; }
+.ladder .leaderboard .player-info .rank.rank-platinum { color: #0a5890 !important; -webkit-text-fill-color: #0a5890 !important; }
+.ladder .leaderboard .player-info .rank.rank-sapphire { color: #1a38cc !important; -webkit-text-fill-color: #1a38cc !important; }
+.ladder .leaderboard .player-info .rank.rank-emerald  { color: #006a34 !important; -webkit-text-fill-color: #006a34 !important; }
+.ladder .leaderboard .player-info .rank.rank-amethyst { color: #7820bb !important; -webkit-text-fill-color: #7820bb !important; }
+.ladder .leaderboard .player-info .rank.rank-diamond  { color: #0088aa !important; -webkit-text-fill-color: #0088aa !important; }
+.ladder .leaderboard .player-info .rank.rank-painite  { color: #bb0000 !important; -webkit-text-fill-color: #bb0000 !important; }
+
+/* ============================================================
+   LOGIN — Google button
+   ============================================================ */
+.login-providers {
+  width: 100%;
+}
+
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #1f1f1f;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+}
+
+.btn-google:hover {
+  background: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, .13);
+  text-decoration: none;
+  color: #1f1f1f;
+}
+
+.btn-google svg {
+  flex-shrink: 0;
 }

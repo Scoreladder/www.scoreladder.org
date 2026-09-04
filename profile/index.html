@@ -1,37 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443" type="text/javascript"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SYPC6SHK23');
+</script>
   <title>Profile</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="profile.css">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../style.css">
+
 </head>
 
 <body>
 
-<div class="banner" id="banner"></div>
 
-<div class="profile-card">
-  <img id="avatar" class="avatar" />
+  <main class="profile-page">
 
-  <h2 id="name"></h2>
-  <p id="id"></p>
+    <div class="banner" id="banner"></div>
 
-  <p id="bio" class="bio"></p>
+    <div class="profile-card">
 
-  <div class="stats" id="stats"></div>
+      <img
+        id="avatar"
+        class="avatar"
+        alt="Profile picture"
+      >
 
-  <div class="socials" id="socials"></div>
+      <h2 id="name"></h2>
 
-  <button class="settings" onclick="goSettings()">Settings</button>
-  <button class="logout" onclick="logout()">Logout</button>
-</div>
+      <p id="id"></p>
 
-<script src="profile.js"></script>
+      <p id="bio" class="bio"></p>
 
-<script src="/components/layout.js"></script>
+      <div class="stats" id="stats"></div>
 
-<div id="header"></div>
-<div id="footer"></div>
+      <div class="socials" id="socials"></div>
 
+      <div class="profile-actions">
+        <button
+          class="settings"
+          type="button"
+          onclick="window.location.href='/settings/'"
+        >
+          Settings
+        </button>
+
+        <button
+          class="logout"
+          type="button"
+          onclick="logout()"
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div id="header"></div>
+  <div id="footer"></div>
+
+  <script src="/components/layout.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
+
 </html>

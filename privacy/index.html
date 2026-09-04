@@ -1,102 +1,187 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scoreladder Privacy Policy</title>
-<link rel="stylesheet" href="/style.css">
-<style>
-* {
-    box-sizing: border-box;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoreladder Privacy Policy</title>
 
-body {
-    margin: 0;
-    font-family: Inter, system-ui, sans-serif;
-    background: var(--base-color);
-    color: var(--text-color);
-    line-height: 1.7;
-}
+    <link rel="stylesheet" href="/style.css">
 
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
+    <script
+        id="Cookiebot"
+        src="https://consent.cookiebot.com/uc.js"
+        data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+        type="text/javascript">
+    </script>
 
-.card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px;
-}
+    <!-- Google tag (gtag.js) -->
+    <script
+        type="text/plain"
+        data-cookieconsent="statistics"
+        src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
+    </script>
 
-h1 {
-    margin-top: 0;
-    font-size: 2.5rem;
-}
+    <script type="text/plain" data-cookieconsent="statistics">
+        window.dataLayer = window.dataLayer || [];
 
-h2 {
-    margin-top: 40px;
-    color: var(--accent);
-}
+        function gtag() {
+            dataLayer.push(arguments);
+        }
 
-p {
-    color: var(--text-color);
-}
+        gtag('js', new Date());
 
-ul {
-    padding-left: 20px;
-}
+        const analyticsUrl = new URL(window.location.href);
+        analyticsUrl.searchParams.delete("session");
 
-li {
-    margin-bottom: 8px;
-}
+        gtag('config', 'G-SYPC6SHK23', {
+            page_location: analyticsUrl.toString()
+        });
+    </script>
 
-.updated {
-    color: var(--text-muted);
-    margin-bottom: 30px;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-a {
-    color: var(--accent);
-    text-decoration: none;
-}
+        body {
+            margin: 0;
+            font-family: var(--font-body);
+            background: var(--base-color);
+            color: var(--text-color);
+            line-height: 1.7;
+        }
 
-a:hover {
-    text-decoration: underline;
-}
+        .doc-page {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 52px 24px 96px;
+        }
 
-@media (max-width: 768px) {
-    .card {
-        padding: 25px;
-    }
+        .doc-header {
+            margin-bottom: 40px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid var(--border);
+        }
 
-    h1 {
-        font-size: 2rem;
-    }
-}
-</style>
+        .doc-header h1 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 0 8px;
+        }
+
+        .doc-header .updated {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .doc-body p {
+            color: var(--text-color);
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        .doc-body h2 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-top: 44px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--accent-soft);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .doc-body h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.1em;
+            background: var(--accent);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .doc-body h3 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 26px;
+            margin-bottom: 10px;
+        }
+
+        .doc-body ul,
+        .doc-body ol {
+            padding-left: 22px;
+            margin-bottom: 16px;
+        }
+
+        .doc-body li {
+            color: var(--text-color);
+            font-size: 15px;
+            margin-bottom: 7px;
+            line-height: 1.65;
+        }
+
+        .doc-body a {
+            color: var(--accent);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .doc-body a:hover {
+            color: var(--accent-hover);
+        }
+
+        @media (max-width: 600px) {
+            .doc-page {
+                padding: 36px 16px 72px;
+            }
+
+            .doc-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+
 </head>
+
 <body>
 
-<div class="container">
-    <div class="card">
+<main class="doc-page" id="main-content">
 
+    <div class="doc-header">
         <h1>Privacy Policy</h1>
+        <p class="updated">Last Updated: June 12, 2026</p>
+    </div>
 
-        <p class="updated">
-            Last Updated: June 12, 2026
-        </p>
+    <div class="doc-body">
 
         <p>
-            Welcome to Scoreladder ("Scoreladder," "we," "our," or "us"). This Privacy Policy explains what information we collect, how we use it, and the choices available to you when using Scoreladder's websites, applications, services, competitions, rankings, and related platforms.
+            Welcome to Scoreladder ("Scoreladder," "we," "our," or "us").
+            This Privacy Policy explains what information we collect, how we
+            use it, and the choices available to you when using Scoreladder's
+            websites, applications, services, competitions, rankings, and
+            related platforms.
         </p>
 
         <h2>Eligibility</h2>
 
         <p>
-            Scoreladder is intended only for individuals who are at least 13 years old. By creating an account or using our services, you represent that you are 13 years of age or older.
+            Scoreladder is intended only for individuals who are at least
+            13 years old. By creating an account or using our services,
+            you represent that you are 13 years of age or older.
         </p>
 
         <h2>Information We Collect</h2>
@@ -129,11 +214,10 @@ a:hover {
         <h3>Authentication Providers</h3>
 
         <p>
-            You may sign in using supported third-party authentication providers, including Discord and Google.
-        </p>
-
-        <p>
-            When using these providers, we may receive account information necessary to authenticate and operate your Scoreladder account.
+            You may sign in using supported third-party authentication
+            providers, including Discord and Google. When using these
+            providers, we may receive account information necessary to
+            authenticate and operate your Scoreladder account.
         </p>
 
         <h3>Technical Information</h3>
@@ -149,7 +233,8 @@ a:hover {
         <h2>Public Information</h2>
 
         <p>
-            The following information is public by default and may be visible to other users and visitors:
+            The following information is public by default and may be visible
+            to other users and visitors:
         </p>
 
         <ul>
@@ -164,14 +249,13 @@ a:hover {
         </ul>
 
         <p>
-            Users should assume that public profile information may be indexed, archived, or viewed by others.
+            Users should assume that public profile information may be
+            indexed, archived, or viewed by others.
         </p>
 
         <h2>Private Information</h2>
 
-        <p>
-            The following information is private by default:
-        </p>
+        <p>The following information is private by default:</p>
 
         <ul>
             <li>Email addresses</li>
@@ -182,7 +266,8 @@ a:hover {
         </ul>
 
         <p>
-            Private information will not be publicly displayed unless you explicitly choose to make it public.
+            Private information will not be publicly displayed unless you
+            explicitly choose to make it public.
         </p>
 
         <h2>How We Use Information</h2>
@@ -202,11 +287,10 @@ a:hover {
         <h2>Testing Program Communications</h2>
 
         <p>
-            Users who apply to participate in testing programs may be contacted regarding testing opportunities and updates.
-        </p>
-
-        <p>
-            Depending on the information provided during registration, communications may occur through:
+            Users who apply to participate in testing programs may be
+            contacted regarding testing opportunities and updates.
+            Depending on the information provided during registration,
+            communications may occur through:
         </p>
 
         <ul>
@@ -217,37 +301,35 @@ a:hover {
         </ul>
 
         <p>
-            Users who apply for testing consent to being contacted regarding testing-related matters.
+            Users who apply for testing consent to being contacted regarding
+            testing-related matters.
         </p>
 
         <h2>Artificial Intelligence</h2>
 
         <p>
-            Scoreladder may use privately hosted artificial intelligence systems to generate questions and platform content.
-        </p>
-
-        <p>
-            User data is not sold or provided to third-party AI providers for question generation.
+            Scoreladder may use privately hosted artificial intelligence
+            systems to generate questions and platform content. User data
+            is not sold or provided to third-party AI providers for question
+            generation.
         </p>
 
         <h2>Analytics</h2>
 
         <p>
-            Scoreladder does not independently operate advertising or behavioral tracking systems.
-        </p>
-
-        <p>
-            Infrastructure providers, including Cloudflare, may collect operational and analytics data necessary to provide security, performance, and reliability services.
+            Scoreladder does not independently operate advertising or
+            behavioral tracking systems. Infrastructure providers, including
+            Cloudflare, may collect operational and analytics data necessary
+            to provide security, performance, and reliability services.
         </p>
 
         <h2>Data Security</h2>
 
         <p>
-            Personally identifying information stored within our infrastructure is encrypted when stored.
-        </p>
-
-        <p>
-            While we strive to protect user data, no method of electronic storage or transmission can be guaranteed to be completely secure.
+            Personally identifying information stored within our
+            infrastructure is encrypted when stored. While we strive to
+            protect user data, no method of electronic storage or transmission
+            can be guaranteed to be completely secure.
         </p>
 
         <h2>Third-Party Services</h2>
@@ -260,17 +342,17 @@ a:hover {
         </ul>
 
         <p>
-            These providers maintain their own privacy policies governing their services.
+            These providers maintain their own privacy policies governing
+            their services.
         </p>
 
         <h2>Data Retention</h2>
 
         <p>
-            Users may request deletion of personal information where applicable.
-        </p>
-
-        <p>
-            Certain records may be retained indefinitely, including usernames, display names, moderation records, and other limited account-related information necessary to:
+            Users may request deletion of personal information where
+            applicable. Certain records may be retained indefinitely,
+            including usernames, display names, moderation records, and
+            other limited account-related information necessary to:
         </p>
 
         <ul>
@@ -284,47 +366,45 @@ a:hover {
         <h2>Data Deletion Requests</h2>
 
         <p>
-            Users may request the deletion of personal information.
-        </p>
-
-        <p>
-            Upon receiving a valid request, we will make reasonable efforts to remove or anonymize personal information that is no longer necessary for the operation of the platform.
+            Users may request the deletion of personal information. Upon
+            receiving a valid request, we will make reasonable efforts to
+            remove or anonymize personal information that is no longer
+            necessary for the operation of the platform.
         </p>
 
         <h2>Donations</h2>
 
         <p>
-            Scoreladder may accept voluntary donations to support platform operations.
-        </p>
-
-        <p>
-            Donations do not grant ownership rights, special legal status, or guaranteed platform benefits unless explicitly stated.
+            Scoreladder may accept voluntary donations to support platform
+            operations. Donations do not grant ownership rights, special
+            legal status, or guaranteed platform benefits unless explicitly
+            stated.
         </p>
 
         <h2>Changes to This Policy</h2>
 
         <p>
-            We may update this Privacy Policy from time to time.
-        </p>
-
-        <p>
-            When significant changes are made, we will update the "Last Updated" date and may provide additional notice where appropriate.
+            We may update this Privacy Policy from time to time. When
+            significant changes are made, we will update the "Last Updated"
+            date and may provide additional notice where appropriate.
         </p>
 
         <h2>Contact</h2>
 
         <p>
             Questions regarding this Privacy Policy may be directed to:
+            <a href="mailto:privacy@scoreladder.org">
+                privacy@scoreladder.org
+            </a>
         </p>
 
-        <p>
-            <a href="mailto:privacy@scoreladder.org">privacy@scoreladder.org</a>
-        </p>
     </div>
-</div>
+
+</main>
 
 <div id="header"></div>
 <div id="footer"></div>
+
 <script src="/components/layout.js" defer></script>
 
 </body>

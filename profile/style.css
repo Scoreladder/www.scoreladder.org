@@ -1,0 +1,303 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 80px;
+}
+
+/* ============================================================
+   BANNER
+   ============================================================ */
+.banner {
+  width: 100%;
+  max-width: 560px;
+  height: 168px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin-bottom: -72px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Subtle inner shadow on banner bottom edge */
+.banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,.18) 100%);
+}
+
+/* ============================================================
+   PROFILE CARD
+   ============================================================ */
+.profile-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 0 36px 36px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  position: relative;
+}
+
+/* ============================================================
+   AVATAR
+   ============================================================ */
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid var(--surface);
+  outline: 3px solid var(--accent);
+  object-fit: cover;
+  margin-top: -50px;
+  margin-bottom: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--secondary-color);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   NAME & BIO
+   ============================================================ */
+.profile-card h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-color);
+  margin-bottom: 3px;
+}
+
+#id {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.bio {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin: 0 0 28px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ============================================================
+   STAT GRID
+   ============================================================ */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 0 22px;
+  text-align: left;
+}
+
+.stat {
+  background: var(--primary-color);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.stat:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.stat b {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-top: 5px;
+  font-family: var(--font-display);
+  line-height: 1.1;
+}
+
+/* ============================================================
+   QUESTION-TYPE BREAKDOWN
+   ============================================================ */
+.question-type-stats {
+  background: var(--primary-color);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin: 0 0 22px;
+  text-align: left;
+}
+
+.question-type-stats h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.question-type-stat {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.question-type-stat:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.question-type-name {
+  color: var(--text-color);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.question-type-accuracy {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  white-space: nowrap;
+  font-family: var(--font-display);
+}
+
+.question-type-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  background: var(--secondary-color);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.question-type-stats > p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ============================================================
+   SOCIALS
+   ============================================================ */
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 26px;
+}
+
+.socials a {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  transition: border-color 0.15s, transform 0.12s, background 0.15s;
+}
+
+.socials a:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: var(--accent);
+}
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--primary-color);
+  color: var(--text-color);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+.settings:hover {
+  background: var(--secondary-color);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.logout {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--danger);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+.logout:hover {
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  border-color: var(--danger);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 580px) {
+  .banner,
+  .profile-card {
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .banner {
+    border-radius: 0;
+  }
+
+  .profile-card {
+    padding: 0 20px 28px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}

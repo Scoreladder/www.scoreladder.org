@@ -2,6 +2,35 @@
 <html lang="en">
 
 <head> 
+<!-- Cookiebot -->
+<script
+    id="Cookiebot"
+    src="https://consent.cookiebot.com/uc.js"
+    data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+    type="text/javascript">
+</script>
+
+<!-- Google Analytics -->
+<script
+    type="text/plain"
+    data-cookieconsent="statistics"
+    src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
+</script>
+
+<script
+    type="text/plain"
+    data-cookieconsent="statistics">
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-SYPC6SHK23');
+</script>
+
     <meta charset="UTF-8">
     <title>Scoreladder Homepage</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +46,7 @@
             <p id="title-description">
                 Stop doomscrolling and paying for test prep. We're turning the SAT into a competitive video game. Start grinding elo today for free!
             </p>
-            <a href=/signup class="btn btn-primary">Get Started</a>
+            <a href="/login" class="btn btn-primary">Get Started</a>
         </div>
 
         <div class="container">
@@ -50,9 +79,10 @@
     <script>
         const pages = [
             { name: "Article (Proof of Concept)", url: "/article", desc: "Test out our article and question generator test!" },
+            { name: "Blog (Coming Soon)", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
         ];
         const externalLinks = [
-            { name: "Blog", url: "https://blog.scoreladder.org", desc: "Dev logs and updates" },
+            { name: "Kofi", url: "https://ko-fi.com/scoreladder", desc: "Support Us!"},
             { name: "Waitlist", url: "https://forms.gle/LAgDeZZH6BArEHzM9", desc: "Join the waitlist so you're notified when the site works!" },
             { name: "Discord", url: "https://discord.com/invite/Zr8s3GnHNv", desc: "Join our community, become a tester!" },
             { name: "Instagram", url: "https://www.instagram.com/scoreladder/", desc: "Follow us on Instagram!" },

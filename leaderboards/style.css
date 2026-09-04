@@ -1,0 +1,395 @@
+/* ============================================================
+   LEADERBOARD PAGE
+   Page background: site default (var(--base-color)).
+   Brown identity lives inside the ladder cards only.
+   ============================================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--base-color);
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+/* =========================
+   PAGE WRAPPER
+========================= */
+
+.page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+}
+
+/* Warm amber gradient title */
+.page-title {
+    margin: 0;
+    text-align: center;
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, #d4894a 0%, #8B5A2B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    margin: 10px 0 52px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* =========================
+   LADDER GRID
+========================= */
+
+.ladders {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px;
+    align-items: start;
+}
+
+/* =========================
+   LADDER CARD
+   The card background (#7a4828) is the rail colour.
+   The 20px padding on each side of .leaderboard exposes it.
+========================= */
+
+.ladder {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 3px solid #3d2008;
+    background: #7a4828;
+    box-shadow:
+        inset 0  2px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.40),
+        0 10px 36px rgba(0, 0, 0, 0.32),
+        0  3px 10px rgba(0, 0, 0, 0.22);
+}
+
+/* Thin amber-to-brown accent bar */
+.ladder::before {
+    content: '';
+    display: block;
+    height: 4px;
+    background: linear-gradient(90deg, #d4894a 0%, #8B5A2B 100%);
+}
+
+/* =========================
+   LADDER HEADER
+   Uses var(--surface) — site default, NOT dark brown.
+   A lighter brown border separates it from the rail area.
+========================= */
+
+.ladder-header {
+    padding: 18px 24px 14px;
+    background: var(--surface);
+    border-bottom: 2px solid #c09060;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ladder-header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text-color);
+}
+
+/* Elo badge — blue/purple accent pop */
+.ladder-header span {
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 3px 10px;
+}
+
+/* =========================
+   LEADERBOARD SCROLL AREA
+   Background = rail colour. Padding = rail width.
+========================= */
+
+.leaderboard {
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    background: #7a4828;
+    padding: 10px 20px;
+}
+
+/* =========================
+   PLAYER ROW — the rung
+========================= */
+
+.player {
+    display: grid;
+    grid-template-columns: 50px 1fr 72px;
+    align-items: center;
+    gap: 10px;
+
+    background: linear-gradient(180deg,
+        #fdf8f0 0%,
+        #f2e4c8 50%,
+        #e8d4a8 100%
+    );
+    border-radius: 6px;
+    border-top:    2px solid #fffbf2;
+    border-bottom: 2px solid #b8915a;
+    border-left:   none;
+    border-right:  none;
+
+    padding: 11px 14px 11px 10px;
+    margin-bottom: 9px;
+
+    position: relative;
+    cursor: default;
+    transition: filter 0.14s ease, transform 0.12s ease, box-shadow 0.14s ease;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.player:last-child {
+    margin-bottom: 0;
+}
+
+.player:hover {
+    filter: brightness(1.05);
+    transform: translateY(-2px) scaleX(1.007);
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    z-index: 2;
+}
+
+/* Dark text on light rungs */
+.player .ranking,
+.player .username,
+.player .score {
+    color: #2e1505;
+}
+
+/* =========================
+   TOP 3 RUNGS
+========================= */
+
+/* Gold */
+.player:nth-child(1) {
+    background: linear-gradient(180deg, #fff4b0 0%, #f5cc00 50%, #c89a00 100%);
+    border-top-color:    #fffce0;
+    border-bottom-color: #8a6a00;
+    box-shadow:
+        0 3px 10px rgba(160, 110, 0, 0.50),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+/* Silver */
+.player:nth-child(2) {
+    background: linear-gradient(180deg, #ffffff 0%, #d8d8e8 50%, #b0b0c4 100%);
+    border-top-color:    #ffffff;
+    border-bottom-color: #78789a;
+    box-shadow:
+        0 3px 10px rgba(60, 60, 120, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* Bronze */
+.player:nth-child(3) {
+    background: linear-gradient(180deg, #ffc870 0%, #d47830 50%, #a85010 100%);
+    border-top-color:    #ffe0a8;
+    border-bottom-color: #7a3800;
+    box-shadow:
+        0 3px 10px rgba(140, 70, 0, 0.44),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.player:nth-child(1) .ranking { color: #6b4800; font-weight: 800; }
+.player:nth-child(2) .ranking { color: #484870; font-weight: 800; }
+.player:nth-child(3) .ranking { color: #5a2c00; font-weight: 800; }
+
+/* =========================
+   POSITION NUMBER
+========================= */
+
+.ranking {
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #4a2800;
+    text-align: center;
+    line-height: 1;
+}
+
+/* =========================
+   PLAYER INFO
+========================= */
+
+.player-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(80, 40, 0, 0.25);
+}
+
+.player-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1px;
+}
+
+.username {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.88rem;
+    font-family: 'Inter', system-ui, sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.35;
+    color: #2e1505;
+}
+
+.mineral-rank {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.35;
+    padding-left: 2px;
+}
+
+/* =========================
+   ELO SCORE
+========================= */
+
+.score {
+    font-weight: 700;
+    font-size: 0.88rem;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #2e1505;
+    text-align: right;
+    white-space: nowrap;
+    padding-right: 4px;
+}
+
+/* =========================
+   MINERAL RANK COLORS
+   Darkened for legibility on cream rungs
+========================= */
+
+.mineral-rank.rank-bronze   { color: #b05000; }
+.mineral-rank.rank-iron     { color: #7a2820; }
+.mineral-rank.rank-silver   { color: #505050; }
+.mineral-rank.rank-gold     { color: #9a7800; }
+.mineral-rank.rank-platinum { color: #0a5890; }
+.mineral-rank.rank-sapphire { color: #1a38cc; }
+.mineral-rank.rank-emerald  { color: #006a34; }
+.mineral-rank.rank-amethyst { color: #7820bb; }
+.mineral-rank.rank-diamond  { color: #0088aa; }
+.mineral-rank.rank-painite  { color: #bb0000; }
+
+/* =========================
+   EMPTY / ERROR STATE
+========================= */
+
+.empty {
+    padding: 55px 20px;
+    text-align: center;
+    color: #e0c090;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.empty p {
+    margin: 0;
+    font-size: 0.88rem;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+.leaderboard::-webkit-scrollbar {
+    width: 5px;
+}
+
+.leaderboard::-webkit-scrollbar-track {
+    background: #4a2810;
+}
+
+.leaderboard::-webkit-scrollbar-thumb {
+    background: #a06030;
+    border-radius: 10px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 820px) {
+    .page {
+        padding: 36px 16px 64px;
+    }
+
+    .page-title {
+        font-size: 2.1rem;
+    }
+
+    .subtitle {
+        margin-bottom: 32px;
+    }
+
+    .ladders {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .ladder-header {
+        padding: 14px 16px;
+    }
+
+    .leaderboard {
+        padding: 8px 14px;
+    }
+
+    .player {
+        grid-template-columns: 40px 1fr 58px;
+        padding: 9px 10px;
+        margin-bottom: 7px;
+    }
+
+    .avatar {
+        width: 28px;
+        height: 28px;
+    }
+}

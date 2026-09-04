@@ -1,75 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443" type="text/javascript" async></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SYPC6SHK23');
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Play</title>
+  <title>Play — Scoreladder</title>
   <link rel="stylesheet" href="/style.css">
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
-      margin: 0;
-      font-family: Inter, system-ui, sans-serif;
+      font-family: var(--font-body);
       background: var(--base-color);
       color: var(--text-color);
       line-height: 1.7;
     }
 
-    .container {
-      max-width: 900px;
+    .play-page {
+      max-width: 860px;
       margin: 0 auto;
-      padding: 40px 20px;
+      padding: 52px 24px 96px;
     }
 
-    .card {
+    .play-page h1 {
+      font-family: var(--font-display);
+      font-size: 2.6rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    .play-page > .page-sub {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 48px;
+    }
+
+    /* ── Mode group heading ── */
+    .mode-group {
+      margin-bottom: 44px;
+    }
+
+    .mode-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Mode cards grid ── */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Individual mode card ── */
+    .mode-card {
+      display: block;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 40px;
-    }
-
-    h1 {
-      margin-top: 0;
-      font-size: 2.5rem;
-    }
-
-    h2 {
-      margin-top: 40px;
-      color: var(--accent);
-    }
-
-    p {
+      border-radius: var(--radius-md);
+      padding: 22px 22px 18px;
+      text-decoration: none;
       color: var(--text-color);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+      position: relative;
+      overflow: hidden;
     }
 
-    ul {
-      padding-left: 20px;
+    .mode-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.18s;
     }
 
-    li {
-      margin-bottom: 8px;
-    }
-
-    a {
-      color: var(--accent);
+    .mode-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-strong);
       text-decoration: none;
     }
 
-    a:hover {
-      text-decoration: underline;
+    .mode-card:hover::before {
+      opacity: 1;
     }
 
-    @media (max-width: 768px) {
-      .card {
-        padding: 25px;
+    /* Disabled/coming-soon card */
+    .mode-card.soon {
+      opacity: 0.62;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .mode-card.soon:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mode-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .mode-card-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-color);
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .status-badge.dev {
+      background: color-mix(in srgb, var(--warning) 15%, transparent);
+      color: var(--warning);
+      border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+    }
+
+    .status-badge.soon {
+      background: var(--secondary-color);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .status-badge.live {
+      background: color-mix(in srgb, var(--success) 15%, transparent);
+      color: var(--success);
+      border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+    }
+
+    .mode-card-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    @media (max-width: 600px) {
+      .play-page {
+        padding: 36px 16px 72px;
       }
 
-      h1 {
+      .play-page h1 {
         font-size: 2rem;
+      }
+
+      .mode-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -77,49 +193,89 @@
 
 <body>
 
-  <div class="container">
-    <div class="card">
-      <h1>Play</h1>
+  <main class="play-page" id="main-content">
 
-      <a href=/play/singleplayer-modes/daily-challenge-rw>
-        <h2>Daily Challenge - RW (In development)</h2>
-      </a>
-      <p>
-        You will get a set of 10 RW questions. None of your stats will be
-        affected, and you don't have to be logged in.
-      </p>
+    <h1>Play</h1>
+    <p class="page-sub">Choose a game mode and start climbing the ladder.</p>
 
-      <a href=/comingsoon>
-        <h2>Daily Challenge - Math (Coming Soon!)</h2>
-      </a>
+    <!-- SINGLEPLAYER -->
+    <div class="mode-group">
+      <p class="mode-group-title">Singleplayer</p>
+      <div class="mode-grid">
 
-      <a href=/comingsoon>
-        <h2>Multiplayer - RW (Coming Soon!)</h2>
-      </a>
+        <div class="mode-card soon">
+          <div class="mode-card-header">
+            <p class="mode-card-title">Reading &amp; Writing</p>
+            <span class="status-badge soon">Coming Soon</span>
+          </div>
+          <p class="mode-card-desc">10 RW questions. Coming soon.</p>
+        </div>
 
-      <a href=/comingsoon>
-        <h2>Multiplayer - Math (Coming Soon!)</h2>
-      </a>
+        <div class="mode-card soon">
+          <div class="mode-card-header">
+            <p class="mode-card-title">Math</p>
+            <span class="status-badge soon">Coming Soon</span>
+          </div>
+          <p class="mode-card-desc">10 Math questions. Coming soon.</p>
+        </div>
 
-      <a href=/comingsoon>
-        <h2>Targeted Practice - RW (Coming Soon!)</h2>
-      </a>
-      <p>
-        You will get a set of 10 RW questions on a specific topic. This mode
-        requires you to be logged in.
-      </p>
-
-      <a href=/comingsoon>
-        <h2>Targeted Practice - Math (Coming Soon!)</h2>
-      </a>
+      </div>
     </div>
-  </div>
+
+    <!-- MULTIPLAYER -->
+    <div class="mode-group">
+      <p class="mode-group-title">Multiplayer</p>
+      <div class="mode-grid">
+
+        <a class="mode-card" href="/play/multiplayer/multiplayer-rw">
+          <div class="mode-card-header">
+            <p class="mode-card-title">Reading &amp; Writing</p>
+            <span class="status-badge dev">In Development</span>
+          </div>
+          <p class="mode-card-desc">Compete head-to-head on 10 RW questions. Earn and lose Elo.</p>
+        </a>
+
+        <div class="mode-card soon">
+          <div class="mode-card-header">
+            <p class="mode-card-title">Math</p>
+            <span class="status-badge soon">Coming Soon</span>
+          </div>
+          <p class="mode-card-desc">Head-to-head Math matches. Coming soon.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TARGETED PRACTICE -->
+    <div class="mode-group">
+      <p class="mode-group-title">Targeted Practice</p>
+      <div class="mode-grid">
+
+        <div class="mode-card soon">
+          <div class="mode-card-header">
+            <p class="mode-card-title">Reading &amp; Writing</p>
+            <span class="status-badge soon">Coming Soon</span>
+          </div>
+          <p class="mode-card-desc">10 RW questions focused on a topic of your choice. Requires a Scoreladder account.</p>
+        </div>
+
+        <div class="mode-card soon">
+          <div class="mode-card-header">
+            <p class="mode-card-title">Math</p>
+            <span class="status-badge soon">Coming Soon</span>
+          </div>
+          <p class="mode-card-desc">Targeted Math practice on a topic of your choice. Coming soon.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
 
   <div id="header"></div>
+  <div id="footer"></div>
 
-  <div class="footer"></div>
   <script src="/components/layout.js" defer></script>
 
 </body>
-
 </html>

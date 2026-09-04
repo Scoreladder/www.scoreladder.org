@@ -1,331 +1,305 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Ladder</title>
-<link rel="stylesheet" href="/style.css">
 
-<style>
-* {
-    box-sizing: border-box;
-}
+    <meta charset="UTF-8">
 
-body {
-    margin: 0;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--base-color);
-    color: var(--text-color);
-    line-height: 1.5;
-}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-.page {
-    max-width: 1250px;
-    margin: 0 auto;
-    padding: 50px 24px 80px;
-}
+    <title>The Ladder</title>
 
-.page-title {
-    margin: 0;
-    text-align: center;
-    font-size: 2.7rem;
-    font-weight: 800;
-    letter-spacing: -1px;
-}
+    <link rel="stylesheet" href="style.css">
 
-.subtitle {
-    margin: 8px 0 45px;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 1rem;
-}
+    <link rel="stylesheet" href="../style.css">
 
-/* =========================
-   LADDER GRID
-========================= */
+    <script
+        id="Cookiebot"
+        src="https://consent.cookiebot.com/uc.js"
+        data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+        type="text/javascript">
+    </script>
 
-.ladders {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 28px;
-    align-items: start;
-}
+    <!-- Google tag (gtag.js) -->
+    <script
+        type="text/plain"
+        data-cookieconsent="statistics"
+        src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
+    </script>
 
-.ladder {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    overflow: hidden;
-}
+    <script type="text/plain" data-cookieconsent="statistics">
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-SYPC6SHK23');
+    </script>
 
-.ladder-header {
-    padding: 22px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+    <style>
 
-.ladder-header h2 {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 750;
-    color: var(--text-color);
-}
+        * {
+            box-sizing: border-box;
+        }
 
-.ladder-header span {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--base-color);
+            color: var(--text-color);
+            line-height: 1.5;
+        }
 
-/* =========================
-   LEADERBOARD
-========================= */
+        .page {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 50px 24px 80px;
+        }
 
-.leaderboard {
-    max-height: 520px;
-    overflow-y: auto;
-}
+        .page-title {
+            margin: 0;
+            text-align: center;
+            font-size: 2.7rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
 
-.player {
-    display: grid;
-    grid-template-columns: 55px 1fr auto;
-    align-items: center;
-    gap: 12px;
+        .subtitle {
+            margin: 8px 0 45px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
 
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
+        /* =========================
+           LADDER GRID
+        ========================= */
 
-    transition: background 0.15s ease;
-}
+        .ladders {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 28px;
+            align-items: start;
+        }
 
-.player:last-child {
-    border-bottom: none;
-}
+        .ladder {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+        }
 
-.player:hover {
-    background: var(--base-color);
-}
+        .ladder-header {
+            padding: 22px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-.rank {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-align: center;
-}
+        .ladder-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 750;
+            color: var(--text-color);
+        }
 
-.player-info {
-    min-width: 0;
-}
+        .ladder-header span {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
 
-.username {
-    margin: 0;
-    font-weight: 650;
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+        /* =========================
+           LEADERBOARD
+        ========================= */
 
-.rating {
-    margin: 2px 0 0;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-}
+        .leaderboard {
+            max-height: 520px;
+            overflow-y: auto;
+        }
 
-.score {
-    font-weight: 750;
-    font-size: 0.95rem;
-}
+        .player {
+            display: grid;
+            grid-template-columns: 55px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s ease;
+        }
 
-/* Top 3 */
+        .player:last-child {
+            border-bottom: none;
+        }
 
-.player:nth-child(1) .rank {
-    color: var(--accent);
-    font-size: 1.15rem;
-}
+        .player:hover {
+            background: var(--base-color);
+        }
 
-.player:nth-child(2) .rank,
-.player:nth-child(3) .rank {
-    font-size: 1.05rem;
-}
+        .rank {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: center;
+        }
 
-/* =========================
-   EMPTY STATE
-========================= */
+        .player-info {
+            min-width: 0;
+        }
 
-.empty {
-    padding: 55px 20px;
-    text-align: center;
-    color: var(--text-muted);
-}
+        .username {
+            margin: 0;
+            font-weight: 650;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-.empty p {
-    margin: 0;
-}
+        .rating {
+            margin: 2px 0 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
 
-/* =========================
-   SCROLLBAR
-========================= */
+        .score {
+            font-weight: 750;
+            font-size: 0.95rem;
+        }
 
-.leaderboard::-webkit-scrollbar {
-    width: 7px;
-}
+        /* Top 3 */
 
-.leaderboard::-webkit-scrollbar-track {
-    background: transparent;
-}
+        .player:nth-child(1) .rank {
+            color: var(--accent);
+            font-size: 1.15rem;
+        }
 
-.leaderboard::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 10px;
-}
+        .player:nth-child(2) .rank,
+        .player:nth-child(3) .rank {
+            font-size: 1.05rem;
+        }
 
-/* =========================
-   MOBILE
-========================= */
+        /* =========================
+           EMPTY STATE
+        ========================= */
 
-@media (max-width: 800px) {
-    .page {
-        padding: 35px 16px 60px;
-    }
+        .empty {
+            padding: 55px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
 
-    .page-title {
-        font-size: 2.1rem;
-    }
+        .empty p {
+            margin: 0;
+        }
 
-    .subtitle {
-        margin-bottom: 30px;
-    }
+        /* =========================
+           SCROLLBAR
+        ========================= */
 
-    .ladders {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
+        .leaderboard::-webkit-scrollbar {
+            width: 7px;
+        }
 
-    .ladder-header {
-        padding: 18px 20px;
-    }
+        .leaderboard::-webkit-scrollbar-track {
+            background: transparent;
+        }
 
-    .player {
-        padding: 15px 20px;
-    }
-}
-</style>
+        .leaderboard::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 800px) {
+
+            .page {
+                padding: 35px 16px 60px;
+            }
+
+            .page-title {
+                font-size: 2.1rem;
+            }
+
+            .subtitle {
+                margin-bottom: 30px;
+            }
+
+            .ladders {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .ladder-header {
+                padding: 18px 20px;
+            }
+
+            .player {
+                padding: 15px 20px;
+            }
+
+        }
+
+    </style>
+
 </head>
 
 <body>
 
-<div class="page">
+    <div class="page">
 
-    <h1 class="page-title">The Ladder</h1>
-    <p class="subtitle">See who's at the top.</p>
+        <h1 class="page-title">The Ladder</h1>
 
-    <div class="ladders">
+        <p class="subtitle">See who's at the top.</p>
 
-        <!-- RW LADDER -->
-        <section class="ladder">
+        <div class="ladders">
 
-            <div class="ladder-header">
-                <h2>RW Ladder</h2>
-                <span>Reading & Writing</span>
-            </div>
+            <!-- RW LADDER -->
 
-            <div class="leaderboard">
+            <section class="ladder">
 
-                <div class="player">
-                    <div class="rank">1</div>
+                <div class="ladder-header">
 
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1200</p>
-                    </div>
+                    <h2>RW Ladder</h2>
 
-                    <div class="score">1200</div>
+                    <span>Elo</span>
+
                 </div>
 
-                <div class="player">
-                    <div class="rank">2</div>
+                <div class="leaderboard" id="rw-leaderboard"></div>
 
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1150</p>
-                    </div>
+            </section>
 
-                    <div class="score">1150</div>
+            <!-- MATH LADDER -->
+
+            <section class="ladder">
+
+                <div class="ladder-header">
+
+                    <h2>Math Ladder</h2>
+
+                    <span>Elo</span>
+
                 </div>
 
-                <div class="player">
-                    <div class="rank">3</div>
+                <div class="leaderboard" id="math-leaderboard"></div>
 
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1100</p>
-                    </div>
+            </section>
 
-                    <div class="score">1100</div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- MATH LADDER -->
-        <section class="ladder">
-
-            <div class="ladder-header">
-                <h2>Math Ladder</h2>
-                <span>Math</span>
-            </div>
-
-            <div class="leaderboard">
-
-                <div class="player">
-                    <div class="rank">1</div>
-
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1200</p>
-                    </div>
-
-                    <div class="score">1200</div>
-                </div>
-
-                <div class="player">
-                    <div class="rank">2</div>
-
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1150</p>
-                    </div>
-
-                    <div class="score">1150</div>
-                </div>
-
-                <div class="player">
-                    <div class="rank">3</div>
-
-                    <div class="player-info">
-                        <p class="username">Placeholder</p>
-                        <p class="rating">Rating: 1100</p>
-                    </div>
-
-                    <div class="score">1100</div>
-                </div>
-
-            </div>
-
-        </section>
+        </div>
 
     </div>
 
-</div>
+    <div id="header"></div>
 
-<div id="header"></div>
-<div id="footer"></div>
+    <div id="footer"></div>
 
-<script src="/components/layout.js" defer></script>
+    <script type="module" src="script.js"></script>
+
+    <script src="/components/layout.js" defer></script>
 
 </body>
+
 </html>
