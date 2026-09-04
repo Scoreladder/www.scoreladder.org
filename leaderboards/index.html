@@ -1,31 +1,42 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>The Ladder</title>
 
     <link rel="stylesheet" href="style.css">
+
     <link rel="stylesheet" href="../style.css">
 
-    <script id="Cookiebot"
+    <script
+        id="Cookiebot"
         src="https://consent.cookiebot.com/uc.js"
         data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
-        type="text/javascript"
-        async>
+        type="text/javascript">
     </script>
 
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
-    <script>
+    <script
+        type="text/plain"
+        data-cookieconsent="statistics"
+        src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
+    </script>
+
+    <script type="text/plain" data-cookieconsent="statistics">
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'G-SYPC6SHK23');
     </script>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
@@ -111,10 +122,8 @@
             grid-template-columns: 55px 1fr auto;
             align-items: center;
             gap: 12px;
-
             padding: 16px 24px;
             border-bottom: 1px solid var(--border);
-
             transition: background 0.15s ease;
         }
 
@@ -205,6 +214,7 @@
         ========================= */
 
         @media (max-width: 800px) {
+
             .page {
                 padding: 35px 16px 60px;
             }
@@ -229,8 +239,11 @@
             .player {
                 padding: 15px 20px;
             }
+
         }
+
     </style>
+
 </head>
 
 <body>
@@ -238,16 +251,21 @@
     <div class="page">
 
         <h1 class="page-title">The Ladder</h1>
+
         <p class="subtitle">See who's at the top.</p>
 
         <div class="ladders">
 
             <!-- RW LADDER -->
+
             <section class="ladder">
 
                 <div class="ladder-header">
+
                     <h2>RW Ladder</h2>
+
                     <span>Elo</span>
+
                 </div>
 
                 <div class="leaderboard" id="rw-leaderboard"></div>
@@ -255,11 +273,15 @@
             </section>
 
             <!-- MATH LADDER -->
+
             <section class="ladder">
 
                 <div class="ladder-header">
+
                     <h2>Math Ladder</h2>
+
                     <span>Elo</span>
+
                 </div>
 
                 <div class="leaderboard" id="math-leaderboard"></div>
@@ -271,10 +293,13 @@
     </div>
 
     <div id="header"></div>
+
     <div id="footer"></div>
 
     <script type="module" src="script.js"></script>
+
     <script src="/components/layout.js" defer></script>
 
 </body>
+
 </html>

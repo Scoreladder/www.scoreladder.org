@@ -120,7 +120,7 @@ if (
       "Cooldown Active";
 
     setStatus(
-      "Your previous match has finished. Go practice your weakest topics on Khan Academy in the meantime."
+      "Your previous match has finished. Analyze this game or practice your weakest topics on Khan Academy in the meantime."
     );
   } else {
     button.disabled = false;

@@ -1,138 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443" type="text/javascript" async></script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-SYPC6SHK23');
-</script>
+  <!-- Cookiebot -->
+  <script
+    id="Cookiebot"
+    src="https://consent.cookiebot.com/uc.js"
+    data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+    type="text/javascript">
+  </script>
+
+  <!-- Google Analytics -->
+  <script
+    type="text/plain"
+    data-cookieconsent="statistics"
+    src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
+  </script>
+
+  <script type="text/plain" data-cookieconsent="statistics">
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    /*
+     * Do not send the session token as part of Google's page_location.
+     * Remove ?session=... from the URL before initializing GA.
+     */
+    const analyticsUrl = new URL(window.location.href);
+    analyticsUrl.searchParams.delete("session");
+
+    gtag('config', 'G-SYPC6SHK23', {
+      page_location: analyticsUrl.toString()
+    });
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login — Scoreladder</title>
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/style.css">
+
   <style>
     .score-section {
-  display: none;
-}
+      display: none;
+    }
 
-.score-section h1 {
-  margin-bottom: 8px;
-}
+    .score-section h1 {
+      margin-bottom: 8px;
+    }
 
-.score-section .subtitle {
-  margin-bottom: 24px;
-}
+    .score-section .subtitle {
+      margin-bottom: 24px;
+    }
 
-.score-field {
-  text-align: left;
-  margin-bottom: 16px;
-}
+    .score-field {
+      text-align: left;
+      margin-bottom: 16px;
+    }
 
-.score-field label {
-  display: block;
-  margin-bottom: 7px;
-  font-size: 14px;
-  font-weight: 600;
-}
+    .score-field label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 600;
+    }
 
-.score-field select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  background: white;
-  font-size: 15px;
-  box-sizing: border-box;
-}
+    .score-field select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      background: white;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
 
-.no-score-option {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 18px 0;
-  text-align: left;
-  font-size: 14px;
-  line-height: 1.4;
-  cursor: pointer;
-}
+    .no-score-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 18px 0;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.4;
+      cursor: pointer;
+    }
 
-.no-score-option input {
-  margin-top: 3px;
-  flex-shrink: 0;
-}
+    .no-score-option input {
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
 
-.no-score-note {
-  display: none;
-  margin-top: 8px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: #f5f5f5;
-  font-size: 13px;
-  line-height: 1.4;
-}
+    .no-score-note {
+      display: none;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f5f5f5;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
     .username-section {
-  display: none;
-}
+      display: none;
+    }
 
-.username-section input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 13px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--primary-color);
-  color: var(--text-color);
-  font-family: var(--font-body);
-  font-size: 15px;
-  margin-bottom: 10px;
-}
+    .username-section input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--primary-color);
+      color: var(--text-color);
+      font-family: var(--font-body);
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
 
-.username-section input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
+    .username-section input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
 
-.username-error {
-  color: var(--danger);
-  font-size: 13px;
-  margin: 8px 0 12px;
-  min-height: 18px;
-}
+    .username-error {
+      color: var(--danger);
+      font-size: 13px;
+      margin: 8px 0 12px;
+      min-height: 18px;
+    }
 
-.btn-username {
-  width: 100%;
-  padding: 12px 20px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: #ffffff;
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-    /* ── Page shell ───────────────────────────────────────────── */
+    .btn-username {
+      width: 100%;
+      padding: 12px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: #ffffff;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     .login-page {
       min-height: calc(100vh - var(--topbar-height));
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 40px 16px;
+
       /* subtle radial glow behind the card */
       background:
-        radial-gradient(ellipse 60% 50% at 50% 40%,
+        radial-gradient(
+          ellipse 60% 50% at 50% 40%,
           rgba(79, 70, 229, .08) 0%,
-          transparent 70%),
+          transparent 70%
+        ),
         var(--base-color);
     }
 
-    /* ── Card ─────────────────────────────────────────────────── */
     .login-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -156,7 +187,6 @@
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     }
 
-    /* ── Logo / heading area ──────────────────────────────────── */
     .login-logo {
       width: 56px;
       height: 56px;
@@ -178,7 +208,6 @@
       margin-bottom: 32px;
     }
 
-    /* ── Discord button ───────────────────────────────────────── */
     .btn-discord {
       display: inline-flex;
       align-items: center;
@@ -211,7 +240,6 @@
       flex-shrink: 0;
     }
 
-    /* ── Divider ──────────────────────────────────────────────── */
     .login-divider {
       display: flex;
       align-items: center;
@@ -263,7 +291,6 @@
       color: var(--text-muted);
     }
 
-    /* ── Logged-in action buttons ─────────────────────────────── */
     .login-actions {
       display: flex;
       flex-direction: column;
@@ -340,159 +367,190 @@
   <main class="login-page" id="main-content">
     <div class="login-card">
 
-      <img src="/assets/logo.png" alt="Scoreladder logo" class="login-logo" />
+      <img
+        src="/assets/logo.png"
+        alt="Scoreladder logo"
+        class="login-logo"
+      />
 
       <!-- NOT LOGGED IN -->
       <div id="loginSection">
         <h1>Welcome to Scoreladder</h1>
-        <p class="subtitle">Sign in to track your scores and climb the ladder.</p>
+        <p class="subtitle">
+          Sign in to track your scores and climb the ladder.
+        </p>
 
-<div class="login-providers">
+        <div class="login-providers">
 
-  <!-- GOOGLE -->
-  <a
-    class="btn-google"
-    href="https://auth.scoreladder.org/auth/google"
-    aria-label="Continue with Google"
-  >
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        fill="#4285F4"
-        d="M21.35 12.27c0-.68-.06-1.34-.17-1.97H12v3.73h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.15z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 21.75c2.63 0 4.84-.87 6.45-2.33l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.75 9.75 0 0 0 12 21.75z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M6.54 13.87A5.86 5.86 0 0 1 6.23 12c0-.65.11-1.28.31-1.87V7.6H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.4l3.24-2.53z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 6.1c1.43 0 2.71.49 3.72 1.46l2.79-2.79C16.84 3.22 14.63 2.25 12 2.25A9.75 9.75 0 0 0 3.3 7.6l3.24 2.53C7.31 7.82 9.46 6.1 12 6.1z"
-      />
-    </svg>
+          <!-- GOOGLE -->
+          <a
+            class="btn-google"
+            href="https://auth.scoreladder.org/auth/google"
+            aria-label="Continue with Google"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                fill="#4285F4"
+                d="M21.35 12.27c0-.68-.06-1.34-.17-1.97H12v3.73h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.15z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 21.75c2.63 0 4.84-.87 6.45-2.33l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.75 9.75 0 0 0 12 21.75z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M6.54 13.87A5.86 5.86 0 0 1 6.23 12c0-.65.11-1.28.31-1.87V7.6H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.4l3.24-2.53z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 6.1c1.43 0 2.71.49 3.72 1.46l2.79-2.79C16.84 3.22 14.63 2.25 12 2.25A9.75 9.75 0 0 0 3.3 7.6l3.24 2.53C7.31 7.82 9.46 6.1 12 6.1z"
+              />
+            </svg>
 
-    Continue with Google
-  </a>
+            Continue with Google
+          </a>
 
-  <div class="login-divider">
-    <span>or</span>
-  </div>
+          <div class="login-divider">
+            <span>or</span>
+          </div>
 
-  <!-- DISCORD -->
-  <a
-    class="btn-discord"
-    href="https://auth.scoreladder.org/auth/discord"
-    aria-label="Continue with Discord"
-  >
-    <!-- keep your existing Discord SVG here -->
+          <!-- DISCORD -->
+          <a
+            class="btn-discord"
+            href="https://auth.scoreladder.org/auth/discord"
+            aria-label="Continue with Discord"
+          >
+            <!-- keep your existing Discord SVG here -->
 
-    Continue with Discord
-  </a>
+            Continue with Discord
+          </a>
 
-</div>
+        </div>
+
         <p class="login-note">
           By signing in you agree to our
           <a href="/privacy/">Privacy Policy</a>.
         </p>
       </div>
-<!-- CHOOSE USERNAME -->
-<div id="usernameSection" class="username-section">
-  <h1>Choose your username</h1>
-  <p class="subtitle">This is how you'll appear on Scoreladder.</p>
 
-  <p class="username-warning">
-  Your username is permanent and cannot be changed.
-</p>
+      <!-- CHOOSE USERNAME -->
+      <div id="usernameSection" class="username-section">
+        <h1>Choose your username</h1>
 
-  <input
-    id="usernameInput"
-    type="text"
-    maxlength="20"
-    autocomplete="username"
-    placeholder="Enter a username"
-  />
+        <p class="subtitle">
+          This is how you'll appear on Scoreladder.
+        </p>
 
-  <div id="usernameError" class="username-error"></div>
+        <p class="username-warning">
+          Your username is permanent and cannot be changed.
+        </p>
 
-  <button
-    id="usernameButton"
-    class="btn-username"
-    type="button"
-    onclick="setUsername()"
-  >
-    Continue
-  </button>
+        <input
+          id="usernameInput"
+          type="text"
+          maxlength="20"
+          autocomplete="username"
+          placeholder="Enter a username"
+        />
+
+        <div id="usernameError" class="username-error"></div>
+
+        <button
+          id="usernameButton"
+          class="btn-username"
+          type="button"
+          onclick="setUsername()"
+        >
+          Continue
+        </button>
+      </div>
 
       <!-- LOGGED IN -->
       <div id="userSection" class="hidden">
         <h1>Welcome back</h1>
-        <p class="subtitle">You're already signed in.</p>
+
+        <p class="subtitle">
+          You're already signed in.
+        </p>
 
         <div class="user-box">
-          <img id="avatar" class="avatar" alt="Your profile picture" />
+          <img
+            id="avatar"
+            class="avatar"
+            alt="Your profile picture"
+          />
+
           <div id="username" class="user-name"></div>
           <div id="email" class="user-email"></div>
         </div>
 
         <div class="login-actions">
-          <a href="/profile/" class="btn-profile">Go to my Profile</a>
-          <button class="btn-logout" onclick="logout()">Sign out</button>
+          <a href="/profile/" class="btn-profile">
+            Go to my Profile
+          </a>
+
+          <button
+            class="btn-logout"
+            onclick="logout()"
+          >
+            Sign out
+          </button>
         </div>
       </div>
 
+      <!-- SET STARTING SCORE -->
+      <div id="scoreSection" class="score-section">
+
+        <h1>Set your starting rating</h1>
+
+        <p class="subtitle">
+          Enter your most recent practice test, SAT, or PSAT score.
+          If you haven't taken any of these yet, select
+          <strong>500</strong> for both sections.
+        </p>
+
+        <div class="score-field">
+          <label for="rwScoreInput">
+            Reading &amp; Writing
+          </label>
+
+          <select id="rwScoreInput">
+            <option value="" disabled selected>
+              Select your score
+            </option>
+          </select>
+        </div>
+
+        <div class="score-field">
+          <label for="mathScoreInput">
+            Math
+          </label>
+
+          <select id="mathScoreInput">
+            <option value="" disabled selected>
+              Select your score
+            </option>
+          </select>
+        </div>
+
+        <div id="scoreError" class="error"></div>
+
+        <button
+          id="scoreButton"
+          type="button"
+          onclick="submitInitialScores()"
+        >
+          Continue
+        </button>
+
+      </div>
+
     </div>
-    <div id="scoreSection" class="score-section">
-
-  <h1>Set your starting rating</h1>
-
-  <p class="subtitle">
-    Enter your most recent practice test, SAT, or PSAT score.
-    If you haven't taken any of these yet, select <strong>500</strong>
-    for both sections.
-  </p>
-
-  <div class="score-field">
-    <label for="rwScoreInput">
-      Reading &amp; Writing
-    </label>
-
-    <select id="rwScoreInput">
-      <option value="" disabled selected>
-        Select your score
-      </option>
-    </select>
-  </div>
-
-  <div class="score-field">
-    <label for="mathScoreInput">
-      Math
-    </label>
-
-    <select id="mathScoreInput">
-      <option value="" disabled selected>
-        Select your score
-      </option>
-    </select>
-  </div>
-
-  <div id="scoreError" class="error"></div>
-
-  <button
-    id="scoreButton"
-    type="button"
-    onclick="submitInitialScores()"
-  >
-    Continue
-  </button>
-</div>
   </main>
 
   <div id="footer"></div>

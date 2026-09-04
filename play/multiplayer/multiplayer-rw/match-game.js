@@ -54,10 +54,6 @@ export function handleGameStart(
   /*
    * A match that has already received its final result
    * must never be started again.
-   *
-   * This protects against a stale game_start message
-   * arriving after handleGameResult() has already
-   * finished the match and stopped its timer.
    */
   if (
     state.matchFinished
@@ -75,7 +71,7 @@ export function handleGameStart(
   }
 
   const questions =
-      Array.isArray(data)
+    Array.isArray(data)
       ? data
       : data &&
         Array.isArray(data.questions)
@@ -185,7 +181,7 @@ export function handleGameStart(
   } else {
     state.selectedAnswers =
       new Array(
-        state.questions.length
+        TOTAL_QUESTIONS
       ).fill(-1);
   }
 
@@ -300,11 +296,16 @@ export function handleGameStart(
       : "NEW GAME STARTED:",
     {
       matchId: state.matchId,
-      matchStartedAt: state.matchStartedAt,
-      challengeDeadline: state.challengeDeadline,
-      timeRemaining: state.timeRemaining,
-      questionCount: state.questions.length,
-      selectedAnswers: state.selectedAnswers,
+      matchStartedAt:
+        state.matchStartedAt,
+      challengeDeadline:
+        state.challengeDeadline,
+      timeRemaining:
+        state.timeRemaining,
+      questionCount:
+        state.questions.length,
+      selectedAnswers:
+        state.selectedAnswers,
       challengeSubmitted:
         state.challengeSubmitted,
       matchFinished:
@@ -359,10 +360,6 @@ export function startMatchTimer(
   /*
    * Never start a timer for a match that has already
    * been definitively finished.
-   *
-   * This is intentionally checked here as well as in
-   * handleGameStart(), because other connection/reconnect
-   * code can call startMatchTimer() directly.
    */
   if (
     state.matchFinished ||
@@ -372,8 +369,10 @@ export function startMatchTimer(
       "Ignoring timer start because match is not active.",
       {
         matchId: state.matchId,
-        gameStarted: state.gameStarted,
-        matchFinished: state.matchFinished,
+        gameStarted:
+          state.gameStarted,
+        matchFinished:
+          state.matchFinished,
         serverStartTime
       }
     );
@@ -410,17 +409,11 @@ export function startMatchTimer(
   state.challengeDeadline =
     startTime +
     MATCH_DURATION_MS;
-  
-  state.matchStartedAt =
-    startTime;
 
   const update = () => {
     /*
      * The match may have finished while this interval
      * was running.
-     *
-     * Immediately kill the timer instead of allowing
-     * another tick or automatic submission.
      */
     if (
       state.matchFinished ||
@@ -487,6 +480,7 @@ export function startMatchTimer(
     );
 }
 
+
 function updateMatchTimer() {
   if (
     !elements.timerDiv ||
@@ -521,14 +515,18 @@ function updateMatchTimer() {
    ========================================================= */
 
 export function renderQuestions() {
-  console.log("RENDER QUESTIONS CALLED");
+  console.log(
+    "RENDER QUESTIONS CALLED"
+  );
+
   if (
     !elements.questionsDiv
   ) {
     return;
   }
 
-  elements.questionsDiv.innerHTML = "";
+  elements.questionsDiv.innerHTML =
+    "";
 
   state.questions.forEach(
     (
@@ -536,12 +534,17 @@ export function renderQuestions() {
       questionIndex
     ) => {
       const card =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
-      card.className = "card";
+      card.className =
+        "card";
 
       const questionNumber =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       questionNumber.className =
         "question-number";
@@ -554,9 +557,12 @@ export function renderQuestions() {
       );
 
       const meta =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
-      meta.className = "meta";
+      meta.className =
+        "meta";
 
       meta.textContent =
         `${getTopicDisplayName(q.topic)}` +
@@ -566,24 +572,33 @@ export function renderQuestions() {
             : ""
         }`;
 
-      card.appendChild(meta);
+      card.appendChild(
+        meta
+      );
 
       if (q.passage) {
         const passage =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
-        passage.className = "passage";
+        passage.className =
+          "passage";
 
         passage.innerHTML =
           formatPassage(
             q.passage
           );
 
-        card.appendChild(passage);
+        card.appendChild(
+          passage
+        );
       }
 
       const questionText =
-        document.createElement("p");
+        document.createElement(
+          "p"
+        );
 
       questionText.textContent =
         q.question || "";
@@ -605,10 +620,15 @@ export function renderQuestions() {
           choiceIndex
         ) => {
           const button =
-            document.createElement("button");
+            document.createElement(
+              "button"
+            );
 
-          button.className = "choice";
-          button.type = "button";
+          button.className =
+            "choice";
+
+          button.type =
+            "button";
 
           const letter =
             ["A", "B", "C", "D"][
@@ -641,7 +661,9 @@ export function renderQuestions() {
             }
           );
 
-          card.appendChild(button);
+          card.appendChild(
+            button
+          );
         }
       );
 
@@ -660,6 +682,14 @@ export function renderQuestions() {
 export function restoreSelectedAnswerUI() {
   if (
     !elements.questionsDiv
+  ) {
+    return;
+  }
+
+  if (
+    !Array.isArray(
+      state.selectedAnswers
+    )
   ) {
     return;
   }
@@ -771,16 +801,25 @@ export function selectAnswer(
   questionIndex,
   choiceIndex
 ) {
-  console.log("SELECT ANSWER CLICKED", {
-    questionIndex,
-    choiceIndex,
-    gameStarted: state.gameStarted,
-    challengeSubmitted: state.challengeSubmitted,
-    submissionInProgress: state.submissionInProgress,
-    matchFinished: state.matchFinished,
-    answerSelectionLocked: state.answerSelectionLocked,
-    selectedAnswers: state.selectedAnswers
-  });
+  console.log(
+    "SELECT ANSWER CLICKED",
+    {
+      questionIndex,
+      choiceIndex,
+      gameStarted:
+        state.gameStarted,
+      challengeSubmitted:
+        state.challengeSubmitted,
+      submissionInProgress:
+        state.submissionInProgress,
+      matchFinished:
+        state.matchFinished,
+      answerSelectionLocked:
+        state.answerSelectionLocked,
+      selectedAnswers:
+        state.selectedAnswers
+    }
+  );
 
   if (
     !state.gameStarted ||
@@ -788,14 +827,15 @@ export function selectAnswer(
     state.submissionInProgress ||
     state.matchFinished
   ) {
-    console.warn("ANSWER BLOCKED");
+    console.warn(
+      "ANSWER BLOCKED"
+    );
+
     return;
   }
+
   /*
    * HARD CLIENT-SIDE LOCK.
-   *
-   * Answers cannot be changed after submission,
-   * during submission, or after the match finishes.
    */
   if (
     !state.gameStarted ||
@@ -807,9 +847,19 @@ export function selectAnswer(
   }
 
   if (
+    !Array.isArray(
+      state.selectedAnswers
+    ) ||
     questionIndex < 0 ||
     questionIndex >=
-      state.selectedAnswers.length
+      TOTAL_QUESTIONS
+  ) {
+    return;
+  }
+
+  if (
+    choiceIndex < 0 ||
+    choiceIndex > 3
   ) {
     return;
   }
@@ -817,7 +867,13 @@ export function selectAnswer(
   state.selectedAnswers[
     questionIndex
   ] = choiceIndex;
-  console.log("ANSWER STATE:", [...state.selectedAnswers]);
+
+  console.log(
+    "ANSWER STATE:",
+    [
+      ...state.selectedAnswers
+    ]
+  );
 
   const card =
     elements.questionsDiv?.children[
@@ -849,10 +905,13 @@ export function selectAnswer(
     ].classList.add(
       "selected"
     );
+
     console.log(
-  "SELECTED CLASS:",
-  buttons[choiceIndex].className
-);
+      "SELECTED CLASS:",
+      buttons[
+        choiceIndex
+      ].className
+    );
   }
 
   saveActiveMatchState();
@@ -873,69 +932,44 @@ export function selectAnswer(
    SUBMIT BUTTON
    ========================================================= */
 
-export function updateSubmitButton() {
+export function updateSubmitButton(
+  forceEnabled = false
+) {
   if (
     !elements.submitButton
   ) {
     return;
   }
 
-  /*
-   * Server has accepted the submission.
-   */
   if (
-    state.challengeSubmitted
+    state.newGameMode
   ) {
-    elements.submitButton.disabled = true;
-    elements.submitButton.textContent =
-      "Answers Submitted";
-
-    return;
-  }
-
-  /*
-   * Submission has been sent but has not yet been
-   * acknowledged by the server.
-   */
-  if (
-    state.submissionInProgress
-  ) {
-    elements.submitButton.disabled = true;
-    elements.submitButton.textContent =
-      "Submitting...";
-
-    return;
-  }
-
-  /*
-   * Cannot submit unless an actual game is active.
-   */
-  if (
-    state.newGameMode ||
-    !state.gameStarted ||
-    state.matchFinished
-  ) {
-    elements.submitButton.disabled = true;
-    elements.submitButton.textContent =
-      "Submit Answers";
+    elements.submitButton.disabled =
+      true;
 
     return;
   }
 
   const allAnswered =
+    Array.isArray(
+      state.selectedAnswers
+    ) &&
     state.selectedAnswers.length ===
       TOTAL_QUESTIONS &&
     state.selectedAnswers.every(
       answer =>
         Number.isInteger(answer) &&
-        answer >= 0
+        answer >= 0 &&
+        answer <= 3
     );
 
   elements.submitButton.disabled =
-    !allAnswered;
-
-  elements.submitButton.textContent =
-    "Submit Answers";
+    (
+      !allAnswered &&
+      !forceEnabled
+    ) ||
+    state.challengeSubmitted ||
+    state.submissionInProgress;
 }
 
 
@@ -958,13 +992,34 @@ export async function submitMatch(
     return;
   }
 
+  if (
+    !Array.isArray(
+      state.selectedAnswers
+    ) ||
+    state.selectedAnswers.length !==
+      TOTAL_QUESTIONS
+  ) {
+    console.error(
+      "Invalid selected answer state:",
+      state.selectedAnswers
+    );
+
+    setStatus(
+      "Your answer state is invalid. Please reconnect to the match."
+    );
+
+    return;
+  }
+
   if (!autoSubmitted) {
     const unanswered =
       state.selectedAnswers.filter(
         answer => answer === -1
       ).length;
 
-    if (unanswered > 0) {
+    if (
+      unanswered > 0
+    ) {
       alert(
         `You still have ${unanswered} unanswered question${
           unanswered === 1
@@ -979,15 +1034,9 @@ export async function submitMatch(
 
   /*
    * Mark submission as in progress immediately.
-   *
-   * This prevents:
-   * - changing answers
-   * - pressing submit again
-   *
-   * challengeSubmitted remains false until
-   * submission_received arrives from the server.
    */
-  state.submissionInProgress = true;
+  state.submissionInProgress =
+    true;
 
   updateSubmitButton();
   lockAnswerButtons();
@@ -1019,7 +1068,8 @@ export async function submitMatch(
    * player may attempt to submit again.
    */
   if (!sent) {
-    state.submissionInProgress = false;
+    state.submissionInProgress =
+      false;
 
     unlockAnswerButtons();
     updateSubmitButton();
@@ -1064,18 +1114,32 @@ export async function handleGameResult(
      MATCH IS DEFINITIVELY FINISHED
      ========================================================= */
 
-  state.gameStarted = false;
-  state.matchFinished = true;
+  state.gameStarted =
+    false;
 
-  state.challengeSubmitted = true;
-  state.submissionInProgress = false;
+  state.matchFinished =
+    true;
 
-  state.inQueue = false;
-  state.playerReady = false;
+  state.challengeSubmitted =
+    true;
 
-  state.matchConnectionConfirmed = false;
-  state.reconnecting = false;
-  state.resumeInProgress = false;
+  state.submissionInProgress =
+    false;
+
+  state.inQueue =
+    false;
+
+  state.playerReady =
+    false;
+
+  state.matchConnectionConfirmed =
+    false;
+
+  state.reconnecting =
+    false;
+
+  state.resumeInProgress =
+    false;
 
   /* =========================================================
      STOP MATCH TIMER
@@ -1089,9 +1153,11 @@ export async function handleGameResult(
 
   clearActiveMatchState();
 
-  state.resumeAvailable = false;
-  state.resumeMatchId = null;
+  state.resumeAvailable =
+    false;
 
+  state.resumeMatchId =
+    null;
 
   /* =========================================================
      CALCULATE RESULT
@@ -1120,13 +1186,19 @@ export async function handleGameResult(
 
   let message;
 
-  if (data.result === "win") {
+  if (
+    data.result === "win"
+  ) {
     message =
       `You won! ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  } else if (data.result === "loss") {
+  } else if (
+    data.result === "loss"
+  ) {
     message =
       `You lost. ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
-  } else if (data.result === "tie") {
+  } else if (
+    data.result === "tie"
+  ) {
     message =
       `Tie! ${yourCorrect}/${yourTotal} (${yourAccuracy}%)`;
   } else {
@@ -1138,8 +1210,11 @@ export async function handleGameResult(
      HIDE SUBMIT BUTTON
      ========================================================= */
 
-  if (elements.submitButton) {
-    elements.submitButton.disabled = true;
+  if (
+    elements.submitButton
+  ) {
+    elements.submitButton.disabled =
+      true;
 
     elements.submitButton.style.display =
       "none";
@@ -1149,7 +1224,9 @@ export async function handleGameResult(
      COOLDOWN BUTTON STATE
      ========================================================= */
 
-  if (elements.startMatchButton) {
+  if (
+    elements.startMatchButton
+  ) {
     elements.startMatchButton.style.display =
       "";
 
@@ -1157,13 +1234,13 @@ export async function handleGameResult(
       true;
   }
 
-    /* =========================================================
+  /* =========================================================
      START COOLDOWN
      ========================================================= */
 
   beginCooldown(
-    data.cooldownUntil ||
-    data.nextGameAt ||
+    data.cooldownUntil ??
+    data.nextGameAt ??
     null
   );
 
@@ -1171,11 +1248,17 @@ export async function handleGameResult(
      RENDER RESULTS
      ========================================================= */
 
-  showResult(message);
+  showResult(
+    message
+  );
 
-  renderTopicPerformance(data);
+  renderTopicPerformance(
+    data
+  );
 
-  renderResults(data);
+  renderResults(
+    data
+  );
 
   /* =========================================================
      STATUS
@@ -1183,7 +1266,8 @@ export async function handleGameResult(
 
   if (
     data.statsRecorded &&
-    data.statsRecorded.success === false
+    data.statsRecorded.success ===
+      false
   ) {
     console.error(
       "SERVER FAILED TO RECORD STATS:",
@@ -1194,9 +1278,16 @@ export async function handleGameResult(
       "Match complete, but the server could not update your stats."
     );
   } else {
-    setStatus(
-    `Match complete. Cooldown: ${countdown} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+    const countdown =
+      formatCountdown(
+        Math.ceil(
+          getCooldownRemainingMs() /
+            1000
+        )
+      );
 
+    setStatus(
+      `Match complete. Cooldown: ${countdown} remaining. Analyze this game or practice your weakest topics on Khan Academy in the meantime.`
     );
   }
 
@@ -1241,8 +1332,11 @@ export function handleSubmissionReceived(
    * This is the ONLY point where the client changes
    * challengeSubmitted to true.
    */
-  state.submissionInProgress = false;
-  state.challengeSubmitted = true;
+  state.submissionInProgress =
+    false;
+
+  state.challengeSubmitted =
+    true;
 
   /*
    * Permanently lock every answer button for this match.
@@ -1289,7 +1383,8 @@ function renderTopicPerformance(
       ? data.questionResults
       : [];
 
-  const topicStats = {};
+  const topicStats =
+    {};
 
   state.questions.forEach(
     (
@@ -1326,14 +1421,18 @@ function renderTopicPerformance(
         };
       }
 
-      topicStats[topic].total++;
+      topicStats[
+        topic
+      ].total++;
 
       if (
         result.correct === true ||
         result.correct === 1 ||
         result.correct === "1"
       ) {
-        topicStats[topic].correct++;
+        topicStats[
+          topic
+        ].correct++;
       }
     }
   );
@@ -1356,13 +1455,17 @@ function renderTopicPerformance(
   );
 
   const performance =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   performance.className =
     "current-topic-performance";
 
   const heading =
-    document.createElement("h3");
+    document.createElement(
+      "h3"
+    );
 
   heading.textContent =
     "This Match: Topic Performance";
@@ -1378,7 +1481,9 @@ function renderTopicPerformance(
         topic,
         stats,
         stats.total >= 2 &&
-        stats.correct / stats.total < 0.70
+        stats.correct /
+          stats.total <
+          0.70
       );
     }
   );
@@ -1409,9 +1514,10 @@ function renderResults(
       questionIndex
     ) => {
       const card =
-        elements.questionsDiv?.children[
-          questionIndex
-        ];
+        elements.questionsDiv
+          ?.children[
+            questionIndex
+          ];
 
       if (!card) {
         return;
@@ -1458,7 +1564,9 @@ function renderResults(
       }
 
       const resultBanner =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       resultBanner.className =
         `question-result ${
@@ -1476,7 +1584,9 @@ function renderResults(
             ${
               selected >= 0 &&
               selected < 4
-                ? ["A", "B", "C", "D"][selected] + "."
+                ? ["A", "B", "C", "D"][
+                    selected
+                  ] + "."
                 : "No answer"
             }
           </span>
@@ -1490,7 +1600,9 @@ function renderResults(
             ${
               selected === -1
                 ? "No answer"
-                : ["A", "B", "C", "D"][selected]
+                : ["A", "B", "C", "D"][
+                    selected
+                  ]
             }
           </span>
 
@@ -1499,7 +1611,9 @@ function renderResults(
             ${
               correctChoice >= 0 &&
               correctChoice < 4
-                ? ["A", "B", "C", "D"][correctChoice]
+                ? ["A", "B", "C", "D"][
+                    correctChoice
+                  ]
                 : "Unknown"
             }
           </span>
@@ -1521,7 +1635,8 @@ function renderResults(
           button,
           choiceIndex
         ) => {
-          button.disabled = true;
+          button.disabled =
+            true;
 
           if (
             choiceIndex ===
@@ -1533,8 +1648,10 @@ function renderResults(
           }
 
           if (
-            choiceIndex === selected &&
-            selected !== correctChoice
+            choiceIndex ===
+              selected &&
+            selected !==
+              correctChoice
           ) {
             button.classList.add(
               "choice-incorrect"
@@ -1546,17 +1663,22 @@ function renderResults(
   );
 }
 
+
 /* =========================================================
    COOLDOWN DISPLAY
    ========================================================= */
 
 function getCooldownDisplay() {
   let element =
-    document.getElementById("cooldown-display");
+    document.getElementById(
+      "cooldown-display"
+    );
 
   if (!element) {
     element =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     element.id =
       "cooldown-display";
@@ -1569,7 +1691,9 @@ function getCooldownDisplay() {
 
     elements.startMatchButton
       ?.parentElement
-      ?.appendChild(element);
+      ?.appendChild(
+        element
+      );
   }
 
   return element;
@@ -1587,7 +1711,9 @@ export function updateCooldownDisplay() {
   const remainingMs =
     getCooldownRemainingMs();
 
-  if (remainingMs > 0) {
+  if (
+    remainingMs > 0
+  ) {
     element.textContent =
       `Next match available in ${formatCountdown(
         remainingMs / 1000
@@ -1596,15 +1722,17 @@ export function updateCooldownDisplay() {
     element.style.display =
       "block";
 
-if (elements.startMatchButton) {
-  elements.startMatchButton.disabled =
-    true;
+    if (
+      elements.startMatchButton
+    ) {
+      elements.startMatchButton.disabled =
+        true;
 
-  elements.startMatchButton.textContent =
-    `Cooldown: ${formatCountdown(
-      remainingMs / 1000
-    )}`;
-}
+      elements.startMatchButton.textContent =
+        `Cooldown: ${formatCountdown(
+          remainingMs / 1000
+        )}`;
+    }
 
     return;
   }
@@ -1615,7 +1743,9 @@ if (elements.startMatchButton) {
   element.style.display =
     "block";
 
-  if (elements.startMatchButton) {
+  if (
+    elements.startMatchButton
+  ) {
     elements.startMatchButton.disabled =
       false;
 
@@ -1623,6 +1753,7 @@ if (elements.startMatchButton) {
       "Join Queue";
   }
 }
+
 
 /* =========================================================
    NEW GAME BUTTON
@@ -1634,32 +1765,40 @@ if (
   elements.submitButton.addEventListener(
     "click",
     () => {
-      if (!state.newGameMode) {
-        submitMatch(false);
+      if (
+        !state.newGameMode
+      ) {
+        submitMatch(
+          false
+        );
+
         return;
       }
 
-if (
-  state.cooldownUntil &&
-  state.cooldownUntil > Date.now()
-) {
-  const countdown =
-    formatCountdown(
-      Math.ceil(
-        getCooldownRemainingMs() / 1000
-      )
-    );
+      if (
+        state.cooldownUntil &&
+        state.cooldownUntil >
+          Date.now()
+      ) {
+        const countdown =
+          formatCountdown(
+            Math.ceil(
+              getCooldownRemainingMs() /
+                1000
+            )
+          );
 
-  setStatus(
-    `You can play again in ${countdown}. Go practice your weakest topics on Khan Academy in the meantime.`
-  );
+        setStatus(
+          `You can play again in ${countdown}. Analyze this game or practice your weakest topics on Khan Academy in the meantime.`
+        );
 
-  updateCooldownUI();
+        updateCooldownUI();
 
-  return;
-}
+        return;
+      }
 
-      state.newGameMode = false;
+      state.newGameMode =
+        false;
 
       elements.submitButton.style.display =
         "none";
@@ -1667,14 +1806,20 @@ if (
       elements.submitButton.disabled =
         true;
 
-      state.matchId = null;
-      state.opponent = null;
-      state.playerReady = false;
+      state.matchId =
+        null;
+
+      state.opponent =
+        null;
+
+      state.playerReady =
+        false;
 
       state.matchConnectionConfirmed =
         false;
 
-      state.reconnecting = false;
+      state.reconnecting =
+        false;
 
       if (
         elements.startMatchButton
@@ -1696,6 +1841,7 @@ if (
   );
 }
 
+
 window.addEventListener(
   "scoreladder:cooldown-started",
   () => {
@@ -1711,21 +1857,24 @@ window.addEventListener(
 
     if (
       !state.gameStarted &&
-      state.cooldownUntil > Date.now()
+      state.cooldownUntil >
+        Date.now()
     ) {
       const countdown =
         formatCountdown(
           Math.ceil(
-            getCooldownRemainingMs() / 1000
+            getCooldownRemainingMs() /
+              1000
           )
         );
 
       setStatus(
-        `Match complete. Cooldown: ${countdown} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+        `Match complete. Cooldown: ${countdown} remaining. Analyze this game or practice your weakest topics on Khan Academy in the meantime.`
       );
     }
   }
 );
+
 
 window.addEventListener(
   "scoreladder:cooldown-complete",
@@ -1733,6 +1882,7 @@ window.addEventListener(
     updateCooldownUI();
   }
 );
+
 
 /* =========================================================
    EXPORTS
@@ -1752,7 +1902,7 @@ initializeMatchConnectionModules({
   renderQuestions,
   restoreSelectedAnswerUI,
   updateSubmitButton,
-  startGame: handleGameStart,
+  startGame,
   startMatchTimer,
   handleGameResult,
   handleSubmissionReceived

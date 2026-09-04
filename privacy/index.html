@@ -6,151 +6,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scoreladder Privacy Policy</title>
 
-```
-<link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css">
 
-<script id="Cookiebot"
-    src="https://consent.cookiebot.com/uc.js"
-    data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
-    type="text/javascript"
-    async>
-</script>
+    <script
+        id="Cookiebot"
+        src="https://consent.cookiebot.com/uc.js"
+        data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+        type="text/javascript">
+    </script>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
+    <!-- Google tag (gtag.js) -->
+    <script
+        type="text/plain"
+        data-cookieconsent="statistics"
+        src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
+    </script>
 
-    function gtag() {
-        dataLayer.push(arguments);
-    }
+    <script type="text/plain" data-cookieconsent="statistics">
+        window.dataLayer = window.dataLayer || [];
 
-    gtag('js', new Date());
-    gtag('config', 'G-SYPC6SHK23');
-</script>
+        function gtag() {
+            dataLayer.push(arguments);
+        }
 
-<style>
-    * {
-        box-sizing: border-box;
-    }
+        gtag('js', new Date());
 
-    body {
-        margin: 0;
-        font-family: var(--font-body);
-        background: var(--base-color);
-        color: var(--text-color);
-        line-height: 1.7;
-    }
+        const analyticsUrl = new URL(window.location.href);
+        analyticsUrl.searchParams.delete("session");
 
-    .doc-page {
-        max-width: 780px;
-        margin: 0 auto;
-        padding: 52px 24px 96px;
-    }
+        gtag('config', 'G-SYPC6SHK23', {
+            page_location: analyticsUrl.toString()
+        });
+    </script>
 
-    .doc-header {
-        margin-bottom: 40px;
-        padding-bottom: 28px;
-        border-bottom: 1px solid var(--border);
-    }
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    .doc-header h1 {
-        font-family: var(--font-display);
-        font-size: 2.5rem;
-        font-weight: 900;
-        background: linear-gradient(135deg, var(--accent), var(--accent2));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 0 0 8px;
-    }
+        body {
+            margin: 0;
+            font-family: var(--font-body);
+            background: var(--base-color);
+            color: var(--text-color);
+            line-height: 1.7;
+        }
 
-    .doc-header .updated {
-        font-size: 13px;
-        color: var(--text-muted);
-        font-weight: 500;
-        margin: 0;
-    }
-
-    .doc-body p {
-        color: var(--text-color);
-        font-size: 15px;
-        margin-bottom: 16px;
-    }
-
-    .doc-body h2 {
-        font-family: var(--font-display);
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: var(--text-color);
-        margin-top: 44px;
-        margin-bottom: 14px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid var(--accent-soft);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .doc-body h2::before {
-        content: '';
-        display: inline-block;
-        width: 4px;
-        height: 1.1em;
-        background: var(--accent);
-        border-radius: 2px;
-        flex-shrink: 0;
-    }
-
-    .doc-body h3 {
-        font-family: var(--font-display);
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--accent);
-        margin-top: 26px;
-        margin-bottom: 10px;
-    }
-
-    .doc-body ul,
-    .doc-body ol {
-        padding-left: 22px;
-        margin-bottom: 16px;
-    }
-
-    .doc-body li {
-        color: var(--text-color);
-        font-size: 15px;
-        margin-bottom: 7px;
-        line-height: 1.65;
-    }
-
-    .doc-body a {
-        color: var(--accent);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-    }
-
-    .doc-body a:hover {
-        color: var(--accent-hover);
-    }
-
-    @media (max-width: 600px) {
         .doc-page {
-            padding: 36px 16px 72px;
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 52px 24px 96px;
+        }
+
+        .doc-header {
+            margin-bottom: 40px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid var(--border);
         }
 
         .doc-header h1 {
-            font-size: 2rem;
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 0 8px;
         }
-    }
-</style>
-```
+
+        .doc-header .updated {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .doc-body p {
+            color: var(--text-color);
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        .doc-body h2 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-top: 44px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--accent-soft);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .doc-body h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.1em;
+            background: var(--accent);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .doc-body h3 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 26px;
+            margin-bottom: 10px;
+        }
+
+        .doc-body ul,
+        .doc-body ol {
+            padding-left: 22px;
+            margin-bottom: 16px;
+        }
+
+        .doc-body li {
+            color: var(--text-color);
+            font-size: 15px;
+            margin-bottom: 7px;
+            line-height: 1.65;
+        }
+
+        .doc-body a {
+            color: var(--accent);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .doc-body a:hover {
+            color: var(--accent-hover);
+        }
+
+        @media (max-width: 600px) {
+            .doc-page {
+                padding: 36px 16px 72px;
+            }
+
+            .doc-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 
 </head>
 
 <body>
 
-```
 <main class="doc-page" id="main-content">
 
     <div class="doc-header">
@@ -398,7 +406,6 @@
 <div id="footer"></div>
 
 <script src="/components/layout.js" defer></script>
-```
 
 </body>
 </html>

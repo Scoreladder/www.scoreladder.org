@@ -545,7 +545,7 @@ if (isCoolingDown()) {
     setStatus(
         `Match complete. Cooldown: ${formatCountdown(
             remainingSeconds
-        )} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+        )} remaining. Analyze this game or practice your weakest topics on Khan Academy in the meantime.`
     );
 } else {
     setStatus(
@@ -868,7 +868,7 @@ export function updateCooldownUI() {
             "block";
 
         cooldown.textContent =
-            `Next match available in ${countdown}. Go practice your weakest topics on Khan Academy in the meantime.`;
+            `Next match available in ${countdown}. Analyze this game or practice your weakest topics on Khan Academy in the meantime.`;
 
         if (elements.startMatchButton) {
             elements.startMatchButton.disabled =
@@ -898,7 +898,7 @@ export function updateCooldownUI() {
             !state.inQueue
         ) {
             setStatus(
-                `Match complete. Cooldown: ${countdown} remaining. Go practice your weakest topics on Khan Academy in the meantime.`
+                `Match complete. Cooldown: ${countdown} remaining. Analyze this game or practice your weakest topics on Khan Academy in the meantime.`
             );
         }
 
@@ -1233,30 +1233,11 @@ export function appendTopicRow(
   stats,
   struggling
 ) {
-  const total =
-    Number(stats.total) || 0;
-
-  const correct =
-    Number(stats.correct) || 0;
-
-  const accuracy =
-    total > 0
-      ? Math.round(
-          (correct / total) * 100
-        )
-      : 0;
-
   const row =
     document.createElement("div");
 
   row.className =
     "topic-performance-row";
-
-  if (struggling) {
-    row.classList.add(
-      "topic-struggling"
-    );
-  }
 
   const name =
     document.createElement("span");
@@ -1267,30 +1248,7 @@ export function appendTopicRow(
   name.textContent =
     getTopicDisplayName(topic);
 
-  const score =
-    document.createElement("span");
-
-  score.className =
-    "topic-performance-score";
-
-  score.textContent =
-    `${correct}/${total} (${accuracy}%)`;
-
   row.appendChild(name);
-  row.appendChild(score);
-
-  if (struggling) {
-    const label =
-      document.createElement("span");
-
-    label.className =
-      "topic-struggling-label";
-
-    label.textContent =
-      "Needs work";
-
-    row.appendChild(label);
-  }
 
   container.appendChild(row);
 }
@@ -1330,7 +1288,7 @@ export function renderTopicStatsIntoContainer(
       document.createElement("h4");
 
     weakHeading.textContent =
-      "Top 3 Topics to Practice";
+      "Top 3 topics to practice based on your recent matches";
 
     container.appendChild(
       weakHeading
@@ -1361,12 +1319,11 @@ export function renderCooldownPracticeMessage() {
     return;
   }
 
-  const selectors = [
-    ".cooldown-practice",
-    ".recent-match-history",
-    ".historical-topic-performance",
-    ".current-topic-performance"
-  ];
+const selectors = [
+  ".cooldown-practice",
+  ".historical-topic-performance",
+  ".current-topic-performance"
+];
 
   selectors.forEach(selector => {
     const old =
@@ -1482,62 +1439,20 @@ export function renderCooldownCompleteMessage() {
  * =========================================================
  */
 
-export function renderHistoricalTopicPerformance(
-  matches
-) {
-  if (!elements.resultDiv) {
-    return;
-  }
-
-  const oldPerformance =
-    elements.resultDiv.querySelector(
+export function renderHistoricalTopicPerformance(matches) {
+  const existing =
+    document.querySelector(
       ".historical-topic-performance"
     );
 
-  if (oldPerformance) {
-    oldPerformance.remove();
+  if (existing) {
+    existing.remove();
   }
 
-  const topicStats = {};
+  const section =
+    document.createElement("section");
 
-  for (const match of matches) {
-    const questionResults =
-      extractQuestionResults(match);
-
-    for (const result of questionResults) {
-      const topic =
-        extractResultTopic(result);
-
-      if (!topic) {
-        continue;
-      }
-
-      if (!topicStats[topic]) {
-        topicStats[topic] = {
-          correct: 0,
-          total: 0
-        };
-      }
-
-      topicStats[topic].total++;
-
-      if (
-        result.correct === true ||
-        result.correct === 1 ||
-        result.correct === "1"
-      ) {
-        topicStats[topic].correct++;
-      }
-    }
-  }
-
-  const topics =
-    Object.entries(topicStats);
-
-  const container =
-    document.createElement("div");
-
-  container.className =
+  section.className =
     "historical-topic-performance";
 
   const heading =
@@ -1546,108 +1461,64 @@ export function renderHistoricalTopicPerformance(
   heading.textContent =
     "Topics You Struggled With";
 
-  container.appendChild(heading);
+  section.appendChild(heading);
 
-  const description =
-    document.createElement("p");
-
-  description.className =
-    "topic-performance-description";
-
-  description.textContent =
-    "Based on your recent completed matches.";
-
-  container.appendChild(
-    description
-  );
-
-  if (topics.length === 0) {
-    const empty =
-      document.createElement("p");
-
-    empty.textContent =
-      "No question-level topic data was found in match history.";
-
-    container.appendChild(empty);
-
-    elements.resultDiv.appendChild(
-      container
+  const topics =
+    calculateTopicStatsFromMatches(
+      matches
     );
 
-    return;
-  }
-
   renderTopicStatsIntoContainer(
-    container,
+    section,
     topics
   );
 
-  elements.resultDiv.appendChild(
-    container
-  );
+  document
+    .querySelector("#result")
+    ?.appendChild(section);
 }
 
 
-export function renderHistoricalTopicStats(
-  topics
-) {
-  if (!elements.resultDiv) {
-    return;
-  }
-
-  const old =
-    elements.resultDiv.querySelector(
+export function renderHistoricalTopicStats(topics) {
+  const existing =
+    document.querySelector(
       ".historical-topic-performance"
     );
 
-  if (old) {
-    old.remove();
+  if (existing) {
+    existing.remove();
   }
 
-  const container =
-    document.createElement("div");
+  const section =
+    document.createElement("section");
 
-  container.className =
+  section.className =
     "historical-topic-performance";
 
   const heading =
     document.createElement("h3");
 
   heading.textContent =
-    "Topics You Struggled With";
-
-  container.appendChild(heading);
-
-  const description =
-    document.createElement("p");
-
-  description.className =
-    "topic-performance-description";
-
-  description.textContent =
     "Based on your accumulated question-level performance.";
 
-  container.appendChild(
-    description
-  );
+  section.appendChild(heading);
 
   window.scoreladderHistoricalTopics =
-    [...topics];
+    topics;
 
   renderTopicStatsIntoContainer(
-    container,
+    section,
     topics
   );
 
-  elements.resultDiv.appendChild(
-    container
-  );
+  document
+    .querySelector("#result")
+    ?.appendChild(section);
 
   if (isCoolingDown()) {
     renderCooldownPracticeMessage();
   }
 }
-
 
 export function renderNoHistoricalTopicData(
   reason =
@@ -1702,158 +1573,6 @@ export function renderNoHistoricalTopicData(
     container
   );
 }
-
-
-/*
- * =========================================================
- * RECENT MATCHES
- * =========================================================
- */
-
-export function renderRecentMatches(
-  matches
-) {
-  if (!elements.resultDiv) {
-    return;
-  }
-
-  const oldHistory =
-    elements.resultDiv.querySelector(
-      ".recent-match-history"
-    );
-
-  if (oldHistory) {
-    oldHistory.remove();
-  }
-
-  const container =
-    document.createElement("div");
-
-  container.className =
-    "recent-match-history";
-
-  const heading =
-    document.createElement("h3");
-
-  heading.textContent =
-    "Recent Matches";
-
-  container.appendChild(heading);
-
-  if (matches.length === 0) {
-    const empty =
-      document.createElement("p");
-
-    empty.textContent =
-      "No completed matches yet.";
-
-    container.appendChild(empty);
-
-    elements.resultDiv.appendChild(
-      container
-    );
-
-    return;
-  }
-
-  matches.forEach(
-    (match, index) => {
-      const row =
-        document.createElement("div");
-
-      row.className =
-        "recent-match-row";
-
-      let result =
-        match.result;
-
-      if (!result) {
-        if (match.won === true) {
-          result = "win";
-        } else if (match.won === false) {
-          result = "loss";
-        } else {
-          result = "unknown";
-        }
-      }
-
-      const opponentName =
-        match.opponentUsername ||
-        match.opponent_username ||
-        match.opponent?.username ||
-        match.opponent?.display_name ||
-        match.opponent ||
-        "Opponent";
-
-      const correct =
-        Number(
-          match.yourCorrect ??
-          match.your_correct ??
-          match.correct ??
-          0
-        );
-
-      const total =
-        Number(
-          match.yourTotal ??
-          match.your_total ??
-          match.totalQuestions ??
-          match.total_questions ??
-          TOTAL_QUESTIONS
-        );
-
-      const rawAccuracy =
-        match.yourAccuracy ??
-        match.your_accuracy ??
-        match.accuracy;
-
-      const accuracy =
-        Number.isFinite(
-          Number(rawAccuracy)
-        )
-          ? Number(rawAccuracy)
-          : total > 0
-            ? Math.round(
-                (correct / total) * 100
-              )
-            : 0;
-
-      const resultText =
-        result === "win"
-          ? "Won"
-          : result === "loss"
-            ? "Lost"
-            : result === "tie"
-              ? "Tie"
-              : "Complete";
-
-      row.innerHTML = `
-        <div class="recent-match-number">
-          #${index + 1}
-        </div>
-
-        <div class="recent-match-opponent">
-          ${escapeHtml(opponentName)}
-        </div>
-
-        <div class="recent-match-result">
-          ${escapeHtml(resultText)}
-        </div>
-
-        <div class="recent-match-score">
-          ${correct}/${total} (${accuracy}%)
-        </div>
-      `;
-
-      container.appendChild(row);
-    }
-  );
-
-  elements.resultDiv.appendChild(
-    container
-  );
-}
-
 
 /*
  * =========================================================
@@ -1941,10 +1660,9 @@ export async function loadHistoricalTopicPerformance() {
         sessionId
       )}`;
 
-    console.log(
-      "Loading historical topic performance:",
-      url
-    );
+console.log(
+  "Loading historical topic performance"
+);
 
     const response =
       await fetch(url);
@@ -2178,7 +1896,6 @@ export async function loadRecentMatches() {
 
         window.scoreladderRecentMatches =
             matches;
-
         /*
          * IMPORTANT:
          *
@@ -2203,13 +1920,11 @@ export async function loadRecentMatches() {
                 match =>
                     extractQuestionResults(match).length > 0
             );
-
         if (hasQuestionData) {
             renderHistoricalTopicPerformance(
                 matches
             );
         }
-
         await loadHistoricalTopicPerformance();
 
         if (isCoolingDown()) {
@@ -2223,8 +1938,6 @@ export async function loadRecentMatches() {
         );
 
         window.scoreladderRecentMatches = [];
-
-        renderRecentMatches([]);
 
         await loadHistoricalTopicPerformance();
     }

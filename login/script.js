@@ -282,12 +282,17 @@ if (user.avatar) {
         );
 
       // Preserve the session for local development.
-      if (session) {
-        profileUrl.searchParams.set(
-          "session",
-          session
-        );
-      }
+const hostname = window.location.hostname;
+
+const isLocalDevelopment =
+  hostname === "localhost" ||
+  hostname === "127.0.0.1" ||
+  hostname === "::1" ||
+  hostname.endsWith(".localhost");
+
+if (session && isLocalDevelopment) {
+  profileUrl.searchParams.set("session", session);
+}
 
       console.log(
         "Current URL:",

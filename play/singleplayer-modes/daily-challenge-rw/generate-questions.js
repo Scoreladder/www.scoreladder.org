@@ -20,6 +20,7 @@ let selectedAnswers = [];
 let challengeStarted = false;
 let challengeSubmitted = false;
 let submissionInProgress = false;
+let autoSubmitFailed = false;
 let timeRemaining = 660;
 let timerInterval = null;
 let challengeDeadline = 0;
@@ -581,14 +582,18 @@ async function startChallenge() {
         return;
     }
 
-    challengeStarted = true;
-    startButton.disabled = true;
-    submitButton.disabled = true;
+challengeStarted = true;
+challengeSubmitted = false;
+submissionInProgress = false;
+autoSubmitFailed = false;
 
-    timeRemaining = 660;
+startButton.disabled = true;
+submitButton.disabled = true;
 
-    challengeDeadline =
-        Date.now() + 660000;
+timeRemaining = 660;
+
+challengeDeadline =
+    Date.now() + 660000;
 
     updateTimer();
 
@@ -871,7 +876,9 @@ function selectAnswer(
    UPDATE SUBMIT BUTTON
    ========================================================= */
 
-function updateSubmitButton() {
+function updateSubmitButton(
+    forceEnabled = false
+) {
 
     const allAnswered =
         selectedAnswers.every(
@@ -879,11 +886,10 @@ function updateSubmitButton() {
         );
 
     submitButton.disabled =
-        !allAnswered ||
+        (!allAnswered && !forceEnabled) ||
         challengeSubmitted ||
         submissionInProgress;
 }
-
 
 /* =========================================================
    SUBMIT DAILY CHALLENGE
@@ -933,7 +939,10 @@ async function submitChallenge(
         timerInterval = null;
     }
 
+try {
+
     let correct = 0;
+
     const results = [];
 
     questions.forEach(
@@ -955,15 +964,12 @@ async function submitChallenge(
                         selectedChoice
                     ];
 
-                if (shuffledChoice) {
+                isCorrect =
+                    shuffledChoice.originalIndex ===
+                    q.answer;
 
-                    isCorrect =
-                        shuffledChoice.originalIndex ===
-                        q.answer;
-
-                    if (isCorrect) {
-                        correct++;
-                    }
+                if (isCorrect) {
+                    correct++;
                 }
             }
 
@@ -973,7 +979,6 @@ async function submitChallenge(
                 );
 
             if (!normalizedTopic) {
-
                 console.error(
                     "Cannot submit unknown topic:",
                     q.topic
@@ -987,7 +992,6 @@ async function submitChallenge(
             results.push({
                 topic:
                     normalizedTopic,
-
                 correct:
                     isCorrect
             });
@@ -998,18 +1002,14 @@ async function submitChallenge(
         questions.length;
 
     const accuracy =
-        total > 0
-            ? Math.round(
-                (correct / total) * 100
-            )
-            : 0;
+        Math.round(
+            (correct / total) * 100
+        );
 
     console.log(
         "Submitting daily challenge results:",
         results
     );
-
-    try {
 
         let sessionId = null;
 
@@ -1049,9 +1049,7 @@ async function submitChallenge(
             "Submitting daily challenge:",
             {
                 sessionFound:
-                    Boolean(sessionId),
-
-                saveUrl
+                    Boolean(sessionId)
             }
         );
 
@@ -1137,81 +1135,83 @@ async function submitChallenge(
             );
         }
 
-        challengeSubmitted = true;
-        submissionInProgress = false;
+challengeSubmitted = true;
+submissionInProgress = false;
+autoSubmitFailed = false;
 
-        renderResults(
+renderResults(
             saveData.correct ?? correct,
             saveData.total ?? total,
             saveData.accuracy ?? accuracy,
             autoSubmitted
         );
 
-    } catch (err) {
+} catch (err) {
+    console.error(
+        "Failed to save daily challenge:",
+        err
+    );
 
-        console.error(
-            "Failed to save daily challenge:",
-            err
-        );
+    submissionInProgress = false;
+    challengeSubmitted = false;
 
-        submissionInProgress = false;
-        challengeSubmitted = false;
+    autoSubmitFailed =
+        autoSubmitted;
 
-        submitButton.disabled = false;
+    updateSubmitButton(
+        autoSubmitted
+    );
 
-        updateSubmitButton();
+    alert(
+        `Failed to save your results.\n\n${
+            err.message
+        }`
+    );
 
-        alert(
-            `Failed to save your results.\n\n${
-                err.message
-            }`
-        );
+    if (
+        !autoSubmitted &&
+        challengeStarted &&
+        timeRemaining > 0 &&
+        !timerInterval
+    ) {
+        challengeDeadline =
+            Date.now() +
+            timeRemaining * 1000;
 
-        if (
-            challengeStarted &&
-            timeRemaining > 0 &&
-            !timerInterval
-        ) {
+        timerInterval =
+            setInterval(
+                () => {
+                    timeRemaining =
+                        Math.max(
+                            0,
+                            Math.ceil(
+                                (
+                                    challengeDeadline -
+                                    Date.now()
+                                ) / 1000
+                            )
+                        );
 
-            challengeDeadline =
-                Date.now() +
-                timeRemaining * 1000;
+                    updateTimer();
 
-            timerInterval =
-                setInterval(
-                    () => {
+                    if (
+                        timeRemaining <= 0
+                    ) {
+                        clearInterval(
+                            timerInterval
+                        );
 
-                        timeRemaining =
-                            Math.max(
-                                0,
-                                Math.ceil(
-                                    (
-                                        challengeDeadline -
-                                        Date.now()
-                                    ) / 1000
-                                )
-                            );
+                        timerInterval = null;
 
-                        updateTimer();
-
-                        if (
-                            timeRemaining <= 0
-                        ) {
-
-                            clearInterval(
-                                timerInterval
-                            );
-
-                            timerInterval = null;
-
-                            submitChallenge(true);
-                        }
-
-                    },
-                    1000
-                );
-        }
+                        submitChallenge(
+                            true
+                        );
+                    }
+                },
+                1000
+            );
     }
+}
 }
 
 
@@ -1445,7 +1445,7 @@ startButton.addEventListener(
 submitButton.addEventListener(
     "click",
     () =>
-        submitChallenge(false)
+        submitChallenge(autoSubmitFailed)
 );
 
 

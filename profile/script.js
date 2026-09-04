@@ -338,89 +338,103 @@ document.getElementById(
   );
 
 
-  // ==========================================================
-  // SOCIAL LINKS
-  // ==========================================================
+// ==========================================================
+// SOCIAL LINKS
+// ==========================================================
 
-  const socials = [];
+const socials = [];
 
-  const twitterUrl =
-    getSafeExternalUrl(
-      profile.twitter
-    );
+const twitterUrl =
+  getSafeExternalUrl(
+    profile.twitter
+  );
 
-  function getSafeExternalUrl(value) {
-    try {
-      const url =
-        new URL(String(value));
+const instagramUrl =
+  getSafeExternalUrl(
+    profile.instagram
+  );
 
-      return ["https:", "http:"].includes(
-        url.protocol
-      )
-        ? url.href
-        : null;
+const youtubeUrl =
+  getSafeExternalUrl(
+    profile.youtube
+  );
 
-    } catch {
-      return null;
-    }
+const websiteUrl =
+  getSafeExternalUrl(
+    profile.website
+  );
+
+function getSafeExternalUrl(value) {
+  try {
+    const url =
+      new URL(String(value));
+
+    return ["https:", "http:"].includes(
+      url.protocol
+    )
+      ? url.href
+      : null;
+  } catch {
+    return null;
   }
-
-  if (twitterUrl) {
-    socials.push(`
-      <a
-        href="${escapeAttribute(twitterUrl)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Twitter
-      </a>
-    `);
-  }
-
-  if (profile.instagram) {
-    socials.push(`
-      <a
-        href="${escapeAttribute(profile.instagram)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Instagram
-      </a>
-    `);
-  }
-
-  if (profile.youtube) {
-    socials.push(`
-      <a
-        href="${escapeAttribute(profile.youtube)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        YouTube
-      </a>
-    `);
-  }
-
-  if (profile.website) {
-    socials.push(`
-      <a
-        href="${escapeAttribute(profile.website)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Website
-      </a>
-    `);
-  }
-
-  document.getElementById(
-    "socials"
-  ).innerHTML =
-    socials.join("");
 }
 
+if (twitterUrl) {
+  socials.push(`
+    <a
+      href="${escapeAttribute(twitterUrl)}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Twitter
+    </a>
+  `);
+}
 
-// ============================================================
+if (instagramUrl) {
+  socials.push(`
+    <a
+      href="${escapeAttribute(instagramUrl)}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Instagram
+    </a>
+  `);
+}
+
+if (youtubeUrl) {
+  socials.push(`
+    <a
+      href="${escapeAttribute(youtubeUrl)}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      YouTube
+    </a>
+  `);
+}
+
+if (websiteUrl) {
+  socials.push(`
+    <a
+      href="${escapeAttribute(websiteUrl)}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Website
+    </a>
+  `);
+}
+
+document.getElementById(
+  "socials"
+).innerHTML =
+  socials.join("");
+
+}
+  
+  // ============================================================
 // QUESTION TYPE STATS
 // ============================================================
 

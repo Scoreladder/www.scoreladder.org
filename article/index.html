@@ -1,122 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443" type="text/javascript" async></script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <!-- Cookiebot -->
+    <script
+        id="Cookiebot"
+        src="https://consent.cookiebot.com/uc.js"
+        data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+        type="text/javascript">
+    </script>
 
-  gtag('config', 'G-SYPC6SHK23');
-</script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scoreladder Articles</title>
-<link rel="stylesheet" href="/style.css">
-<style>
-body {
-    margin: 0;
-    font-family: sans-serif;
-    background: var(--base-color);
-    color: var(--text-color);
-}
+    <!-- Google Analytics -->
+    <script
+        type="text/plain"
+        data-cookieconsent="statistics"
+        src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
+    </script>
 
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-}
+    <script type="text/plain" data-cookieconsent="statistics">
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-SYPC6SHK23');
+    </script>
 
-h1 {
-    margin-bottom: 5px;
-}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoreladder Articles</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+    body {
+        margin: 0;
+        font-family: sans-serif;
+        background: var(--base-color);
+        color: var(--text-color);
+    }
 
-.subtitle {
-    margin-bottom: 20px;
-    opacity: 0.8;
-}
+    .container {
+        max-width: 900px;
+        margin: auto;
+        padding: 20px;
+    }
 
-/* INPUT */
-input {
-    width: 100%;
-    padding: 14px;
-    font-size: 18px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-color);
-    margin-bottom: 12px;
-}
+    h1 {
+        margin-bottom: 5px;
+    }
 
-/* BUTTONS */
-button {
-    padding: 12px 18px;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    background: var(--accent);
-    color: white;
-    margin-right: 8px;
-}
+    .subtitle {
+        margin-bottom: 20px;
+        opacity: 0.8;
+    }
 
-button:hover {
-    background: var(--accent-hover);
-}
+    /* INPUT */
+    input {
+        width: 100%;
+        padding: 14px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-color);
+        margin-bottom: 12px;
+    }
 
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+    /* BUTTONS */
+    button {
+        padding: 12px 18px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background: var(--accent);
+        color: white;
+        margin-right: 8px;
+    }
 
-/* CARD */
-.card {
-    margin-top: 20px;
-    padding: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-}
+    button:hover {
+        background: var(--accent-hover);
+    }
 
-.title {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 
-.meta {
-    font-size: 14px;
-    opacity: 0.9;
-    margin-bottom: 10px;
-}
+    /* CARD */
+    .card {
+        margin-top: 20px;
+        padding: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
 
-.abstract {
-    line-height: 1.6;
-    white-space: pre-wrap;
-}
+    .title {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
 
-/* QUESTIONS */
-.choice {
-    margin-top: 8px;
-    padding: 10px;
-    border-radius: 8px;
-    background: var(--secondary-color);
-}
+    .meta {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 10px;
+    }
 
-.answer {
-    margin-top: 10px;
-    color: var(--accent);
-}
+    .abstract {
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
 
-/* FOOTER */
-.footer {
-    margin-top: 30px;
-    font-size: 12px;
-    opacity: 0.7;
-    text-align: center;
-}
-</style>
+    /* QUESTIONS */
+    .choice {
+        margin-top: 8px;
+        padding: 10px;
+        border-radius: 8px;
+        background: var(--secondary-color);
+    }
+
+    .answer {
+        margin-top: 10px;
+        color: var(--accent);
+    }
+
+    /* FOOTER */
+    .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        opacity: 0.7;
+        text-align: center;
+    }
+    </style>
 </head>
 
 <body>

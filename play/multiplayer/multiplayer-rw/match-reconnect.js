@@ -778,6 +778,32 @@ if (isResume) {
    ANSWER STATE
    =============================================== */
 
+   function normalizeSelectedAnswer(value) {
+  if (
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= 3
+  ) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized =
+      value.trim().toUpperCase();
+
+    const choiceIndex =
+      ["A", "B", "C", "D"].indexOf(
+        normalized
+      );
+
+    if (choiceIndex !== -1) {
+      return choiceIndex;
+    }
+  }
+
+  return -1;
+}
+
 case "answer_state": {
   /*
    * Ignore answer state belonging to another player.
@@ -837,95 +863,123 @@ case "answer_state": {
           : 0
       );
 
-    const mergedAnswers =
-      new Array(answerCount).fill(null);
+const mergedAnswers =
+  new Array(TOTAL_QUESTIONS).fill(-1);
 
-    for (
-      let i = 0;
-      i < answerCount;
-      i++
-    ) {
-      /*
-       * An explicitly supplied server value is
-       * authoritative, including null when the server
-       * explicitly cleared that question.
-       */
-      if (
-        i < incomingAnswers.length
-      ) {
-        mergedAnswers[i] =
-          incomingAnswers[i];
-      } else {
-        /*
-         * Do not erase an existing local selection merely
-         * because this payload did not contain that index.
-         */
-        mergedAnswers[i] =
-          currentAnswers[i] ?? null;
-      }
-    }
-
-    state.selectedAnswers =
-      mergedAnswers;
+for (
+  let i = 0;
+  i < TOTAL_QUESTIONS;
+  i++
+) {
+  /*
+   * An explicitly supplied server value is
+   * authoritative, including null when the server
+   * explicitly cleared that question.
+   */
+  if (
+    i < incomingAnswers.length
+  ) {
+    mergedAnswers[i] =
+      normalizeSelectedAnswer(
+        incomingAnswers[i]
+      );
+  } else {
+    /*
+     * Do not erase an existing local selection merely
+     * because this payload did not contain that index.
+     */
+    mergedAnswers[i] =
+      normalizeSelectedAnswer(
+        currentAnswers[i]
+      );
   }
+}
+
+state.selectedAnswers =
+  mergedAnswers;  }
 
 
   /* -------------------------------------------------
      SINGLE ANSWER UPDATE
      ------------------------------------------------- */
 
-  if (
-    Number.isInteger(
-      data.questionIndex
-    )
-  ) {
-    const index =
-      data.questionIndex;
+if (
+  Number.isInteger(
+    data.questionIndex
+  )
+) {
+  const index =
+    data.questionIndex;
 
-    if (
-      !Array.isArray(
+  if (
+    index < 0 ||
+    index >= TOTAL_QUESTIONS
+  ) {
+    return;
+  }
+
+  if (
+    !Array.isArray(
+      state.selectedAnswers
+    ) ||
+    state.selectedAnswers.length !==
+      TOTAL_QUESTIONS
+  ) {
+    const currentAnswers =
+      Array.isArray(
         state.selectedAnswers
       )
-    ) {
-      state.selectedAnswers = [];
-    }
+        ? state.selectedAnswers
+        : [];
 
-    /*
-     * Ensure the array is large enough.
-     */
-    while (
-      state.selectedAnswers.length <=
-      index
-    ) {
-      state.selectedAnswers.push(
-        null
+    const normalizedAnswers =
+      new Array(TOTAL_QUESTIONS).fill(
+        -1
       );
+
+    for (
+      let i = 0;
+      i < TOTAL_QUESTIONS;
+      i++
+    ) {
+      normalizedAnswers[i] =
+        normalizeSelectedAnswer(
+          currentAnswers[i]
+        );
     }
 
-    /*
-     * Support both:
-     *
-     * answer
-     * selectedAnswer
-     */
-    if (
-      Object.prototype.hasOwnProperty.call(
-        data,
-        "answer"
-      )
-    ) {
-      state.selectedAnswers[index] =
-        data.answer;
-    } else if (
-      Object.prototype.hasOwnProperty.call(
-        data,
-        "selectedAnswer"
-      )
-    ) {
-      state.selectedAnswers[index] =
-        data.selectedAnswer;
-    }
+    state.selectedAnswers =
+      normalizedAnswers;
   }
+
+  /*
+   * Support both:
+   *
+   * answer
+   * selectedAnswer
+   */
+  if (
+    Object.prototype.hasOwnProperty.call(
+      data,
+      "answer"
+    )
+  ) {
+    state.selectedAnswers[index] =
+      normalizeSelectedAnswer(
+        data.answer
+      );
+  } else if (
+    Object.prototype.hasOwnProperty.call(
+      data,
+      "selectedAnswer"
+    )
+  ) {
+    state.selectedAnswers[index] =
+      normalizeSelectedAnswer(
+        data.selectedAnswer
+      );
+  }
+}
 
 
   /* -------------------------------------------------
