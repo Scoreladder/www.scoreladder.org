@@ -18,7 +18,7 @@ import {
   state,
   isResumeAvailable,
   isCoolingDown,
-  restoreCooldownState
+  restoreCooldownState,
 } from "./match-state.js";
 
 import {
@@ -27,32 +27,24 @@ import {
   initializeResumeGame,
   initializeCooldown,
   loadRecentMatches,
-  refreshPlayerStats
+  refreshPlayerStats,
 } from "./match-ui.js";
 
-import {
-  resumeExistingMatch
-} from "./match-connection.js";
-
+import { resumeExistingMatch } from "./match-connection.js";
 
 /* =========================================================
    INITIAL GLOBAL DATA
    ========================================================= */
 
-window.scoreladderRecentMatches =
-  Array.isArray(
-    window.scoreladderRecentMatches
-  )
-    ? window.scoreladderRecentMatches
-    : [];
+window.scoreladderRecentMatches = Array.isArray(window.scoreladderRecentMatches)
+  ? window.scoreladderRecentMatches
+  : [];
 
-window.scoreladderHistoricalTopics =
-  Array.isArray(
-    window.scoreladderHistoricalTopics
-  )
-    ? window.scoreladderHistoricalTopics
-    : [];
-
+window.scoreladderHistoricalTopics = Array.isArray(
+  window.scoreladderHistoricalTopics,
+)
+  ? window.scoreladderHistoricalTopics
+  : [];
 
 /* =========================================================
    RESUME BUTTON INTERCEPTION
@@ -70,25 +62,17 @@ function handleStartMatchButtonClick(event) {
     return;
   }
 
-  const button =
-    elements.startMatchButton;
+  const button = elements.startMatchButton;
 
-  const isResumeButton =
-    button.textContent.trim() ===
-    "Resume Game";
+  const isResumeButton = button.textContent.trim() === "Resume Game";
 
-  const resumable =
-    isResumeAvailable();
-
+  const resumable = isResumeAvailable();
 
   /* -------------------------------------------------------
      VALID RESUME BUTTON
      ------------------------------------------------------- */
 
-  if (
-    resumable &&
-    isResumeButton
-  ) {
+  if (resumable && isResumeButton) {
     event.preventDefault();
     event.stopImmediatePropagation();
 
@@ -96,7 +80,6 @@ function handleStartMatchButtonClick(event) {
 
     return;
   }
-
 
   /* -------------------------------------------------------
      STALE RESUME BUTTON
@@ -109,45 +92,34 @@ function handleStartMatchButtonClick(event) {
    * Restore normal queue presentation and allow the
    * matchmaking click handler to process this click.
    */
-if (
-  !resumable &&
-  isResumeButton
-) {
-  if (isCoolingDown()) {
-    button.disabled = true;
+  if (!resumable && isResumeButton) {
+    if (isCoolingDown()) {
+      button.disabled = true;
 
-    button.textContent =
-      "Cooldown Active";
+      button.textContent = "Cooldown Active";
 
-    setStatus(
-      "Your previous match has finished. Analyze this game or practice your weakest topics on Khan Academy in the meantime."
-    );
-  } else {
-    button.disabled = false;
+      setStatus(
+        "Your previous match has finished. Analyze this game or practice your weakest topics on Khan Academy in the meantime.",
+      );
+    } else {
+      button.disabled = false;
 
-    button.removeAttribute(
-      "disabled"
-    );
+      button.removeAttribute("disabled");
 
-    button.textContent =
-      "Join Queue";
+      button.textContent = "Join Queue";
 
-    setStatus(
-      "Your previous match has finished. You can join the queue."
-    );
+      setStatus("Your previous match has finished. You can join the queue.");
+    }
   }
 }
-}
-
 
 if (elements.startMatchButton) {
   elements.startMatchButton.addEventListener(
     "click",
     handleStartMatchButtonClick,
-    true
+    true,
   );
 }
-
 
 /* =========================================================
    INITIAL BUTTON STATE
@@ -162,19 +134,14 @@ if (elements.startMatchButton) {
  */
 
 if (elements.submitButton) {
-  elements.submitButton.style.display =
-    "none";
+  elements.submitButton.style.display = "none";
 
-  elements.submitButton.disabled =
-    true;
+  elements.submitButton.disabled = true;
 }
-
 
 if (elements.timerDiv) {
-  elements.timerDiv.textContent =
-    "13:00";
+  elements.timerDiv.textContent = "13:00";
 }
-
 
 /* =========================================================
    RESTORE PERSISTED STATE
@@ -185,7 +152,6 @@ if (elements.timerDiv) {
  * decides whether normal queue interaction is available.
  */
 restoreCooldownState();
-
 
 /*
  * initializeCooldown() handles the UI side of cooldown
@@ -203,9 +169,6 @@ initializeCooldown();
  */
 initializeResumeGame();
 
-
-
-
 /* =========================================================
    LOAD USER DATA
    ========================================================= */
@@ -213,7 +176,6 @@ initializeResumeGame();
 loadRecentMatches();
 
 refreshPlayerStats();
-
 
 /* =========================================================
    ACTIVE MATCH LEAVE WARNING
@@ -229,12 +191,8 @@ refreshPlayerStats();
  * flag. Do not use gameFinished here.
  */
 function isMatchInProgress() {
-  return Boolean(
-    state.matchId &&
-    !state.matchFinished
-  );
+  return Boolean(state.matchId && !state.matchFinished);
 }
-
 
 /* =========================================================
    BROWSER REFRESH / TAB CLOSE
@@ -249,12 +207,7 @@ function handleBeforeUnload(event) {
   event.returnValue = "";
 }
 
-
-window.addEventListener(
-  "beforeunload",
-  handleBeforeUnload
-);
-
+window.addEventListener("beforeunload", handleBeforeUnload);
 
 /* =========================================================
    NORMAL PAGE NAVIGATION
@@ -262,27 +215,22 @@ window.addEventListener(
 
 document.addEventListener(
   "click",
-  event => {
+  (event) => {
     if (!isMatchInProgress()) {
       return;
     }
 
-    const link =
-      event.target.closest(
-        "a[href]"
-      );
+    const link = event.target.closest("a[href]");
 
     if (!link) {
       return;
     }
 
-    const href =
-      link.href;
+    const href = link.href;
 
     if (!href) {
       return;
     }
-
 
     /*
      * Do not interfere with:
@@ -305,51 +253,38 @@ document.addEventListener(
       return;
     }
 
-
-    const confirmed =
-      window.confirm(
-        "WARNING: Do not leave or refresh while a match is in progress.\n\n" +
+    const confirmed = window.confirm(
+      "WARNING: Do not leave or refresh while a match is in progress.\n\n" +
         "Disconnecting may prevent you from rejoining the match " +
         "or entering a new match. Reconnection is currently unreliable.\n\n" +
-        "Are you sure you want to leave?"
-      );
-
+        "Are you sure you want to leave?",
+    );
 
     if (!confirmed) {
       event.preventDefault();
       event.stopPropagation();
     }
   },
-  true
+  true,
 );
-
 
 /* =========================================================
    BROWSER BACK / FORWARD
    ========================================================= */
 
-window.addEventListener(
-  "popstate",
-  () => {
-    if (!isMatchInProgress()) {
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        "WARNING: Your match is still in progress.\n\n" +
-        "Leaving may prevent you from rejoining the match " +
-        "or entering a new match. Reconnection is currently unreliable.\n\n" +
-        "Are you sure you want to leave?"
-      );
-
-
-    if (!confirmed) {
-      history.pushState(
-        null,
-        "",
-        window.location.href
-      );
-    }
+window.addEventListener("popstate", () => {
+  if (!isMatchInProgress()) {
+    return;
   }
-);
+
+  const confirmed = window.confirm(
+    "WARNING: Your match is still in progress.\n\n" +
+      "Leaving may prevent you from rejoining the match " +
+      "or entering a new match. Reconnection is currently unreliable.\n\n" +
+      "Are you sure you want to leave?",
+  );
+
+  if (!confirmed) {
+    history.pushState(null, "", window.location.href);
+  }
+});

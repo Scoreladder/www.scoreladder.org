@@ -5,7 +5,6 @@ import {
   isCoolingDown,
   saveCooldownUntil,
   startCooldownTimer,
-  beginCooldown
 } from "./match-state.js";
 
 import {
@@ -14,19 +13,10 @@ import {
   updatePlayer,
   updateOpponent,
   updateCooldownUI,
-  renderCooldownPracticeMessage
+  renderCooldownPracticeMessage,
 } from "./match-ui.js";
 
-import {
-  sendRoomMessage,
-  connectToRoom
-} from "./match-connection.js";
-
-import {
-  handleGameStart,
-  handleGameResult
-} from "./match-game.js";
-
+import { sendRoomMessage, connectToRoom } from "./match-connection.js";
 
 /* =========================================================
    PROFILE NORMALIZATION
@@ -47,7 +37,7 @@ function normalizePlayer(player) {
   }
 
   const normalized = {
-    ...player
+    ...player,
   };
 
   const displayName =
@@ -57,37 +47,28 @@ function normalizePlayer(player) {
     player.username ||
     "Unknown Player";
 
-  normalized.display_name =
-    displayName;
+  normalized.display_name = displayName;
 
-  normalized.displayName =
-    displayName;
+  normalized.displayName = displayName;
 
   if (!normalized.username) {
-    normalized.username =
-      displayName;
+    normalized.username = displayName;
   }
 
   if (normalized.id != null) {
-    normalized.id =
-      String(normalized.id);
+    normalized.id = String(normalized.id);
   }
 
   if (normalized.playerId != null) {
-    normalized.playerId =
-      String(normalized.playerId);
+    normalized.playerId = String(normalized.playerId);
   }
 
-  normalized.isBot =
-    String(
-      normalized.id ||
-      normalized.playerId ||
-      ""
-    ).startsWith("bot_");
+  normalized.isBot = String(
+    normalized.id || normalized.playerId || "",
+  ).startsWith("bot_");
 
   return normalized;
 }
-
 
 /* =========================================================
    MATCHMAKING
@@ -103,13 +84,10 @@ async function startMatchmaking() {
     return;
   }
 
-  const sessionId =
-    getSessionId();
+  const sessionId = getSessionId();
 
   if (!sessionId) {
-    setStatus(
-      "You must be logged in to play multiplayer."
-    );
+    setStatus("You must be logged in to play multiplayer.");
 
     return;
   }
@@ -132,50 +110,33 @@ async function startMatchmaking() {
 
   if (elements.startMatchButton) {
     elements.startMatchButton.disabled = true;
-    elements.startMatchButton.textContent =
-      "Joining Queue...";
+    elements.startMatchButton.textContent = "Joining Queue...";
   }
 
   if (elements.submitButton) {
-    elements.submitButton.style.display =
-      "none";
+    elements.submitButton.style.display = "none";
   }
 
-  setStatus(
-    "Finding an opponent..."
-  );
+  setStatus("Finding an opponent...");
 
   try {
-    const response =
-      await fetch(
-        `${API}/matchmake?session=${encodeURIComponent(
-          sessionId
-        )}`
-      );
-
-    const data =
-      await response.json();
-
-    console.log(
-      "Matchmaking response:",
-      data
+    const response = await fetch(
+      `${API}/matchmake?session=${encodeURIComponent(sessionId)}`,
     );
+
+    const data = await response.json();
+
+    console.log("Matchmaking response:", data);
 
     /*
      * Handle HTTP-level errors first.
      */
     if (!response.ok) {
       if (data.cooldownUntil) {
-        const serverCooldown =
-          Number(data.cooldownUntil);
+        const serverCooldown = Number(data.cooldownUntil);
 
-        if (
-          Number.isFinite(serverCooldown) &&
-          serverCooldown > Date.now()
-        ) {
-          saveCooldownUntil(
-            serverCooldown
-          );
+        if (Number.isFinite(serverCooldown) && serverCooldown > Date.now()) {
+          saveCooldownUntil(serverCooldown);
 
           state.newGameMode = true;
 
@@ -184,10 +145,7 @@ async function startMatchmaking() {
         }
       }
 
-      throw new Error(
-        data.error ||
-        "Unable to enter matchmaking."
-      );
+      throw new Error(data.error || "Unable to enter matchmaking.");
     }
 
     /*
@@ -195,45 +153,38 @@ async function startMatchmaking() {
      * successful response indicating that cooldown
      * is active.
      */
-if (data.status === "cooldown") {
-  state.inQueue = false;
+    if (data.status === "cooldown") {
+      state.inQueue = false;
 
-  if (data.nextGameAt) {
-    const nextGameAt =
-      Number(data.nextGameAt);
+      if (data.nextGameAt) {
+        const nextGameAt = Number(data.nextGameAt);
 
-    if (
-      Number.isFinite(nextGameAt) &&
-      nextGameAt > Date.now()
-    ) {
-      saveCooldownUntil(
-        nextGameAt
-      );
+        if (Number.isFinite(nextGameAt) && nextGameAt > Date.now()) {
+          saveCooldownUntil(nextGameAt);
 
-      state.newGameMode = true;
+          state.newGameMode = true;
 
-      startCooldownTimer();
+          startCooldownTimer();
+
+          updateCooldownUI();
+
+          renderCooldownPracticeMessage();
+
+          return;
+        }
+      }
 
       updateCooldownUI();
 
-      renderCooldownPracticeMessage();
-
       return;
     }
-  }
-
-  updateCooldownUI();
-
-  return;
-}
 
     /*
      * Matchmaking succeeded. Store our player ID
      * before handling either matched or queued state.
      */
     if (data.playerId != null) {
-      state.playerId =
-        String(data.playerId);
+      state.playerId = String(data.playerId);
     }
 
     /*
@@ -241,31 +192,23 @@ if (data.status === "cooldown") {
      * the player UI.
      */
     if (data.player) {
-      updatePlayer(
-        normalizePlayer(data.player)
-      );
+      updatePlayer(normalizePlayer(data.player));
     }
 
     /*
      * Match was immediately found.
      */
     if (data.status === "matched") {
-      state.matchId =
-        data.matchId;
+      state.matchId = data.matchId;
 
       state.inQueue = false;
 
-      updateOpponent(
-        normalizePlayer(data.opponent)
-      );
+      updateOpponent(normalizePlayer(data.opponent));
 
-      setStatus(
-        "Opponent found!"
-      );
+      setStatus("Opponent found!");
 
       if (elements.startMatchButton) {
-        elements.startMatchButton.textContent =
-          "Connecting...";
+        elements.startMatchButton.textContent = "Connecting...";
       }
 
       onMatchFound();
@@ -277,28 +220,18 @@ if (data.status === "cooldown") {
      * Still waiting in the queue.
      */
     if (elements.startMatchButton) {
-      elements.startMatchButton.textContent =
-        "In Queue";
+      elements.startMatchButton.textContent = "In Queue";
     }
 
-    setStatus(
-      "Waiting for opponent..."
-    );
+    setStatus("Waiting for opponent...");
 
     checkForMatch();
-
   } catch (error) {
-    console.error(
-      "Matchmaking error:",
-      error
-    );
+    console.error("Matchmaking error:", error);
 
     state.inQueue = false;
 
-    setStatus(
-      error.message ||
-      "Unable to connect to matchmaking."
-    );
+    setStatus(error.message || "Unable to connect to matchmaking.");
 
     if (isCoolingDown()) {
       updateCooldownUI();
@@ -306,72 +239,48 @@ if (data.status === "cooldown") {
     }
 
     if (elements.startMatchButton) {
-      elements.startMatchButton.disabled =
-        false;
+      elements.startMatchButton.disabled = false;
 
-      elements.startMatchButton.textContent =
-        "Join Queue";
+      elements.startMatchButton.textContent = "Join Queue";
     }
 
     if (elements.submitButton) {
-      elements.submitButton.style.display =
-        "none";
+      elements.submitButton.style.display = "none";
     }
   }
 }
-
 
 /* =========================================================
    CHECK FOR MATCH
    ========================================================= */
 
 async function checkForMatch() {
-  if (
-    state.checkingMatch ||
-    !state.playerId ||
-    state.matchId
-  ) {
+  if (state.checkingMatch || !state.playerId || state.matchId) {
     return;
   }
 
   state.checkingMatch = true;
 
   try {
-    const response =
-      await fetch(
-        `${API}/check-match?playerId=${encodeURIComponent(
-          state.playerId
-        )}`
-      );
-
-    const data =
-      await response.json();
-
-    console.log(
-      "Match check:",
-      data
+    const response = await fetch(
+      `${API}/check-match?playerId=${encodeURIComponent(state.playerId)}`,
     );
+
+    const data = await response.json();
+
+    console.log("Match check:", data);
 
     /*
      * Server-side cooldown.
      */
-    if (
-      response.ok &&
-      data.status === "cooldown"
-    ) {
+    if (response.ok && data.status === "cooldown") {
       state.inQueue = false;
 
       if (data.nextGameAt) {
-        const nextGameAt =
-          Number(data.nextGameAt);
+        const nextGameAt = Number(data.nextGameAt);
 
-        if (
-          Number.isFinite(nextGameAt) &&
-          nextGameAt > Date.now()
-        ) {
-          saveCooldownUntil(
-            nextGameAt
-          );
+        if (Number.isFinite(nextGameAt) && nextGameAt > Date.now()) {
+          saveCooldownUntil(nextGameAt);
 
           state.newGameMode = true;
 
@@ -388,39 +297,25 @@ async function checkForMatch() {
     /*
      * Match found while polling.
      */
-    if (
-      response.ok &&
-      data.status === "matched"
-    ) {
-      state.matchId =
-        data.matchId;
+    if (response.ok && data.status === "matched") {
+      state.matchId = data.matchId;
 
       state.inQueue = false;
 
-      updateOpponent(
-        normalizePlayer(data.opponent)
-      );
+      updateOpponent(normalizePlayer(data.opponent));
 
-      setStatus(
-        "Opponent found!"
-      );
+      setStatus("Opponent found!");
 
       if (elements.startMatchButton) {
-        elements.startMatchButton.textContent =
-          "Connecting...";
+        elements.startMatchButton.textContent = "Connecting...";
       }
 
       onMatchFound();
 
       return;
     }
-
   } catch (error) {
-    console.error(
-      "Match check error:",
-      error
-    );
-
+    console.error("Match check error:", error);
   } finally {
     state.checkingMatch = false;
   }
@@ -429,36 +324,21 @@ async function checkForMatch() {
    * Continue polling only while the player is
    * genuinely still waiting for a match.
    */
-  if (
-    !state.matchId &&
-    state.inQueue &&
-    !isCoolingDown()
-  ) {
-    setTimeout(
-      checkForMatch,
-      1000
-    );
+  if (!state.matchId && state.inQueue && !isCoolingDown()) {
+    setTimeout(checkForMatch, 1000);
   }
 }
-
 
 /* =========================================================
    MATCH FOUND
    ========================================================= */
 
 function onMatchFound() {
-  console.log(
-    "Match found:",
-    state.matchId
-  );
+  console.log("Match found:", state.matchId);
 
-  console.log(
-    "Opponent:",
-    state.opponent
-  );
+  console.log("Opponent:", state.opponent);
 
-  state.matchConnectionConfirmed =
-    false;
+  state.matchConnectionConfirmed = false;
 
   /*
    * match-connection.js owns the WebSocket.
@@ -467,130 +347,102 @@ function onMatchFound() {
   connectToRoom(false);
 }
 
-
 /* =========================================================
    START / QUEUE BUTTON
    ========================================================= */
 
 if (elements.startMatchButton) {
-  elements.startMatchButton.addEventListener(
-    "click",
-    () => {
-      /*
-       * Cooldown always takes priority.
-       */
-      if (isCoolingDown()) {
-        updateCooldownUI();
-        return;
-      }
-
-      /*
-       * No match ID means the player is joining
-       * matchmaking.
-       */
-      if (!state.matchId) {
-        if (!state.inQueue) {
-          startMatchmaking();
-        }
-
-        return;
-      }
-
-      /*
-       * Do not allow starting a match that has
-       * already started.
-       */
-      if (state.gameStarted) {
-        return;
-      }
-
-      /*
-       * Do not send start_ready more than once.
-       */
-      if (state.playerReady) {
-        return;
-      }
-
-      /*
-       * The room must confirm the connection before
-       * the player can send start_ready.
-       */
-      if (!state.matchConnectionConfirmed) {
-        setStatus(
-          "Waiting for opponent to connect..."
-        );
-
-        return;
-      }
-
-      /*
-       * Make sure the actual WebSocket is open.
-       */
-      if (
-        !state.matchSocket ||
-        state.matchSocket.readyState !==
-          WebSocket.OPEN
-      ) {
-        console.error(
-          "Cannot start match: WebSocket is not connected."
-        );
-
-        setStatus(
-          "Not connected to match room."
-        );
-
-        return;
-      }
-
-      /*
-       * Mark ready before sending so a rapid second
-       * click cannot send another start_ready message.
-       */
-      state.playerReady = true;
-
-      elements.startMatchButton.disabled =
-        true;
-
-      elements.startMatchButton.textContent =
-        "Waiting for Opponent...";
-
-      setStatus(
-        "Waiting for opponent to start..."
-      );
-
-      const sent =
-        sendRoomMessage({
-          type: "start_ready"
-        });
-
-      /*
-       * If the message could not be sent, roll back
-       * playerReady so the user can try again.
-       */
-      if (!sent) {
-        state.playerReady = false;
-
-        elements.startMatchButton.disabled =
-          false;
-
-        elements.startMatchButton.textContent =
-          "Start Match";
-
-        setStatus(
-          "Unable to start match."
-        );
-      }
+  elements.startMatchButton.addEventListener("click", () => {
+    /*
+     * Cooldown always takes priority.
+     */
+    if (isCoolingDown()) {
+      updateCooldownUI();
+      return;
     }
-  );
-}
 
+    /*
+     * No match ID means the player is joining
+     * matchmaking.
+     */
+    if (!state.matchId) {
+      if (!state.inQueue) {
+        startMatchmaking();
+      }
+
+      return;
+    }
+
+    /*
+     * Do not allow starting a match that has
+     * already started.
+     */
+    if (state.gameStarted) {
+      return;
+    }
+
+    /*
+     * Do not send start_ready more than once.
+     */
+    if (state.playerReady) {
+      return;
+    }
+
+    /*
+     * The room must confirm the connection before
+     * the player can send start_ready.
+     */
+    if (!state.matchConnectionConfirmed) {
+      setStatus("Waiting for opponent to connect...");
+
+      return;
+    }
+
+    /*
+     * Make sure the actual WebSocket is open.
+     */
+    if (!state.matchSocket || state.matchSocket.readyState !== WebSocket.OPEN) {
+      console.error("Cannot start match: WebSocket is not connected.");
+
+      setStatus("Not connected to match room.");
+
+      return;
+    }
+
+    /*
+     * Mark ready before sending so a rapid second
+     * click cannot send another start_ready message.
+     */
+    state.playerReady = true;
+
+    elements.startMatchButton.disabled = true;
+
+    elements.startMatchButton.textContent = "Waiting for Opponent...";
+
+    setStatus("Waiting for opponent to start...");
+
+    const sent = sendRoomMessage({
+      type: "start_ready",
+    });
+
+    /*
+     * If the message could not be sent, roll back
+     * playerReady so the user can try again.
+     */
+    if (!sent) {
+      state.playerReady = false;
+
+      elements.startMatchButton.disabled = false;
+
+      elements.startMatchButton.textContent = "Start Match";
+
+      setStatus("Unable to start match.");
+    }
+  });
+}
 
 /* =========================================================
    EXPORTS
    ========================================================= */
 
-export {
-  startMatchmaking,
-  checkForMatch,
-  onMatchFound
-};
+export { startMatchmaking, checkForMatch, onMatchFound };

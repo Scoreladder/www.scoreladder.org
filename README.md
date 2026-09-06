@@ -1,16 +1,16 @@
 ### www.scoreladder.org
+
 Our webite
 
-
 # Contributing
-## For outsiders: 
+
+## For outsiders:
 
 Fork, and base your branch on `Scoreladder/www.scoreladder.org/develop`.
 
 Then PR into develop.
 
 To view live changes, run `python -m http.server 8080` and navigate to `localhost:8080` in your browser.
-
 
 ## For Scoreladder devs:
 

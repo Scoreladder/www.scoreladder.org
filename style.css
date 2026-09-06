@@ -1,50 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@700;800;900&display=swap");
 
 /* ============================================================
    LIGHT MODE TOKENS
    ============================================================ */
 :root {
   /* Backgrounds */
-  --base-color:       #eef0f8;
-  --primary-color:    #e4e8f4;
-  --secondary-color:  #d6dcee;
-  --surface:          #ffffff;
+  --base-color: #eef0f8;
+  --primary-color: #e4e8f4;
+  --secondary-color: #d6dcee;
+  --surface: #ffffff;
 
   /* Text */
-  --text-color:       #0e1120;
-  --text-muted:       #4a5270;
+  --text-color: #0e1120;
+  --text-muted: #4a5270;
 
   /* Accent — indigo/violet */
-  --accent:           #4f46e5;
-  --accent-hover:     #3d35c8;
-  --accent-soft:      #e8e6fd;
-  --accent2:          #0ea5e9;
+  --accent: #4f46e5;
+  --accent-hover: #3d35c8;
+  --accent-soft: #e8e6fd;
+  --accent2: #0ea5e9;
 
   /* Semantic */
-  --success:          #059669;
-  --warning:          #d97706;
-  --danger:           #dc2626;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
 
   /* Chrome */
-  --border:           #c8ceE2;
-  --border-strong:    #a8b0cc;
+  --border: #c8cee2;
+  --border-strong: #a8b0cc;
 
   /* Shadows — tinted indigo */
-  --shadow-sm:  0 1px 3px rgba(79,70,229,.10), 0 1px 2px rgba(0,0,0,.06);
-  --shadow-md:  0 4px 18px rgba(79,70,229,.13), 0 2px 8px rgba(0,0,0,.07);
-  --shadow-lg:  0 10px 44px rgba(79,70,229,.16), 0 4px 16px rgba(0,0,0,.09);
+  --shadow-sm: 0 1px 3px rgba(79, 70, 229, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md:
+    0 4px 18px rgba(79, 70, 229, 0.13), 0 2px 8px rgba(0, 0, 0, 0.07);
+  --shadow-lg:
+    0 10px 44px rgba(79, 70, 229, 0.16), 0 4px 16px rgba(0, 0, 0, 0.09);
 
   /* Shape */
-  --radius-sm:  8px;
-  --radius-md:  14px;
-  --radius-lg:  20px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
 
   /* Layout */
   --topbar-height: 64px;
 
   /* Fonts */
-  --font-body:    'Inter', system-ui, sans-serif;
-  --font-display: 'Poppins', 'Inter', sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-display: "Poppins", "Inter", sans-serif;
 
   color-scheme: light;
 }
@@ -53,29 +55,29 @@
    DARK MODE TOKENS
    ============================================================ */
 html.darkmode {
-  --base-color:      #0b0e18;
-  --primary-color:   #111525;
+  --base-color: #0b0e18;
+  --primary-color: #111525;
   --secondary-color: #192030;
-  --surface:         #151c2e;
+  --surface: #151c2e;
 
-  --text-color:      #eceef8;
-  --text-muted:      #8892b8;
+  --text-color: #eceef8;
+  --text-muted: #8892b8;
 
-  --accent:          #7c6fff;
-  --accent-hover:    #9a90ff;
-  --accent-soft:     #26245a;
-  --accent2:         #22d3ee;
+  --accent: #7c6fff;
+  --accent-hover: #9a90ff;
+  --accent-soft: #26245a;
+  --accent2: #22d3ee;
 
-  --success:         #34d399;
-  --warning:         #fbbf24;
-  --danger:          #f87171;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
 
-  --border:          #252f4a;
-  --border-strong:   #38456a;
+  --border: #252f4a;
+  --border-strong: #38456a;
 
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.40);
-  --shadow-md:  0 4px 18px rgba(0,0,0,.55);
-  --shadow-lg:  0 10px 44px rgba(0,0,0,.65);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 10px 44px rgba(0, 0, 0, 0.65);
 
   color-scheme: dark;
 }
@@ -83,24 +85,24 @@ html.darkmode {
 /* System preference fallback */
 @media (prefers-color-scheme: dark) {
   html:not(.lightmode):not(.darkmode) {
-    --base-color:      #0b0e18;
-    --primary-color:   #111525;
+    --base-color: #0b0e18;
+    --primary-color: #111525;
     --secondary-color: #192030;
-    --surface:         #151c2e;
-    --text-color:      #eceef8;
-    --text-muted:      #8892b8;
-    --accent:          #7c6fff;
-    --accent-hover:    #9a90ff;
-    --accent-soft:     #26245a;
-    --accent2:         #22d3ee;
-    --success:         #34d399;
-    --warning:         #fbbf24;
-    --danger:          #f87171;
-    --border:          #252f4a;
-    --border-strong:   #38456a;
-    --shadow-sm:  0 1px 3px rgba(0,0,0,.40);
-    --shadow-md:  0 4px 18px rgba(0,0,0,.55);
-    --shadow-lg:  0 10px 44px rgba(0,0,0,.65);
+    --surface: #151c2e;
+    --text-color: #eceef8;
+    --text-muted: #8892b8;
+    --accent: #7c6fff;
+    --accent-hover: #9a90ff;
+    --accent-soft: #26245a;
+    --accent2: #22d3ee;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --border: #252f4a;
+    --border-strong: #38456a;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 10px 44px rgba(0, 0, 0, 0.65);
     color-scheme: dark;
   }
 }
@@ -128,11 +130,18 @@ body {
   font-size: 16px;
   line-height: 1.7;
   padding-top: var(--topbar-height);
-  transition: background 0.3s, color 0.3s;
+  transition:
+    background 0.3s,
+    color 0.3s;
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.25;
@@ -169,9 +178,13 @@ a:hover {
   color: var(--text-color);
 }
 
-.bold { font-weight: 700; }
+.bold {
+  font-weight: 700;
+}
 
-.regular-text { color: var(--text-color); }
+.regular-text {
+  color: var(--text-color);
+}
 
 .grid {
   display: grid;
@@ -192,7 +205,10 @@ a.card,
   text-decoration: none;
   color: var(--text-color);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
 }
 
 a.card:hover {
@@ -217,7 +233,10 @@ a.card:hover {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+  transition:
+    background 0.18s,
+    transform 0.12s,
+    box-shadow 0.18s;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -230,14 +249,14 @@ a.card:hover {
   background: var(--accent);
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  box-shadow: 0 4px 16px rgba(79, 70, 229, .40);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  box-shadow: 0 6px 22px rgba(79, 70, 229, .50);
+  box-shadow: 0 6px 22px rgba(79, 70, 229, 0.5);
   text-decoration: none;
 }
 
@@ -328,7 +347,7 @@ a.card:hover {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -394,7 +413,7 @@ html.darkmode .badge-success {
   margin-bottom: 20px;
   color: var(--text-muted);
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -488,7 +507,10 @@ html.darkmode .badge-success {
   text-align: center;
   min-width: 130px;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s,
+    border-color 0.18s;
 }
 
 .stat-chip:hover {
@@ -526,7 +548,9 @@ html.darkmode .badge-success {
   font-size: 17px;
   line-height: 1;
   color: var(--text-color);
-  transition: background 0.18s, border-color 0.18s;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
 }
 
 #darkmode-toggle:hover {
@@ -587,7 +611,9 @@ html.darkmode .badge-success {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+  }
 
   *,
   *::before,
@@ -608,16 +634,36 @@ html.darkmode .badge-success {
 /* ============================================================
    MINERAL RANK COLORS — global
    ============================================================ */
-.rank-bronze   { color: #e07010; }
-.rank-iron     { color: #b04840; }
-.rank-silver   { color: #707070; }
-.rank-gold     { color: #c8a800; }
-.rank-platinum { color: #1580c8; }
-.rank-sapphire { color: #2244ee; }
-.rank-emerald  { color: #00b856; }
-.rank-amethyst { color: #b060f0; }
-.rank-diamond  { color: #00c8e8; }
-.rank-painite  { color: #e81010; }
+.rank-bronze {
+  color: #e07010;
+}
+.rank-iron {
+  color: #b04840;
+}
+.rank-silver {
+  color: #707070;
+}
+.rank-gold {
+  color: #c8a800;
+}
+.rank-platinum {
+  color: #1580c8;
+}
+.rank-sapphire {
+  color: #2244ee;
+}
+.rank-emerald {
+  color: #00b856;
+}
+.rank-amethyst {
+  color: #b060f0;
+}
+.rank-diamond {
+  color: #00c8e8;
+}
+.rank-painite {
+  color: #e81010;
+}
 
 .rank-bronze,
 .rank-iron,
@@ -633,28 +679,78 @@ html.darkmode .badge-success {
 }
 
 /* Stat block rank values */
-.stat b.rank-bronze   { color: #e07010; }
-.stat b.rank-iron     { color: #b04840; }
-.stat b.rank-silver   { color: #707070; }
-.stat b.rank-gold     { color: #c8a800; }
-.stat b.rank-platinum { color: #1580c8; }
-.stat b.rank-sapphire { color: #2244ee; }
-.stat b.rank-emerald  { color: #00b856; }
-.stat b.rank-amethyst { color: #b060f0; }
-.stat b.rank-diamond  { color: #00c8e8; }
-.stat b.rank-painite  { color: #e81010; }
+.stat b.rank-bronze {
+  color: #e07010;
+}
+.stat b.rank-iron {
+  color: #b04840;
+}
+.stat b.rank-silver {
+  color: #707070;
+}
+.stat b.rank-gold {
+  color: #c8a800;
+}
+.stat b.rank-platinum {
+  color: #1580c8;
+}
+.stat b.rank-sapphire {
+  color: #2244ee;
+}
+.stat b.rank-emerald {
+  color: #00b856;
+}
+.stat b.rank-amethyst {
+  color: #b060f0;
+}
+.stat b.rank-diamond {
+  color: #00c8e8;
+}
+.stat b.rank-painite {
+  color: #e81010;
+}
 
 /* Leaderboard mineral rank overrides */
-.ladder .leaderboard .player-info .rank.rank-bronze   { color: #b05000 !important; -webkit-text-fill-color: #b05000 !important; }
-.ladder .leaderboard .player-info .rank.rank-iron     { color: #7a2820 !important; -webkit-text-fill-color: #7a2820 !important; }
-.ladder .leaderboard .player-info .rank.rank-silver   { color: #505050 !important; -webkit-text-fill-color: #505050 !important; }
-.ladder .leaderboard .player-info .rank.rank-gold     { color: #9a7800 !important; -webkit-text-fill-color: #9a7800 !important; }
-.ladder .leaderboard .player-info .rank.rank-platinum { color: #0a5890 !important; -webkit-text-fill-color: #0a5890 !important; }
-.ladder .leaderboard .player-info .rank.rank-sapphire { color: #1a38cc !important; -webkit-text-fill-color: #1a38cc !important; }
-.ladder .leaderboard .player-info .rank.rank-emerald  { color: #006a34 !important; -webkit-text-fill-color: #006a34 !important; }
-.ladder .leaderboard .player-info .rank.rank-amethyst { color: #7820bb !important; -webkit-text-fill-color: #7820bb !important; }
-.ladder .leaderboard .player-info .rank.rank-diamond  { color: #0088aa !important; -webkit-text-fill-color: #0088aa !important; }
-.ladder .leaderboard .player-info .rank.rank-painite  { color: #bb0000 !important; -webkit-text-fill-color: #bb0000 !important; }
+.ladder .leaderboard .player-info .rank.rank-bronze {
+  color: #b05000 !important;
+  -webkit-text-fill-color: #b05000 !important;
+}
+.ladder .leaderboard .player-info .rank.rank-iron {
+  color: #7a2820 !important;
+  -webkit-text-fill-color: #7a2820 !important;
+}
+.ladder .leaderboard .player-info .rank.rank-silver {
+  color: #505050 !important;
+  -webkit-text-fill-color: #505050 !important;
+}
+.ladder .leaderboard .player-info .rank.rank-gold {
+  color: #9a7800 !important;
+  -webkit-text-fill-color: #9a7800 !important;
+}
+.ladder .leaderboard .player-info .rank.rank-platinum {
+  color: #0a5890 !important;
+  -webkit-text-fill-color: #0a5890 !important;
+}
+.ladder .leaderboard .player-info .rank.rank-sapphire {
+  color: #1a38cc !important;
+  -webkit-text-fill-color: #1a38cc !important;
+}
+.ladder .leaderboard .player-info .rank.rank-emerald {
+  color: #006a34 !important;
+  -webkit-text-fill-color: #006a34 !important;
+}
+.ladder .leaderboard .player-info .rank.rank-amethyst {
+  color: #7820bb !important;
+  -webkit-text-fill-color: #7820bb !important;
+}
+.ladder .leaderboard .player-info .rank.rank-diamond {
+  color: #0088aa !important;
+  -webkit-text-fill-color: #0088aa !important;
+}
+.ladder .leaderboard .player-info .rank.rank-painite {
+  color: #bb0000 !important;
+  -webkit-text-fill-color: #bb0000 !important;
+}
 
 /* ============================================================
    LOGIN — Google button
@@ -679,14 +775,17 @@ html.darkmode .badge-success {
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+  transition:
+    background 0.18s,
+    transform 0.12s,
+    box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .btn-google:hover {
   background: #f5f5f5;
   transform: translateY(-2px);
-  box-shadow: 0 5px 14px rgba(0, 0, 0, .13);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.13);
   text-decoration: none;
   color: #1f1f1f;
 }

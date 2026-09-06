@@ -31,62 +31,62 @@ export const MINERAL_RANKS = [
     name: "Bronze",
     minElo: -Infinity,
     maxElo: 599,
-    className: "rank-bronze"
+    className: "rank-bronze",
   },
   {
     name: "Iron",
     minElo: 600,
     maxElo: 799,
-    className: "rank-iron"
+    className: "rank-iron",
   },
   {
     name: "Silver",
     minElo: 800,
     maxElo: 999,
-    className: "rank-silver"
+    className: "rank-silver",
   },
   {
     name: "Gold",
     minElo: 1000,
     maxElo: 1199,
-    className: "rank-gold"
+    className: "rank-gold",
   },
   {
     name: "Platinum",
     minElo: 1200,
     maxElo: 1399,
-    className: "rank-platinum"
+    className: "rank-platinum",
   },
   {
     name: "Sapphire",
     minElo: 1400,
     maxElo: 1599,
-    className: "rank-sapphire"
+    className: "rank-sapphire",
   },
   {
     name: "Emerald",
     minElo: 1600,
     maxElo: 1799,
-    className: "rank-emerald"
+    className: "rank-emerald",
   },
   {
     name: "Amethyst",
     minElo: 1800,
     maxElo: 1999,
-    className: "rank-amethyst"
+    className: "rank-amethyst",
   },
   {
     name: "Diamond",
     minElo: 2000,
     maxElo: 2199,
-    className: "rank-diamond"
+    className: "rank-diamond",
   },
   {
     name: "Painite",
     minElo: 2200,
     maxElo: Infinity,
-    className: "rank-painite"
-  }
+    className: "rank-painite",
+  },
 ];
 
 /*
@@ -120,9 +120,7 @@ export function getMineralRank(elo) {
 
   return (
     MINERAL_RANKS.find(
-      rank =>
-        numericElo >= rank.minElo &&
-        numericElo <= rank.maxElo
+      (rank) => numericElo >= rank.minElo && numericElo <= rank.maxElo,
     ) || null
   );
 }
@@ -144,9 +142,7 @@ export function getMineralRank(elo) {
 export function getMineralRankName(elo) {
   const rank = getMineralRank(elo);
 
-  return rank
-    ? rank.name
-    : null;
+  return rank ? rank.name : null;
 }
 
 /*
@@ -168,9 +164,7 @@ export function getMineralRankName(elo) {
 export function getMineralRankClass(elo) {
   const rank = getMineralRank(elo);
 
-  return rank
-    ? rank.className
-    : null;
+  return rank ? rank.className : null;
 }
 
 /*
@@ -188,7 +182,5 @@ export function getMineralRankClass(elo) {
 export function formatMineralRank(elo) {
   const rank = getMineralRank(elo);
 
-  return rank
-    ? `Rank: ${rank.name}`
-    : "Rank: —";
+  return rank ? `Rank: ${rank.name}` : "Rank: —";
 }

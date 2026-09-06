@@ -1,58 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoreladder Daily Challenge</title>
 
-  <title>Scoreladder Daily Challenge</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
 
-  <link rel="stylesheet" href="/style.css">
-</head>
+  <body>
+    <div class="container">
+      <h1>Daily Challenge</h1>
 
-<body>
+      <div class="subtitle">Answer 10 questions before time runs out.</div>
 
+      <div class="challenge-controls">
+        <button id="startButton">Start Challenge</button>
 
-  <div class="container">
-
-    <h1>Daily Challenge</h1>
-
-    <div class="subtitle">
-      Answer 10 questions before time runs out.
-    </div>
-
-    <div class="challenge-controls">
-
-      <button id="startButton">
-        Start Challenge
-      </button>
-
-      <div id="timer">
-        11:00
+        <div id="timer">11:00</div>
       </div>
 
+      <div id="result"></div>
+
+      <div id="questions"></div>
+
+      <button id="submitButton" disabled>Submit Challenge</button>
     </div>
 
-    <div id="result"></div>
+    <div id="header"></div>
 
-    <div id="questions"></div>
+    <div id="footer"></div>
 
-    <button id="submitButton" disabled>
-      Submit Challenge
-    </button>
+    <p>Powered by Wikipedia API</p>
 
-  </div>
-
-  
-  <div id="header"></div>
-  
-  <div id="footer"></div>
-
-  <p>Powered by Wikipedia API</p>
-
-  <script src="generate-questions.js"></script>
-  <script src="/components/layout.js" defer></script>
-
-</body>
-
+    <script src="generate-questions.js"></script>
+    <script src="/components/layout.js" defer></script>
+  </body>
 </html>

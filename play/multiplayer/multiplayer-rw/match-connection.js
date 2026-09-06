@@ -20,7 +20,7 @@ import {
   saveActiveMatchState,
   getStoredActiveMatchState,
   getStoredResumeMatchId,
-  clearActiveMatchState
+  clearActiveMatchState,
 } from "./match-state.js";
 
 import {
@@ -30,17 +30,12 @@ import {
   enableQueueButton,
   updateOpponent,
   refreshPlayerStats,
-  setAnswerSelectionLocked
+  setAnswerSelectionLocked,
 } from "./match-ui.js";
 
-import {
-  createDisconnectManager
-} from "./match-disconnect.js";
+import { createDisconnectManager } from "./match-disconnect.js";
 
-import {
-  createReconnectManager
-} from "./match-reconnect.js";
-
+import { createReconnectManager } from "./match-reconnect.js";
 
 /* =========================================================
    MANAGERS
@@ -50,21 +45,17 @@ let disconnectManager = null;
 let reconnectManager = null;
 let reconnectBridge = null;
 
-
 /* =========================================================
    INITIALIZE CONNECTION MODULES
    ========================================================= */
 
-export function initializeMatchConnectionModules(
-  callbacks = {}
-) {
+export function initializeMatchConnectionModules(callbacks = {}) {
   /*
    * Managers should only be initialized once.
    */
   if (reconnectManager) {
     return reconnectBridge;
   }
-
 
   /* =======================================================
      GAMEPLAY CALLBACKS
@@ -77,9 +68,7 @@ export function initializeMatchConnectionModules(
   */
 
   const startGame =
-    typeof callbacks.startGame === "function"
-      ? callbacks.startGame
-      : null;
+    typeof callbacks.startGame === "function" ? callbacks.startGame : null;
 
   const startMatchTimer =
     typeof callbacks.startMatchTimer === "function"
@@ -96,61 +85,55 @@ export function initializeMatchConnectionModules(
       ? callbacks.handleSubmissionReceived
       : null;
 
-
   /* =======================================================
      DISCONNECT MANAGER
      ======================================================= */
 
-  disconnectManager =
-    createDisconnectManager({
-      state,
-      saveActiveMatchState,
-      enableResumeGame,
-      setStatus
-    });
-
+  disconnectManager = createDisconnectManager({
+    state,
+    saveActiveMatchState,
+    enableResumeGame,
+    setStatus,
+  });
 
   /* =======================================================
      RECONNECT MANAGER
      ======================================================= */
 
-  reconnectManager =
-    createReconnectManager({
-      API,
-      MATCH_DURATION_MS,
+  reconnectManager = createReconnectManager({
+    API,
+    MATCH_DURATION_MS,
 
-      state,
-      elements,
+    state,
+    elements,
 
-      setStatus,
+    setStatus,
 
-      saveActiveMatchState,
-      getStoredActiveMatchState,
-      getStoredResumeMatchId,
-      clearActiveMatchState,
+    saveActiveMatchState,
+    getStoredActiveMatchState,
+    getStoredResumeMatchId,
+    clearActiveMatchState,
 
-      enableResumeGame,
-      enableQueueButton,
+    enableResumeGame,
+    enableQueueButton,
 
-      updateOpponent,
-      refreshPlayerStats,
+    updateOpponent,
+    refreshPlayerStats,
 
-      /*
-       * Gameplay callbacks.
-       */
-      startGame,
-      startMatchTimer,
-      handleGameResult,
-      handleSubmissionReceived,
+    /*
+     * Gameplay callbacks.
+     */
+    startGame,
+    startMatchTimer,
+    handleGameResult,
+    handleSubmissionReceived,
 
-      setAnswerSelectionLocked,
+    setAnswerSelectionLocked,
 
-      disconnectManager
-    });
+    disconnectManager,
+  });
 
-  reconnectBridge =
-    reconnectManager;
-
+  reconnectBridge = reconnectManager;
 
   /* =======================================================
      PAGE LIFECYCLE
@@ -161,7 +144,6 @@ export function initializeMatchConnectionModules(
   return reconnectBridge;
 }
 
-
 /* =========================================================
    GET RECONNECT MANAGER
    ========================================================= */
@@ -169,7 +151,6 @@ export function initializeMatchConnectionModules(
 export function getReconnectManager() {
   return reconnectManager;
 }
-
 
 /* =========================================================
    GET DISCONNECT MANAGER
@@ -179,48 +160,33 @@ export function getDisconnectManager() {
   return disconnectManager;
 }
 
-
 /* =========================================================
    SEND ROOM MESSAGE
    ========================================================= */
 
-export function sendRoomMessage(
-  message
-) {
+export function sendRoomMessage(message) {
   if (!reconnectManager) {
-    console.error(
-      "Reconnect manager has not been initialized."
-    );
+    console.error("Reconnect manager has not been initialized.");
 
     return false;
   }
 
-  return reconnectManager.sendRoomMessage(
-    message
-  );
+  return reconnectManager.sendRoomMessage(message);
 }
-
 
 /* =========================================================
    CONNECT TO ROOM
    ========================================================= */
 
-export function connectToRoom(
-  isResume = false
-) {
+export function connectToRoom(isResume = false) {
   if (!reconnectManager) {
-    console.error(
-      "Reconnect manager has not been initialized."
-    );
+    console.error("Reconnect manager has not been initialized.");
 
     return null;
   }
 
-  return reconnectManager.connectToRoom(
-    isResume
-  );
+  return reconnectManager.connectToRoom(isResume);
 }
-
 
 /* =========================================================
    RESUME EXISTING MATCH
@@ -228,9 +194,7 @@ export function connectToRoom(
 
 export async function resumeExistingMatch() {
   if (!reconnectManager) {
-    console.error(
-      "Reconnect manager has not been initialized."
-    );
+    console.error("Reconnect manager has not been initialized.");
 
     return false;
   }
@@ -238,23 +202,16 @@ export async function resumeExistingMatch() {
   return reconnectManager.resumeExistingMatch();
 }
 
-
 /* =========================================================
    MATCH FOUND
    ========================================================= */
 
-export function onMatchFound(
-  isResume = false
-) {
+export function onMatchFound(isResume = false) {
   if (!reconnectManager) {
-    console.error(
-      "Reconnect manager has not been initialized."
-    );
+    console.error("Reconnect manager has not been initialized.");
 
     return false;
   }
 
-  return reconnectManager.onMatchFound(
-    isResume
-  );
+  return reconnectManager.onMatchFound(isResume);
 }

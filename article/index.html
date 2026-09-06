@@ -1,57 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <!-- Cookiebot -->
     <script
-        id="Cookiebot"
-        src="https://consent.cookiebot.com/uc.js"
-        data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
-        type="text/javascript">
-    </script>
+      id="Cookiebot"
+      src="https://consent.cookiebot.com/uc.js"
+      data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+      type="text/javascript"
+    ></script>
 
     <!-- Google Analytics -->
     <script
-        type="text/plain"
-        data-cookieconsent="statistics"
-        src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23">
-    </script>
+      type="text/plain"
+      data-cookieconsent="statistics"
+      src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"
+    ></script>
 
     <script type="text/plain" data-cookieconsent="statistics">
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-SYPC6SHK23');
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SYPC6SHK23');
     </script>
 
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scoreladder Articles</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css" />
     <style>
-    body {
+      body {
         margin: 0;
         font-family: sans-serif;
         background: var(--base-color);
         color: var(--text-color);
-    }
+      }
 
-    .container {
+      .container {
         max-width: 900px;
         margin: auto;
         padding: 20px;
-    }
+      }
 
-    h1 {
+      h1 {
         margin-bottom: 5px;
-    }
+      }
 
-    .subtitle {
+      .subtitle {
         margin-bottom: 20px;
         opacity: 0.8;
-    }
+      }
 
-    /* INPUT */
-    input {
+      /* INPUT */
+      input {
         width: 100%;
         padding: 14px;
         font-size: 18px;
@@ -60,10 +60,10 @@
         background: var(--surface);
         color: var(--text-color);
         margin-bottom: 12px;
-    }
+      }
 
-    /* BUTTONS */
-    button {
+      /* BUTTONS */
+      button {
         padding: 12px 18px;
         font-size: 16px;
         border: none;
@@ -72,95 +72,93 @@
         background: var(--accent);
         color: white;
         margin-right: 8px;
-    }
+      }
 
-    button:hover {
+      button:hover {
         background: var(--accent-hover);
-    }
+      }
 
-    button:disabled {
+      button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
-    }
+      }
 
-    /* CARD */
-    .card {
+      /* CARD */
+      .card {
         margin-top: 20px;
         padding: 20px;
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
-    }
+      }
 
-    .title {
+      .title {
         font-size: 24px;
         margin-bottom: 10px;
-    }
+      }
 
-    .meta {
+      .meta {
         font-size: 14px;
         opacity: 0.9;
         margin-bottom: 10px;
-    }
+      }
 
-    .abstract {
+      .abstract {
         line-height: 1.6;
         white-space: pre-wrap;
-    }
+      }
 
-    /* QUESTIONS */
-    .choice {
+      /* QUESTIONS */
+      .choice {
         margin-top: 8px;
         padding: 10px;
         border-radius: 8px;
         background: var(--secondary-color);
-    }
+      }
 
-    .answer {
+      .answer {
         margin-top: 10px;
         color: var(--accent);
-    }
+      }
 
-    /* FOOTER */
-    .footer {
+      /* FOOTER */
+      .footer {
         margin-top: 30px;
         font-size: 12px;
         opacity: 0.7;
         text-align: center;
-    }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
+    <div class="container">
+      <h1>Scoreladder Articles</h1>
 
-<div class="container">
+      <div class="subtitle">
+        Wikipedia-powered reading + SAT question generator
+      </div>
 
-<h1>Scoreladder Articles</h1>
+      <input
+        id="topicInput"
+        placeholder="Enter a topic (e.g. World War II, Gravity, Shakespeare)"
+      />
 
-<div class="subtitle">
-    Wikipedia-powered reading + SAT question generator
-</div>
+      <div>
+        <button id="searchBtn">Find Article</button>
+        <button id="aiBtn">Generate SAT Questions</button>
+      </div>
 
-<input id="topicInput" placeholder="Enter a topic (e.g. World War II, Gravity, Shakespeare)" />
+      <div id="result"></div>
+      <div id="questions"></div>
 
-<div>
-    <button id="searchBtn">Find Article</button>
-    <button id="aiBtn">Generate SAT Questions</button>
-</div>
+      <div class="footer">Powered by Wikipedia API</div>
+    </div>
 
-<div id="result"></div>
-<div id="questions"></div>
+    <script src="script.js"></script>
+    <script src="/components/layout.js" defer></script>
 
-<div class="footer">
-    Powered by Wikipedia API
-</div>
-
-</div>
-
-<script src="script.js"></script>
-<script src="/components/layout.js" defer></script>
-
-<div id="header"></div>
-<div id="footer"></div>
-</body>
+    <div id="header"></div>
+    <div id="footer"></div>
+  </body>
 </html>

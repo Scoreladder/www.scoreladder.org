@@ -18,105 +18,68 @@ export function createDisconnectManager({
   state,
   saveActiveMatchState,
   enableResumeGame,
-  setStatus
+  setStatus,
 }) {
-
   /* =======================================================
      CONNECTION STATE
      ======================================================= */
 
   function clearConnectionState() {
-    state.matchConnectionConfirmed =
-      false;
+    state.matchConnectionConfirmed = false;
 
-    state.resumeInProgress =
-      false;
+    state.resumeInProgress = false;
 
-    state.reconnecting =
-      false;
+    state.reconnecting = false;
   }
-
 
   /* =======================================================
      WEBSOCKET ERROR
      ======================================================= */
 
-  function handleSocketError(
-    error,
-    isResume
-  ) {
-    console.error(
-      "WebSocket error:",
-      error
-    );
+  function handleSocketError(error, isResume) {
+    console.error("WebSocket error:", error);
 
     clearConnectionState();
 
     if (isResume) {
-      setStatus(
-        "Unable to reconnect to your match."
-      );
+      setStatus("Unable to reconnect to your match.");
 
-      enableResumeGame(
-        state.matchId
-      );
+      enableResumeGame(state.matchId);
 
       return;
     }
 
-    setStatus(
-      "Connection to match failed."
-    );
+    setStatus("Connection to match failed.");
   }
-
 
   /* =======================================================
      WEBSOCKET CLOSE
      ======================================================= */
 
-  function handleSocketClose(
-    event,
-    isResume
-  ) {
-    console.log(
-      "WebSocket closed:",
-      {
-        code:
-          event.code,
+  function handleSocketClose(event) {
+    console.log("WebSocket closed:", {
+      code: event.code,
 
-        reason:
-          event.reason
-      }
-    );
+      reason: event.reason,
+    });
 
-    state.matchConnectionConfirmed =
-      false;
+    state.matchConnectionConfirmed = false;
 
-    state.resumeInProgress =
-      false;
+    state.resumeInProgress = false;
 
     /*
      * Preserve an unfinished active match.
      */
-    if (
-      state.gameStarted &&
-      !state.challengeSubmitted &&
-      !state.newGameMode
-    ) {
+    if (state.gameStarted && !state.challengeSubmitted && !state.newGameMode) {
       saveActiveMatchState();
 
-      state.resumeAvailable =
-        true;
+      state.resumeAvailable = true;
 
-      state.resumeMatchId =
-        state.matchId;
+      state.resumeMatchId = state.matchId;
 
-      state.reconnecting =
-        false;
+      state.reconnecting = false;
 
-      enableResumeGame(
-        state.matchId
-      );
+      enableResumeGame(state.matchId);
 
       return;
     }
@@ -125,61 +88,38 @@ export function createDisconnectManager({
      * Also preserve a matched room that has not
      * started yet.
      */
-    if (
-      state.matchId &&
-      !state.matchFinished &&
-      !state.newGameMode
-    ) {
+    if (state.matchId && !state.matchFinished && !state.newGameMode) {
       saveActiveMatchState();
 
-      state.reconnecting =
-        false;
+      state.reconnecting = false;
 
-      enableResumeGame(
-        state.matchId
-      );
+      enableResumeGame(state.matchId);
 
       return;
     }
 
-    state.reconnecting =
-      false;
+    state.reconnecting = false;
   }
-
 
   /* =======================================================
      PAGE LIFECYCLE PERSISTENCE
      ======================================================= */
 
   function persistBeforePageHide() {
-    if (
-      state.matchId &&
-      !state.challengeSubmitted
-    ) {
+    if (state.matchId && !state.challengeSubmitted) {
       saveActiveMatchState();
     }
   }
 
-
   function installPageLifecycleHandlers() {
-    window.addEventListener(
-      "pagehide",
-      persistBeforePageHide
-    );
+    window.addEventListener("pagehide", persistBeforePageHide);
 
-    document.addEventListener(
-      "visibilitychange",
-      () => {
-        if (
-          document.visibilityState ===
-          "hidden"
-        ) {
-          persistBeforePageHide();
-        }
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        persistBeforePageHide();
       }
-    );
+    });
   }
-
 
   /* =======================================================
      PUBLIC API
@@ -189,6 +129,6 @@ export function createDisconnectManager({
     handleSocketError,
     handleSocketClose,
     persistBeforePageHide,
-    installPageLifecycleHandlers
+    installPageLifecycleHandlers,
   };
 }
