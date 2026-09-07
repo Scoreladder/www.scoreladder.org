@@ -31,8 +31,6 @@ async function load() {
   try {
     const sessionId = getSessionId();
 
-    console.log("Profile session:", sessionId ? "found" : "missing");
-
     let meUrl = `${Auth_API}/me`;
 
     if (sessionId) {
@@ -56,8 +54,6 @@ async function load() {
     }
 
     const user = await res.json();
-
-    console.log("Profile data loaded:", user);
 
     // --------------------------------------------------------
     // LOAD MINERAL RANKS
@@ -244,11 +240,8 @@ function renderProfile(user, getMineralRank) {
   const socials = [];
 
   const twitterUrl = getSafeExternalUrl(profile.twitter);
-
   const instagramUrl = getSafeExternalUrl(profile.instagram);
-
   const youtubeUrl = getSafeExternalUrl(profile.youtube);
-
   const websiteUrl = getSafeExternalUrl(profile.website);
 
   function getSafeExternalUrl(value) {

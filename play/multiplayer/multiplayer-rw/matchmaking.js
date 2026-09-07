@@ -126,8 +126,6 @@ async function startMatchmaking() {
 
     const data = await response.json();
 
-    console.log("Matchmaking response:", data);
-
     /*
      * Handle HTTP-level errors first.
      */
@@ -268,8 +266,6 @@ async function checkForMatch() {
 
     const data = await response.json();
 
-    console.log("Match check:", data);
-
     /*
      * Server-side cooldown.
      */
@@ -334,10 +330,6 @@ async function checkForMatch() {
    ========================================================= */
 
 function onMatchFound() {
-  console.log("Match found:", state.matchId);
-
-  console.log("Opponent:", state.opponent);
-
   state.matchConnectionConfirmed = false;
 
   /*

@@ -456,11 +456,6 @@ export function enableResumeGame(matchId = state.matchId) {
     activeState.matchId === matchId &&
     isPersistedMatchExpired(activeState)
   ) {
-    console.log(
-      "Refusing to enable Resume Game because saved match is expired:",
-      matchId,
-    );
-
     clearActiveMatchState();
 
     state.matchId = null;
@@ -533,24 +528,6 @@ export function initializeResumeGame() {
   const restored = restoreActiveMatchState();
 
   if (restored) {
-    console.log("Restored active match state:", {
-      matchId: state.matchId,
-
-      playerId: state.playerId,
-
-      selectedAnswers: state.selectedAnswers,
-
-      questionCount: state.questions.length,
-
-      challengeDeadline: state.challengeDeadline,
-
-      matchStartedAt: state.matchStartedAt,
-
-      gameStarted: state.gameStarted,
-
-      challengeSubmitted: state.challengeSubmitted,
-    });
-
     if (state.opponent) {
       updateOpponent(state.opponent);
     }
@@ -1220,8 +1197,6 @@ export async function loadHistoricalTopicPerformance() {
       "topic-performance",
     )}?session=${encodeURIComponent(sessionId)}`;
 
-    console.log("Loading historical topic performance");
-
     const response = await fetch(url);
 
     let data = {};
@@ -1347,8 +1322,6 @@ export async function loadHistoricalTopicPerformance() {
       return;
     }
 
-    console.log("Loaded historical topic performance:", normalizedTopics);
-
     window.scoreladderHistoricalTopics = normalizedTopics;
 
     renderHistoricalTopicStats(normalizedTopics);
@@ -1372,8 +1345,6 @@ export async function loadRecentMatches() {
       sessionId,
     )}&limit=5`;
 
-    console.log("Loading recent matches:", url);
-
     const response = await fetch(url);
 
     let data = {};
@@ -1391,8 +1362,6 @@ export async function loadRecentMatches() {
     }
 
     const matches = Array.isArray(data.matches) ? data.matches.slice(0, 5) : [];
-
-    console.log("Loaded recent matches:", matches);
 
     window.scoreladderRecentMatches = matches;
     /*

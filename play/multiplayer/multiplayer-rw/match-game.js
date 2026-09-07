@@ -222,13 +222,7 @@ export function handleGameStart(data, isResume = false) {
    ========================================================= */
 
 export function startGame(questions, startTime, isResume = false) {
-  handleGameStart(
-    {
-      questions,
-      startTime,
-    },
-    isResume,
-  );
+  handleGameStart({ questions, startTime }, isResume);
 }
 
 /* =========================================================
@@ -436,9 +430,7 @@ export function restoreSelectedAnswerUI() {
     return;
   }
 
-  if (!Array.isArray(state.selectedAnswers)) {
-    return;
-  }
+  if (!Array.isArray(state.selectedAnswers)) return;
 
   state.selectedAnswers.forEach((choiceIndex, questionIndex) => {
     if (!Number.isInteger(choiceIndex) || choiceIndex < 0) {

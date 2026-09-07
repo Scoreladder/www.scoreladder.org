@@ -113,10 +113,6 @@ async function getCurrentUser() {
       meUrl = `${AUTH_API_URL}/me?session=${encodeURIComponent(sessionId)}`;
     }
 
-    console.log("Checking authentication:", {
-      sessionFound: Boolean(sessionId),
-    });
-
     const response = await fetch(meUrl, {
       method: "GET",
       credentials: "include",
@@ -132,12 +128,6 @@ async function getCurrentUser() {
     } catch {
       data = null;
     }
-
-    console.log("Authentication check:", {
-      status: response.status,
-      ok: response.ok,
-      data,
-    });
 
     if (!response.ok) {
       return null;
@@ -163,8 +153,6 @@ async function loadDailyQuestions() {
     `;
 
   try {
-    console.log("Loading daily questions from:", QUESTION_API_URL);
-
     const res = await fetch(QUESTION_API_URL, {
       method: "GET",
       cache: "no-store",
@@ -183,8 +171,6 @@ async function loadDailyQuestions() {
         cause: parseError,
       });
     }
-
-    console.log("Daily question response:", data);
 
     if (!res.ok) {
       throw new Error(
@@ -220,12 +206,8 @@ async function loadDailyQuestions() {
 
     if (Array.isArray(data)) {
       rawQuestions = data;
-
-      console.log("Question worker returned a top-level question array.");
     } else if (data && Array.isArray(data.questions)) {
       rawQuestions = data.questions;
-
-      console.log("Question worker returned { questions: [...] }.");
     } else {
       throw new Error(
         "The question worker returned an invalid question format.",
@@ -358,19 +340,6 @@ async function loadDailyQuestions() {
       };
     });
 
-    console.log(
-      "Loaded and normalized daily questions:",
-      questions.map((q, index) => ({
-        number: index + 1,
-        originalTopic: q.originalTopic,
-        normalizedTopic: q.topic,
-        answer: q.answer,
-        choiceCount: Array.isArray(q.choices)
-          ? q.choices.length
-          : Object.keys(q.choices || {}).length,
-      })),
-    );
-
     selectedAnswers = new Array(questions.length).fill(-1);
 
     questionsDiv.innerHTML = `
@@ -461,9 +430,7 @@ async function startChallenge() {
 
     if (timeRemaining <= 0) {
       clearInterval(timerInterval);
-
       timerInterval = null;
-
       submitChallenge(true);
     }
   }, 1000);
@@ -561,7 +528,6 @@ function renderQuestions() {
       button.addEventListener("click", () => {
         selectAnswer(questionIndex, choiceIndex);
       });
-
       card.appendChild(button);
     });
 
@@ -652,7 +618,6 @@ async function submitChallenge(autoSubmitted = false) {
 
   if (timerInterval) {
     clearInterval(timerInterval);
-
     timerInterval = null;
   }
 
@@ -694,8 +659,6 @@ async function submitChallenge(autoSubmitted = false) {
 
     const accuracy = Math.round((correct / total) * 100);
 
-    console.log("Submitting daily challenge results:", results);
-
     let sessionId = null;
 
     try {
@@ -714,10 +677,6 @@ async function submitChallenge(autoSubmitted = false) {
         sessionId,
       )}`;
     }
-
-    console.log("Submitting daily challenge:", {
-      sessionFound: Boolean(sessionId),
-    });
 
     const saveResponse = await fetch(saveUrl, {
       method: "POST",
@@ -744,14 +703,6 @@ async function submitChallenge(autoSubmitted = false) {
         error: responseText || "Auth worker returned a non-JSON response.",
       };
     }
-
-    console.log("Daily challenge save response:", {
-      status: saveResponse.status,
-
-      ok: saveResponse.ok,
-
-      data: saveData,
-    });
 
     if (saveResponse.status === 401) {
       throw new Error(
@@ -812,9 +763,7 @@ async function submitChallenge(autoSubmitted = false) {
 
         if (timeRemaining <= 0) {
           clearInterval(timerInterval);
-
           timerInterval = null;
-
           submitChallenge(true);
         }
       }, 1000);

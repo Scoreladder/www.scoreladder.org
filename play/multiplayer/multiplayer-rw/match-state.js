@@ -589,18 +589,6 @@ export function isResumeAvailable() {
    */
   if (activeState && isLogicalMatchId(activeState.matchId)) {
     if (isPersistedMatchExpired(activeState)) {
-      console.log("Saved match has expired. Clearing resume state:", {
-        matchId: activeState.matchId,
-
-        challengeDeadline: activeState.challengeDeadline,
-
-        matchStartedAt: activeState.matchStartedAt,
-
-        savedAt: activeState.savedAt,
-
-        now: Date.now(),
-      });
-
       clearActiveMatchState();
 
       state.matchId = null;
@@ -625,11 +613,6 @@ export function isResumeAvailable() {
   const storedMatchId = getStoredResumeMatchId();
 
   if (storedMatchId && !activeState) {
-    console.log(
-      "Found orphaned resume key without active match state. Clearing it:",
-      storedMatchId,
-    );
-
     clearResumeMatch();
 
     return false;
@@ -660,18 +643,6 @@ export function restoreActiveMatchState() {
    * restoring it into live state.
    */
   if (saved && isPersistedMatchExpired(saved)) {
-    console.log("Persisted match is expired. Clearing resume state:", {
-      matchId: logicalMatchId,
-
-      challengeDeadline: saved.challengeDeadline,
-
-      matchStartedAt: saved.matchStartedAt,
-
-      savedAt: saved.savedAt,
-
-      now: Date.now(),
-    });
-
     clearActiveMatchState();
 
     state.matchId = null;
@@ -800,24 +771,6 @@ export function restoreActiveMatchState() {
   } catch (error) {
     console.error("Failed to repair resume match key:", error);
   }
-
-  console.log("Restored logical match state:", {
-    matchId: state.matchId,
-
-    playerId: state.playerId,
-
-    resumeMatchId: state.resumeMatchId,
-
-    challengeDeadline: state.challengeDeadline,
-
-    matchStartedAt: state.matchStartedAt,
-
-    challengeSubmitted: state.challengeSubmitted,
-
-    matchFinished: state.matchFinished,
-
-    answerSelectionLocked: state.answerSelectionLocked,
-  });
 
   return true;
 }

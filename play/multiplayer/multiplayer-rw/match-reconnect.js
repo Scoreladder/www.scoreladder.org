@@ -96,18 +96,6 @@ export function createReconnectManager({
      ======================================================= */
 
   function handleRoomState(data) {
-    console.log("Room state:", {
-      logicalMatchId: state.matchId,
-
-      durableObjectId: data.matchId,
-
-      gameStarted: data.gameStarted,
-
-      connectedCount: data.connectedCount,
-
-      roomStatus: data.roomStatus,
-    });
-
     /*
      * NEVER replace state.matchId with data.matchId.
      *
@@ -326,11 +314,6 @@ export function createReconnectManager({
       `${wsAPI}/match?matchId=${encodeURIComponent(state.matchId)}` +
       `&playerId=${encodeURIComponent(state.playerId)}`;
 
-    console.log("Connecting to room:", {
-      socketURL,
-      isResume,
-    });
-
     /* -----------------------------------------------------
        CLOSE OLD SOCKET
        ----------------------------------------------------- */
@@ -358,8 +341,6 @@ export function createReconnectManager({
       if (state.matchSocket !== socket) {
         return;
       }
-
-      console.log("WebSocket connected.");
 
       state.matchConnectionConfirmed = true;
 
@@ -402,8 +383,6 @@ export function createReconnectManager({
         return;
       }
 
-      console.log("WebSocket message:", data);
-
       function normalizeSelectedAnswer(value) {
         if (Number.isInteger(value) && value >= 0 && value <= 3) {
           return value;
@@ -428,14 +407,6 @@ export function createReconnectManager({
              =============================================== */
 
         case "connected": {
-          console.log("Connected to match room:", {
-            logicalMatchId: state.matchId,
-
-            durableObjectId: data.matchId,
-
-            playerId: data.playerId,
-          });
-
           /*
            * NEVER copy data.matchId into state.matchId.
            */
@@ -549,8 +520,6 @@ export function createReconnectManager({
              =============================================== */
 
         case "game_schedule": {
-          console.log("Next game scheduled:", data.nextGameAt);
-
           return;
         }
 
@@ -559,8 +528,6 @@ export function createReconnectManager({
              =============================================== */
 
         case "game_start": {
-          console.log("Game state received from server:", data);
-
           if (typeof startGame === "function") {
             startGame(data.questions, data.startTime, isResume);
           }
@@ -757,8 +724,6 @@ export function createReconnectManager({
              =============================================== */
 
         case "submission_received": {
-          console.log("Submission accepted by server:", data);
-
           /*
            * THIS is the authoritative acknowledgement
            * that our own submission was accepted.
@@ -902,12 +867,6 @@ export function createReconnectManager({
       if (state.matchSocket !== socket) {
         return;
       }
-
-      console.log("WebSocket closed:", {
-        code: event.code,
-
-        reason: event.reason,
-      });
 
       state.matchConnectionConfirmed = false;
 
@@ -1119,24 +1078,6 @@ export function createReconnectManager({
      */
     saveActiveMatchState();
 
-    console.log("RESUME START:", {
-      matchId: state.matchId,
-
-      playerId: state.playerId,
-
-      gameStarted: state.gameStarted,
-
-      questionCount: Array.isArray(state.questions)
-        ? state.questions.length
-        : 0,
-
-      selectedAnswers: state.selectedAnswers,
-
-      challengeSubmitted: state.challengeSubmitted,
-
-      submissionInProgress: state.submissionInProgress,
-    });
-
     /*
      * The connection layer is responsible for:
      *
@@ -1156,16 +1097,6 @@ export function createReconnectManager({
      ======================================================= */
 
   function onMatchFound(isResume = false) {
-    console.log("Match found/resuming:", {
-      matchId: state.matchId,
-
-      playerId: state.playerId,
-
-      opponent: state.opponent,
-
-      isResume,
-    });
-
     return connectToRoom(isResume);
   }
 

@@ -1,0 +1,19 @@
+warning: in the working copy of 'play/multiplayer/multiplayer-rw/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'play/multiplayer/multiplayer-rw/match-disconnect.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'play/multiplayer/multiplayer-rw/match-game.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'play/multiplayer/multiplayer-rw/match-reconnect.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'play/multiplayer/multiplayer-rw/match-state.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'play/multiplayer/multiplayer-rw/match-ui.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'play/multiplayer/multiplayer-rw/matchmaking.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'play/singleplayer-modes/daily-challenge-rw/generate-questions.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'profile/script.js', LF will be replaced by CRLF the next time Git touches it
+ play/multiplayer/multiplayer-rw/index.html         |  2 [32m+[m[31m-[m
+ .../multiplayer/multiplayer-rw/match-disconnect.js |  8 [32m+[m[31m--[m
+ play/multiplayer/multiplayer-rw/match-game.js      | 12 [32m+[m[31m---[m
+ play/multiplayer/multiplayer-rw/match-reconnect.js | 69 [31m----------------------[m
+ play/multiplayer/multiplayer-rw/match-state.js     | 47 [31m---------------[m
+ play/multiplayer/multiplayer-rw/match-ui.js        | 31 [31m----------[m
+ play/multiplayer/multiplayer-rw/matchmaking.js     |  8 [31m---[m
+ .../daily-challenge-rw/generate-questions.js       | 51 [31m----------------[m
+ profile/script.js                                  |  7 [31m---[m
+ 9 files changed, 4 insertions(+), 231 deletions(-)

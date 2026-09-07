@@ -56,13 +56,7 @@ export function createDisconnectManager({
      WEBSOCKET CLOSE
      ======================================================= */
 
-  function handleSocketClose(event) {
-    console.log("WebSocket closed:", {
-      code: event.code,
-
-      reason: event.reason,
-    });
-
+  function handleSocketClose() {
     state.matchConnectionConfirmed = false;
 
     state.resumeInProgress = false;
