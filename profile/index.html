@@ -1,47 +1,72 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443" type="text/javascript" async></script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  gtag('config', 'G-SYPC6SHK23');
-</script>
-  <title>Profile</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="profile.css">
-</head>
+    <script
+      id="Cookiebot"
+      src="https://consent.cookiebot.com/uc.js"
+      data-cbid="e3561ef0-50a8-4b4b-84ba-074325b97443"
+      type="text/javascript"
+    ></script>
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-SYPC6SHK23"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-<body>
+      gtag("config", "G-SYPC6SHK23");
+    </script>
+    <title>Profile</title>
 
-<div class="banner" id="banner"></div>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
 
-<div class="profile-card">
-  <img id="avatar" class="avatar" />
+  <body>
+    <main class="profile-page">
+      <div class="banner" id="banner"></div>
 
-  <h2 id="name"></h2>
-  <p id="id"></p>
+      <div class="profile-card">
+        <img id="avatar" class="avatar" alt="Profile picture" />
 
-  <p id="bio" class="bio"></p>
+        <h2 id="name"></h2>
 
-  <div class="stats" id="stats"></div>
+        <p id="id"></p>
 
-  <div class="socials" id="socials"></div>
+        <p id="bio" class="bio"></p>
 
-  <button class="settings" onclick="goSettings()">Settings</button>
-  <button class="logout" onclick="logout()">Logout</button>
-</div>
+        <div class="stats" id="stats"></div>
 
-<script src="profile.js"></script>
+        <div class="socials" id="socials"></div>
 
-<script src="/components/layout.js"></script>
+        <div class="profile-actions">
+          <button
+            class="settings"
+            type="button"
+            onclick="window.location.href = '/settings/'"
+          >
+            Settings
+          </button>
 
-<div id="header"></div>
-<div id="footer"></div>
+          <button class="logout" type="button" onclick="logout()">
+            Sign out
+          </button>
+        </div>
+      </div>
+    </main>
 
-</body>
+    <div id="header"></div>
+    <div id="footer"></div>
+
+    <script src="/components/layout.js"></script>
+    <script type="module" src="script.js"></script>
+  </body>
 </html>
