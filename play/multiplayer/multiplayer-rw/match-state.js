@@ -21,7 +21,7 @@
    CONSTANTS
    ========================================================= */
 
-export const API = "https://scoreladder.org";
+export const API = "https://www.scoreladder.org";
 
 export const AUTH_API = "https://auth.scoreladder.org";
 
