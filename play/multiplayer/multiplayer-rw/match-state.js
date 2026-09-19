@@ -21,7 +21,7 @@
    CONSTANTS
    ========================================================= */
 
-export const API = "http://127.0.0.1:8787";
+export const API = "https://www.scoreladder.org";
 
 export const AUTH_API = "https://auth.scoreladder.org";
 
